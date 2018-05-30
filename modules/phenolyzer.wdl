@@ -14,12 +14,17 @@ task phenolyzer {
   String OutDir
   String PerlPath
 
+  #command <<<
+  #  cp ${DiseaseFile} ${PhenolyzerExe}/disease_files
+  #  chmod +xwr ${PhenolyzerExe}/disease_files/disease.txt
+  #  cd ${PhenolyzerExe}
+  #  ${SrunLow} ${PerlPath} disease_annotation.pl disease_files/disease.txt -f -p -ph -logistic -out out/disease/${SampleID}
+  #  mv ${PhenolyzerExe}/out/disease/${SampleID}.predicted_gene_scores ${OutDir}${SampleID}/${WorkflowType}/disease/
+  #>>>
+
   command <<<
-    cp ${DiseaseFile} ${PhenolyzerExe}/disease_files
-    chmod +xwr ${PhenolyzerExe}/disease_files/disease.txt
     cd ${PhenolyzerExe}
-    ${SrunLow} ${PerlPath} disease_annotation.pl disease_files/disease.txt -f -p -ph -logistic -out out/disease/${SampleID}
-    mv ${PhenolyzerExe}/out/disease/${SampleID}.predicted_gene_scores ${OutDir}${SampleID}/${WorkflowType}/disease/
+    ${SrunLow} ${PerlPath} disease_annotation.pl ${DiseaseFile} -f -p -ph -logistic -out ../..${OutDir}${SampleID}/${WorkflowType}/disease/${SampleID}
   >>>
 
   output {
