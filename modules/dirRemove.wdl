@@ -7,19 +7,21 @@ task dirRemove {
   File OutAchab
   File OutAchabNewHope
 
+  #if [ -d "${PhenolyzerExe}/out" ]; then \
+  #    rm -rf "${PhenolyzerExe}/out"; \
+  #  fi
+  #  if [ -d "${PhenolyzerExe}/out/disease" ]; then \
+  #    rm -rf "${PhenolyzerExe}/out/disease"; \
+  #  fi
+  #  if [ -d "${PhenolyzerExe}/disease_files" ]; then \
+  #    rm -rf "${PhenolyzerExe}/disease_files"; \
+  #  fi
+  #  if [ -f "${PhenolyzerExe}/disease.txt" ]; then \
+  #    rm "${PhenolyzerExe}/disease.txt"; \
+  #  fi
+
+
   command {
-    if [ -d "${PhenolyzerExe}/out" ]; then \
-      rm -rf "${PhenolyzerExe}/out"; \
-    fi
-    if [ -d "${PhenolyzerExe}/out/disease" ]; then \
-      rm -rf "${PhenolyzerExe}/out/disease"; \
-    fi
-    if [ -d "${PhenolyzerExe}/disease_files" ]; then \
-      rm -rf "${PhenolyzerExe}/disease_files"; \
-    fi
-    if [ -f "${PhenolyzerExe}/disease.txt" ]; then \
-      rm "${PhenolyzerExe}/disease.txt"; \
-    fi
     if [ -d "${OutDir}${SampleID}/${WorkflowType}/bcftools" ]; then \
       rm -rf "${OutDir}${SampleID}/${WorkflowType}/bcftools"; \
     fi 
