@@ -1,6 +1,6 @@
 #Import section
-import "modules/dirPreparation.wdl" as runDirPreparation
-import "modules/dirRemove.wdl" as runDirRemove
+import "modules/achabDirPreparation.wdl" as runAchabDirPreparation
+import "modules/achabDirCleanUp.wdl" as runAchabDirCleanUp
 import "modules/annovarForMpa.wdl" as runAnnovarForMpa
 import "modules/mpa.wdl" as runMpa
 import "modules/phenolyzer.wdl" as runPhenolyzer
@@ -60,7 +60,7 @@ workflow captainAchab {
     input: 
     SrunLow = srunLow,
     WorkflowType = workflowType, 
-    IsPrepared = dirPreparation.isPrepared, 
+    IsPrepared = achabDirPreparation.isPrepared, 
     InputVcf = inputVcf, 
     BcftoolsExe = bcftoolsExe, 
     SampleID = sampleID, 
@@ -98,7 +98,7 @@ workflow captainAchab {
     UnsortedVcf = bcftoolsNorm.normVcf
   }
 
-  call runDirPreparation.dirPreparation{
+  call runAchabDirPreparation.achabDirPreparation{
     input:
     WorkflowType = workflowType,
     SampleID = sampleID,
@@ -109,7 +109,7 @@ workflow captainAchab {
 
   if (!keepFiles) {
 
-    call runDirRemove.dirRemove{
+    call runAchabDirCleanUp.achabDirCleanUp{
       input:
       WorkflowType = workflowType,
       SampleID = sampleID,
@@ -154,7 +154,7 @@ workflow captainAchab {
     input:
     SrunLow = srunLow, 
     WorkflowType = workflowType, 
-    IsPrepared = dirPreparation.isPrepared,
+    IsPrepared = achabDirPreparation.isPrepared,
     DiseaseFile = diseaseFile,
     PhenolyzerExe = phenolyzerExe,
     SampleID = sampleID,

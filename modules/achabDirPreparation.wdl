@@ -1,4 +1,4 @@
-task dirPreparation {
+task achabDirPreparation {
   String WorkflowType
   String SampleID
   String OutDir

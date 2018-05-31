@@ -1,4 +1,4 @@
-task dirRemove {
+task achabDirCleanUp {
   String WorkflowType
   String SampleID
   String OutDir
