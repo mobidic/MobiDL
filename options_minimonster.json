@@ -1,7 +1,0 @@
-{
-    "workflow_failure_mode": "ContinueWhilePossible",
-    "final_workflow_log_dir": "/home/mobidic/Devs/wdlDev/cromwell-workflow-logs",
-    "final_call_logs_dir": "/home/mobidic/Devs/wdlDev/cromwell-workflow-logs",
-    "write_to_cache": "true",
-    "read_from_cache": "true"
-}
