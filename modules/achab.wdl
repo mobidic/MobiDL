@@ -3,7 +3,7 @@ task achab {
   #Trio = dad/mum/case mais si control, trio ne marche pas
 
   File AchabExe
-  File GenesOfInterest
+  String GenesOfInterest
   #String ControlSample
   String FatherSample
   String CaseSample
