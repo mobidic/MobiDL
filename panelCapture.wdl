@@ -330,7 +330,8 @@ workflow panelCapture {
 		BamFile = samtoolsSort.sortedBam,
 		IntervalBedFile = intervalBedFile,
 	}
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {			input:
+	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
+		input:
 		SrunLow = srunLow,
 		SampleID = sampleID,
 		OutDir = outDir,
