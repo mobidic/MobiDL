@@ -28,7 +28,7 @@ task achabNewHope {
     --dad ${FatherSample} \
     --mum ${MotherSample} \
     ${CheckTrio} \
-    --candidates ${GenesOfInterest} \
+    ${GenesOfInterest} \
     --phenolyzerFile ${OutPhenolyzer} \
     --popFreqThr ${AllelicFrequency} \
     --newHope \
