@@ -42,7 +42,7 @@ workflow captainAchab {
   File diseaseFile
   ## From captainAchab
   Boolean newHope
-  File genesOfInterest
+  String genesOfInterest
   String fatherSample
   String caseSample
   String motherSample
