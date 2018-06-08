@@ -38,9 +38,9 @@ java -jar /PATH/TO/cromwell.jar run panelCapture.wdl -i panelCapture_inputs.json
 
 This workflow is dedicated to NGS experiments based on capture libraries, and focusing on gene panels.
 
-This is suitable for exome but the VCF is hard-filtered, not VQSRed (see [here](https://software.broadinstitute.org/gatk/best-practices/workflow?id=11145).
+This is suitable for exome but the VCF is hard-filtered, not VQSRed (see [here](https://software.broadinstitute.org/gatk/best-practices/workflow?id=11145)).
 
-This workflow requires as input 2 fatsqs and one ROI bed file.
+This workflow requires as input 2 fastqs and one ROI bed file.
 
 All software paths and input paths are to be modified in the json file (example: panelCapture_MinifastqTest_inputs.json).
 
