@@ -37,7 +37,7 @@ task achabDirCleanUp {
     if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf" ]; then \
       rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf"; \
     fi
-    if [ -f "${OutDir}${SampleID}/${SampleID}.sorted.vcf.idx" ]; then \
+    if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf.idx" ]; then \
       rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf.idx"; \
     fi
   }
