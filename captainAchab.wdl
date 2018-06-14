@@ -40,7 +40,7 @@ workflow captainAchab {
   String humanDb
   ## From phenolyzer
   File diseaseFile
-  ## From captainAchab
+  ## From Achab
   Boolean newHope
   String genesOfInterest
   String fatherSample
@@ -49,6 +49,8 @@ workflow captainAchab {
   Float allelicFrequency
   String checkTrio
   String customInfo
+  String cnvGeneList
+  String filterList
   ## From BcftoolsSplit 
   File inputVcf
   ## From BcftoolsLeftAlign 
@@ -166,6 +168,8 @@ workflow captainAchab {
     SrunLow = srunLow, 
     WorkflowType = workflowType, 
     AchabExe = achabExe,
+    CnvGeneList = cnvGeneList, 
+    FilterList = filterList,
     GenesOfInterest = genesOfInterest,
     FatherSample = fatherSample,
     CaseSample = caseSample,
@@ -185,6 +189,8 @@ workflow captainAchab {
      SrunLow = srunLow, 
      WorkflowType = workflowType, 
      AchabExe = achabExe,
+     CnvGeneList = cnvGeneList,
+     FilterList = filterList,
      GenesOfInterest = genesOfInterest, 
      FatherSample = fatherSample,
      CaseSample = caseSample,

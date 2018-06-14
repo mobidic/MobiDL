@@ -1,15 +1,14 @@
 task achabNewHope {
 
-  #Trio = dad/mum/case mais si control, trio ne marche pas
-
   File AchabExe
+  File OutMpa
+  File OutPhenolyzer
+  String CnvGeneList
+  String FilterList 
   String GenesOfInterest
-  #String ControlSample
   String FatherSample
   String CaseSample
   String MotherSample
-  File OutMpa
-  File OutPhenolyzer
   Float AllelicFrequency
   String SrunLow
   String WorkflowType
@@ -28,11 +27,13 @@ task achabNewHope {
     --dad ${FatherSample} \
     --mum ${MotherSample} \
     ${CheckTrio} \
-    ${GenesOfInterest} \
+    --candidates ${GenesOfInterest} \
     --phenolyzerFile ${OutPhenolyzer} \
     --popFreqThr ${AllelicFrequency} \
     --newHope \
-    --customInfo ${CustomInfo} 
+    --filterList ${FilterList} \
+    --cnvGeneList ${CnvGeneList}\
+    --customInfoList ${CustomInfo} 
 
   }
   output {

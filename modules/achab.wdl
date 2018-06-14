@@ -1,16 +1,15 @@
 task achab {
 
-  #Trio = dad/mum/case mais si control, trio ne marche pas
-
   File AchabExe
-  String GenesOfInterest
-  #String ControlSample
-  String FatherSample
-  String CaseSample
-  String MotherSample
   File OutMpa
   File OutPhenolyzer
   Float AllelicFrequency
+  String GenesOfInterest
+  String CnvGeneList
+  String FilterList
+  String FatherSample
+  String CaseSample
+  String MotherSample
   String SrunLow 
   String WorkflowType
   String CheckTrio
@@ -28,10 +27,12 @@ task achab {
     --dad ${FatherSample} \
     --mum ${MotherSample} \
     ${CheckTrio} \
-    ${GenesOfInterest} \
+    --candidates ${GenesOfInterest} \
     --phenolyzerFile ${OutPhenolyzer} \
     --popFreqThr ${AllelicFrequency} \
-    --customInfo ${CustomInfo} \
+    --filterList ${FilterList} \
+    --cnvGeneList ${CnvGeneList}\
+    --customInfoList ${CustomInfo} 
   }
   output {
     File outAchab = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/achab_catch.xlsx"
