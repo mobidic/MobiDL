@@ -27,11 +27,7 @@ task achab {
     --dad ${FatherSample} \
     --mum ${MotherSample} \
     ${CheckTrio} \
-<<<<<<< HEAD
     --candidates ${GenesOfInterest} \
-=======
-    -- candidates ${GenesOfInterest} \
->>>>>>> cb360481efb284d326bd9dc67f5a26dcc454b975
     --phenolyzerFile ${OutPhenolyzer} \
     --popFreqThr ${AllelicFrequency} \
     --filterList ${FilterList} \
