@@ -14,7 +14,7 @@
   "panelCapture.threads": "2",
   "panelCapture.refAmb": "/usr/local/share/refData/genome/hg19/hg19.fa.amb",
   "panelCapture.fastqR2": "/usr/local/share/refData/examples/MiniFastqTest_R2.fastq.gz",
-  "panelCapture.outDir": "/home/mobidic/Devs/wdlDev/test_output/",
+  "panelCapture.outDir": "/home/adminbioinfo/Tests/MobiDL/output/",
   "panelCapture.bwaExe": "/usr/local/bin/bwa",
   "panelCapture.platform": "ILLUMINA",
   "panelCapture.srunLow": "",
@@ -28,7 +28,7 @@
   "panelCapture.bedtoolsLowCoverage" : "20",
   "panelCapture.bedToolsSmallInterval" : "20",
   "panelCapture.javaRam" : "6",
-  "panelCapture.gatkExe" : "/usr/local/bin/gatk",
+  "panelCapture.gatkExe" : "/softs/gatk",
   "panelCapture.refDict": "/usr/local/share/refData/genome/hg19/hg19.dict",
   "panelCapture.workflowType": "panelCapture",
   "panelCapture.subdivisionMode": "BALANCING_WITHOUT_INTERVAL_SUBDIVISION",
@@ -42,7 +42,7 @@
   "panelCapture.suffixIndex": "",
   "panelCapture.suffixIndex2": "",
   "panelCapture.swMode": "FASTEST_AVAILABLE",
-  "panelCapture.qualimapExe": "/softs/qualimap",
+  "panelCapture.qualimapExe": "/softs/qualimap_v2.2.1/qualimap",
   "panelCapture.javaExe": "/usr/bin/java",
   "panelCapture.vcfPolyXJar": "/softs/jvarkit/dist/vcfpolyx.jar",
   "panelCapture.vcfHcSuffix": ".raw",
@@ -50,5 +50,8 @@
   "panelCapture.bcfToolsExe": "/usr/local/bin/bcftools",
   "panelCapture.bgZipExe": "/usr/local/bin/bgzip",
   "panelCapture.tabixExe": "/usr/local/bin/tabix",
-  "panelCapture.multiqcExe": "/usr/bin/multiqc"
+  "panelCapture.multiqcExe": "/usr/bin/multiqc",
+  "panelCapture.refFastaGz": "/usr/local/share/refData/genome/hg19/hg19.fa.gz",
+  "panelCapture.refFaiGz": "/usr/local/share/refData/genome/hg19/hg19.fa.gz.fai",
+  "panelCapture.refFaiGzi": "/usr/local/share/refData/genome/hg19/hg19.fa.gz.gzi"
 }

@@ -11,6 +11,8 @@ import "modules/gatkApplyBQSR.wdl" as runGatkApplyBQSR
 import "modules/gatkLeftAlignIndels.wdl" as runGatkLeftAlignIndels
 import "modules/gatkGatherBamFiles.wdl" as runGatkGatherBamFiles
 import "modules/samtoolsSort.wdl" as runSamtoolsSort
+import "modules/samtoolsCramConvert.wdl" as runSamtoolsCramConvert
+import "modules/samtoolsCramIndex.wdl" as runSamtoolsCramIndex
 import "modules/sambambaFlagStat.wdl" as runSambambaFlagStat
 import "modules/gatkCollectMultipleMetrics.wdl" as runGatkCollectMultipleMetrics
 import "modules/gatkCollectInsertSizeMetrics.wdl" as runGatkCollectInsertSizeMetrics
@@ -88,6 +90,10 @@ workflow panelCapture {
 	File knownSites2Index
 	File knownSites3
 	File knownSites3Index
+	#cram conversion
+	File refFastaGz
+	File refFaiGz
+	File refFaiGzi
 	#gatherVcfs
 	String vcfHcSuffix
 	String vcfSISuffix
@@ -287,6 +293,27 @@ workflow panelCapture {
 		SambambaExe = sambambaExe,
 		BamFile = samtoolsSort.sortedBam,
 		SuffixIndex = suffixIndex2
+	}
+	call runSamtoolsCramConvert.samtoolsCramConvert {
+		input:
+		SrunLow = srunLow,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		SamtoolsExe = samtoolsExe,
+		BamFile = samtoolsSort.sortedBam,
+		RefFastaGz = refFastaGz,
+		RefFaiGz = refFaiGz,	
+		RefFaiGzi = refFaiGzi
+	}
+	call runSamtoolsCramIndex.samtoolsCramIndex {
+		input:
+		SrunLow = srunLow,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		SamtoolsExe = samtoolsExe,
+		CramFile = samtoolsCramConvert.cram,
 	}
 	call runSambambaFlagStat.sambambaFlagStat {
 		input:
