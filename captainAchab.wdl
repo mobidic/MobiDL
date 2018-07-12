@@ -39,6 +39,7 @@ workflow captainAchab {
   File refVariantsReduction
   String humanDb
   ## From phenolyzer
+  Boolean withPenolyzer
   File diseaseFile
   ## From Achab
   Boolean newHope
@@ -152,17 +153,22 @@ workflow captainAchab {
     PythonPath = pythonPath
   }
 
-  call runPhenolyzer.phenolyzer {
-    input:
-    SrunLow = srunLow, 
-    WorkflowType = workflowType, 
-    IsPrepared = achabDirPreparation.isPrepared,
-    DiseaseFile = diseaseFile,
-    PhenolyzerExe = phenolyzerExe,
-    SampleID = sampleID,
-    OutDir = outDir,
-    PerlPath = perlPath
+  if (withPenolyzer) {
+    call runPhenolyzer.phenolyzer {
+      input:
+      SrunLow = srunLow, 
+      WorkflowType = workflowType, 
+      IsPrepared = achabDirPreparation.isPrepared,
+      DiseaseFile = diseaseFile,
+      PhenolyzerExe = phenolyzerExe,
+      SampleID = sampleID,
+      OutDir = outDir,
+      PerlPath = perlPath
+    }
+
   }
+
+  
   call runAchabNewHope.achabNewHope {
     input:
     SrunLow = srunLow, 
