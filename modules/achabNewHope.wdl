@@ -2,10 +2,10 @@ task achabNewHope {
 
   File AchabExe
   File OutMpa
-  File OutPhenolyzer
+  File? OutPhenolyzer
   String CnvGeneList
   String FilterList 
-  String GenesOfInterest
+  String? GenesOfInterest
   String FatherSample
   String CaseSample
   String MotherSample

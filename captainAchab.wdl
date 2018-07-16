@@ -20,7 +20,7 @@ workflow captainAchab {
   ## Exe
   File achabExe
   File mpaExe
-  String phenolyzerExe
+  File? phenolyzerExe
   File tableAnnovarExe
   File bcftoolsExe
   File gatkExe
@@ -40,10 +40,10 @@ workflow captainAchab {
   String humanDb
   ## From phenolyzer
   Boolean withPenolyzer
-  File diseaseFile
+  File? diseaseFile
   ## From Achab
   Boolean newHope
-  String genesOfInterest
+  File? genesOfInterest
   String fatherSample
   String caseSample
   String motherSample

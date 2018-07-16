@@ -2,9 +2,9 @@ task achab {
 
   File AchabExe
   File OutMpa
-  File OutPhenolyzer
+  File? OutPhenolyzer
   Float AllelicFrequency
-  String GenesOfInterest
+  File? GenesOfInterest
   String CnvGeneList
   String FilterList
   String FatherSample
