@@ -3,7 +3,7 @@ task achabDirCleanUp {
   String SampleID
   String OutDir
   String PhenolyzerExe
-  File OutPhenolyzer
+  String? OutPhenolyzer
   File OutAchab
   File OutAchabNewHope
 

@@ -2,9 +2,12 @@ task achab {
 
   File AchabExe
   File OutMpa
-  File? OutPhenolyzer
+  String? OutPhenolyzer
+  String CustomVCF
+  String GenesOfInterest
   Float AllelicFrequency
-  File? GenesOfInterest
+  Float MozaicRate
+  Float MozaicDP
   String CnvGeneList
   String FilterList
   String FatherSample
@@ -32,7 +35,10 @@ task achab {
     --popFreqThr ${AllelicFrequency} \
     --filterList ${FilterList} \
     --cnvGeneList ${CnvGeneList}\
-    --customInfoList ${CustomInfo} 
+    --customInfoList ${CustomInfo} \
+    --customVCF ${CustomVCF} \
+    --mozaicRate ${MozaicRate} \
+    --mozaicDP ${MozaicDP}
   }
   output {
     File outAchab = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/achab_catch.xlsx"

@@ -2,14 +2,19 @@ task achabNewHope {
 
   File AchabExe
   File OutMpa
-  File? OutPhenolyzer
+  # Tester les deux prochaines variables avec File?
+  String? OutPhenolyzer
+  String CustomVCF
   String CnvGeneList
   String FilterList 
-  String? GenesOfInterest
+  #Tester GeneOfInterest avec File?
+  String GenesOfInterest
   String FatherSample
   String CaseSample
   String MotherSample
   Float AllelicFrequency
+  Float MozaicRate
+  Float MozaicDP
   String SrunLow
   String WorkflowType
   String CheckTrio
@@ -33,7 +38,10 @@ task achabNewHope {
     --newHope \
     --filterList ${FilterList} \
     --cnvGeneList ${CnvGeneList}\
-    --customInfoList ${CustomInfo} 
+    --customInfoList ${CustomInfo} \
+    --customVCF ${CustomVCF} \
+    --mozaicRate ${MozaicRate} \
+    --mozaicDP ${MozaicDP}
 
   }
   output {

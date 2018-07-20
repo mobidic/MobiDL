@@ -3,20 +3,21 @@ task phenolyzer {
   #perl disease_annotation.pl disease.txt -f -p -ph -logistic -out disease/out
 
   Boolean IsPrepared
-  File? PhenolyzerExe
-  File? DiseaseFile
+  # Tester les deux prochaines variables avec File?
+  String PhenolyzerExe
+  String DiseaseFile
   String SrunLow
   String WorkflowType
   String SampleID
   String OutDir
   String PerlPath
 
-  command <<<
+  command {
     cd ${PhenolyzerExe}
     ${SrunLow} ${PerlPath} disease_annotation.pl ${DiseaseFile} -f -p -ph -logistic -out ../..${OutDir}${SampleID}/${WorkflowType}/disease/${SampleID}
-  >>>
+  }
 
   output {
-    File outPhenolyzer = "${OutDir}${SampleID}/${WorkflowType}/disease/${SampleID}.predicted_gene_scores"
+    String? outPhenolyzer = "${OutDir}${SampleID}/${WorkflowType}/disease/${SampleID}.predicted_gene_scores"
   }
 }

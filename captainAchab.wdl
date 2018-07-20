@@ -20,7 +20,7 @@ workflow captainAchab {
   ## Exe
   File achabExe
   File mpaExe
-  File? phenolyzerExe
+  String phenolyzerExe
   File tableAnnovarExe
   File bcftoolsExe
   File gatkExe
@@ -40,14 +40,17 @@ workflow captainAchab {
   String humanDb
   ## From phenolyzer
   Boolean withPenolyzer
-  File? diseaseFile
+  String diseaseFile
   ## From Achab
   Boolean newHope
-  File? genesOfInterest
+  String genesOfInterest
+  String customVCF
   String fatherSample
   String caseSample
   String motherSample
   Float allelicFrequency
+  Float mozaicRate
+  Float mozaicDP
   String checkTrio
   String customInfo
   String cnvGeneList
@@ -187,7 +190,10 @@ workflow captainAchab {
     CustomInfo = customInfo,
     SampleID = sampleID,
     OutDir = outDir,
-    PerlPath = perlPath
+    PerlPath = perlPath,
+    CustomVCF = customVCF,
+    MozaicRate = mozaicRate,
+    MozaicDP = mozaicDP
    }
 
   call runAchab.achab {
@@ -208,6 +214,9 @@ workflow captainAchab {
      CustomInfo = customInfo,
      SampleID = sampleID,
      OutDir = outDir,
-     PerlPath = perlPath
+     PerlPath = perlPath,
+     CustomVCF = customVCF,
+     MozaicRate = mozaicRate,
+     MozaicDP = mozaicDP
   }
 }
