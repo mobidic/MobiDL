@@ -12,10 +12,10 @@ task phenolyzer {
   String OutDir
   String PerlPath
 
-  command {
+  command <<<
     cd ${PhenolyzerExe}
     ${SrunLow} ${PerlPath} disease_annotation.pl ${DiseaseFile} -f -p -ph -logistic -out ../..${OutDir}${SampleID}/${WorkflowType}/disease/${SampleID}
-  }
+  >>>
 
   output {
     String? outPhenolyzer = "${OutDir}${SampleID}/${WorkflowType}/disease/${SampleID}.predicted_gene_scores"
