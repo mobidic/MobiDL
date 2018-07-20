@@ -1,4 +1,4 @@
-captainAchab_inputs.json
+*.json
 cromwell-executions/
 cromwell-workflow-logs/
 input/
