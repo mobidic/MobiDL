@@ -39,7 +39,7 @@ workflow captainAchab {
   File refVariantsReduction
   String humanDb
   ## From phenolyzer
-  Boolean withPenolyzer
+  Boolean withPhenolyzer
   String diseaseFile
   ## From Achab
   Boolean newHope
@@ -156,7 +156,7 @@ workflow captainAchab {
     PythonPath = pythonPath
   }
 
-  if (withPenolyzer) {
+  if (withPhenolyzer) {
     call runPhenolyzer.phenolyzer {
       input:
       SrunLow = srunLow, 
