@@ -1,7 +1,5 @@
 task mpa {
 
-  #python MPA.py -i name.hg19_multianno.vcf -o name.hg19_multianno_MPA.vcf
-  
   File MpaExe
   File OutAnnotation
   String SrunLow

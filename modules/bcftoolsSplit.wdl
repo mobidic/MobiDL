@@ -1,4 +1,5 @@
 task bcftoolsSplit {
+
   String SrunLow
   String WorkflowType
   Boolean IsPrepared

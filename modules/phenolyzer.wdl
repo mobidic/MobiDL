@@ -1,9 +1,6 @@
 task phenolyzer {
 
-  #perl disease_annotation.pl disease.txt -f -p -ph -logistic -out disease/out
-
   Boolean IsPrepared
-  # Tester les deux prochaines variables avec File?
   String PhenolyzerExe
   String DiseaseFile
   String SrunLow
