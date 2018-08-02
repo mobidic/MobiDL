@@ -12,12 +12,12 @@ task gatkCollectInsertSizeMetrics {
 	command {
 		${SrunLow} ${GatkExe} CollectInsertSizeMetrics \
 		-I ${BamFile} \
-		-H "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insert_size_metrics.pdf" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insert_size_metrics.txt" \
+		-H "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf" \
+		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt" \
 		-M 0.5
 	}
 	output {
-		File insertSizeMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insert_size_metrics.txt"
-		File insertSizeMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insert_size_metrics.pdf"
+		File insertSizeMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt"
+		File insertSizeMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf"
 	}
 }
