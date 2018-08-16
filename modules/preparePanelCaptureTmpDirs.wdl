@@ -44,5 +44,10 @@ task preparePanelCaptureTmpDirs {
 	}
 	output {
 		Boolean dirsPrepared = true
+		#we put all tmp dirs (that will be removed at the end of the workflow to force execution of the module when call-caching activated
+		File recalTablesDir = "${OutDir}${SampleID}/${WorkflowType}/recal_tables"
+		File splittedIntervalsDir = "${OutDir}${SampleID}/${WorkflowType}/splitted_intervals"
+		File recalBamsDir = "${OutDir}${SampleID}/${WorkflowType}/recal_bams"
+		File vcfDir = "${OutDir}${SampleID}/${WorkflowType}/vcfs"
 	}
 }
