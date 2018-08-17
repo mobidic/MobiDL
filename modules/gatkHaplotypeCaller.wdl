@@ -16,7 +16,8 @@ task gatkHaplotypeCaller {
 	File BamFile
 	File BamIndex
 	#when callcaching on, seem to keep Bam and index in the same directory for HC execution
-	Pair[File, File] Bam = (BamFile, BamIndex)
+	#does not work in fine...
+	#Pair[File, File] Bam = (BamFile, BamIndex)
 	String SwMode
 	command {
 		${SrunLow} ${GatkExe} HaplotypeCaller \
