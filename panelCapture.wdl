@@ -38,6 +38,11 @@ import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
 
 workflow panelCapture {
+	meta {
+		author: "David Baux"
+		email: "david.baux(at)inserm.fr"
+	}
+	#variables declarations
 	#global
 	String srunHigh
 	String srunLow
@@ -145,7 +150,7 @@ workflow panelCapture {
 		BwaExe = bwaExe,
 		Platform = platform,
 		RefFasta = refFasta,
-		RefFai = refFai,
+		#RefFai = refFai,
 		RefAmb = refAmb,
 		RefAnn = refAnn,
 		RefBwt = refBwt,
@@ -558,8 +563,10 @@ workflow panelCapture {
 		WorkflowType = workflowType,
 		FinalVcf = compressIndexVcf.bgZippedVcf,
 		BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam)],
-		FinalBam = "${dataPath}" + basename(samtoolsSort.sortedBam),
-		FinalBamIndex = "${dataPath}" + basename(finalIndexing.bamIndex),
+		#FinalBam = "${dataPath}" + basename(samtoolsSort.sortedBam),
+		#FinalBamIndex = "${dataPath}" + basename(finalIndexing.bamIndex),
+		#FinalCram = "${dataPath}" + basename(samtoolsCramConvert.cram),
+		#FinalCramIndex = "${dataPath}" + basename(samtoolsCramIndex.cramIndex),
 		VcfArray = ["${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyX.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyX.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcf.sortedVcf), "${dataPath}" + basename(gatkSortVcf.sortedVcfIndex)]
 	}
 	call runMultiqc.multiqc {
@@ -571,6 +578,11 @@ workflow panelCapture {
 		MultiqcExe = multiqcExe,
 		Vcf = cleanUpPanelCaptureTmpDirs.finalVcf
 	}
-
-
+	output {
+		File FinalVcf = cleanUpPanelCaptureTmpDirs.finalVcf
+		#FinalBam = "${dataPath}" + basename(samtoolisSort.sortedBam),
+		#FinalBamIndex = "${dataPath}" + basename(finalIndexing.bamIndex),
+		File FinalCram = samtoolsCramConvert.cram
+		File FinalCramIndex = samtoolsCramIndex.cramIndex
+	}
 }

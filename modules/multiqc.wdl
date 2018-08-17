@@ -6,7 +6,7 @@ task multiqc {
 	String MultiqcExe
 	File Vcf
 	command {
-		${SrunLow} ${MultiqcExe} -o "${OutDir}${SampleID}/${WorkflowType}/" -n "${SampleID}_multiqc" "${OutDir}${SampleID}/${WorkflowType}/"
+		${SrunLow} ${MultiqcExe} -o "${OutDir}${SampleID}/${WorkflowType}/" -n "${SampleID}_multiqc" "${OutDir}${SampleID}/${WorkflowType}/" -f
 	}
 	output {
 		File multiqcHtml = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}_multiqc.html"

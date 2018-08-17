@@ -12,7 +12,8 @@ task bwaSamtools {
 	String BwaExe
 	String Platform
 	File RefFasta
-	File RefFai
+	#File RefFai
+	#RefFai useles for bwa
 	#index files for bwa
 	File RefAmb
 	File RefAnn
