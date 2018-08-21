@@ -14,7 +14,10 @@ import "modules/gatkSortVcf.wdl" as runGatkSortVcf
 workflow captainAchab {
 
   #Variable section
-  ## Language Path
+	##Resources
+	Int cpu
+	Int memory
+	## Language Path
   String perlPath
   String pythonPath
   ## Exe
@@ -25,7 +28,6 @@ workflow captainAchab {
   File bcftoolsExe
   File gatkExe
   ## Global
-  String srunLow
   String workflowType
   String sampleID
   String outDir
@@ -64,7 +66,8 @@ workflow captainAchab {
 
   call runBcftoolsSplit.bcftoolsSplit {
     input: 
-    SrunLow = srunLow,
+    Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     IsPrepared = achabDirPreparation.isPrepared, 
     InputVcf = inputVcf, 
@@ -75,7 +78,8 @@ workflow captainAchab {
 
   call runBcftoolsLeftAlign.bcftoolsLeftAlign {
     input:
-    SrunLow = srunLow, 
+    Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     BcftoolsExe = bcftoolsExe, 
     FastaGenome = fastaGenome, 
@@ -86,7 +90,8 @@ workflow captainAchab {
 
   call runBcftoolsNorm.bcftoolsNorm {
     input: 
-    SrunLow = srunLow, 
+    Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     SampleID = sampleID, 
     OutDir = outDir, 
@@ -96,7 +101,8 @@ workflow captainAchab {
 
   call runGatkSortVcf.gatkSortVcf {
     input:
-    SrunLow = srunLow, 
+    Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     SampleID = sampleID, 
     OutDir = outDir, 
@@ -106,6 +112,8 @@ workflow captainAchab {
 
   call runAchabDirPreparation.achabDirPreparation{
     input:
+    Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType,
     SampleID = sampleID,
     OutDir = outDir,
@@ -117,6 +125,8 @@ workflow captainAchab {
 
     call runAchabDirCleanUp.achabDirCleanUp{
       input:
+			Cpu = cpu,
+			Memory = memory,
       WorkflowType = workflowType,
       SampleID = sampleID,
       OutDir = outDir,
@@ -129,7 +139,8 @@ workflow captainAchab {
   
   call runAnnovarForMpa.annovarForMpa {
     input:
-    SrunLow = srunLow, 
+		Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     CustomXref = customXref,
     SortedVcf = gatkSortVcf.sortedVcf,
@@ -147,7 +158,8 @@ workflow captainAchab {
 
   call runMpa.mpa {
     input:
-    SrunLow = srunLow, 
+		Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     MpaExe = mpaExe,
     OutAnnotation = annovarForMpa.outAnnotationVcf,
@@ -159,7 +171,8 @@ workflow captainAchab {
   if (withPhenolyzer) {
     call runPhenolyzer.phenolyzer {
       input:
-      SrunLow = srunLow, 
+			Cpu = cpu,
+			Memory = memory,
       WorkflowType = workflowType, 
       IsPrepared = achabDirPreparation.isPrepared,
       DiseaseFile = diseaseFile,
@@ -174,7 +187,8 @@ workflow captainAchab {
   
   call runAchabNewHope.achabNewHope {
     input:
-    SrunLow = srunLow, 
+		Cpu = cpu,
+		Memory = memory,
     WorkflowType = workflowType, 
     AchabExe = achabExe,
     CnvGeneList = cnvGeneList, 
@@ -197,26 +211,27 @@ workflow captainAchab {
    }
 
   call runAchab.achab {
-     input:
-     SrunLow = srunLow, 
-     WorkflowType = workflowType, 
-     AchabExe = achabExe,
-     CnvGeneList = cnvGeneList,
-     FilterList = filterList,
-     GenesOfInterest = genesOfInterest, 
-     FatherSample = fatherSample,
-     CaseSample = caseSample,
-     MotherSample = motherSample,
-     OutMpa = mpa.outMpa,
-     OutPhenolyzer = phenolyzer.outPhenolyzer,
-     AllelicFrequency = allelicFrequency,
-     CheckTrio = checkTrio,
-     CustomInfo = customInfo,
-     SampleID = sampleID,
-     OutDir = outDir,
-     PerlPath = perlPath,
-     CustomVCF = customVCF,
-     MozaicRate = mozaicRate,
-     MozaicDP = mozaicDP
+		input:
+		Cpu = cpu,
+		Memory = memory,
+    WorkflowType = workflowType, 
+    AchabExe = achabExe,
+    CnvGeneList = cnvGeneList,
+    FilterList = filterList,
+    GenesOfInterest = genesOfInterest, 
+    FatherSample = fatherSample,
+    CaseSample = caseSample,
+    MotherSample = motherSample,
+    OutMpa = mpa.outMpa,
+    OutPhenolyzer = phenolyzer.outPhenolyzer,
+    AllelicFrequency = allelicFrequency,
+    CheckTrio = checkTrio,
+    CustomInfo = customInfo,
+    SampleID = sampleID,
+    OutDir = outDir,
+    PerlPath = perlPath,
+    CustomVCF = customVCF,
+    MozaicRate = mozaicRate,
+    MozaicDP = mozaicDP
   }
 }

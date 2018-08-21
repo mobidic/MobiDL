@@ -1,20 +1,25 @@
 task sambambaIndex {
 	#global variables
-	String SrunHigh
-	Int Threads
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
 	String SambambaExe
 	#task specific variables
 	File BamFile
 	String SuffixIndex
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunHigh} ${SambambaExe} index -t ${Threads} \
+		${SambambaExe} index -t ${Cpu} \
 		${BamFile} \
 		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}${SuffixIndex}.bam.bai"
 	}
 	output {
 		File bamIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${SuffixIndex}.bam.bai"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

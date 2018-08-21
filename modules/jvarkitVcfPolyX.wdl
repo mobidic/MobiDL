@@ -1,8 +1,7 @@
 task jvarkitVcfPolyX {
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
 	String JavaExe
 	String VcfPolyXJar
@@ -12,8 +11,11 @@ task jvarkitVcfPolyX {
 	#task specific variables
 	File Vcf
 	File VcfIndex
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${JavaExe} -jar ${VcfPolyXJar} \
+		${JavaExe} -jar ${VcfPolyXJar} \
 		-R ${RefFasta} \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.polyx.vcf" \
 		"${Vcf}"
@@ -23,5 +25,9 @@ task jvarkitVcfPolyX {
 	output {
 		File polyxedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.polyx.vcf"
 		File polyxedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.polyx.vcf.idx"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

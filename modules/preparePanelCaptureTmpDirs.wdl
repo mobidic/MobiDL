@@ -1,9 +1,11 @@
 task preparePanelCaptureTmpDirs {
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
 		if [ ! -d "${OutDir}" ];then \
 			mkdir "${OutDir}"; \
@@ -49,5 +51,9 @@ task preparePanelCaptureTmpDirs {
 		File splittedIntervalsDir = "${OutDir}${SampleID}/${WorkflowType}/splitted_intervals"
 		File recalBamsDir = "${OutDir}${SampleID}/${WorkflowType}/recal_bams"
 		File vcfDir = "${OutDir}${SampleID}/${WorkflowType}/vcfs"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

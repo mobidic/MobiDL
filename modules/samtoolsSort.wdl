@@ -1,14 +1,15 @@
 task samtoolsSort {
 	#global variables
-	String SrunHigh
-	Int Threads
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
 	String SamtoolsExe
 	String BamFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunHigh} ${SamtoolsExe} sort -@ ${Threads} -l 6 \
+		${SamtoolsExe} sort -@ ${Cpu} -l 6 \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
 		"${BamFile}"
 		mv "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
@@ -16,5 +17,9 @@ task samtoolsSort {
 	}
 	output {
 		File sortedBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

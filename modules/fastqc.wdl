@@ -1,7 +1,5 @@
 task fastqc {
 	#global variables
-	String SrunHigh
-	Int Threads
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -12,8 +10,11 @@ task fastqc {
 	String Suffix1
 	String Suffix2
 	Boolean DirsPrepared
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunHigh} ${FastqcExe} --threads ${Threads} \
+		${FastqcExe} --threads ${Cpu} \
 		${FastqR1} \
 		${FastqR2} \
 		-o "${OutDir}${SampleID}/${WorkflowType}/FastqcDir"
@@ -23,5 +24,9 @@ task fastqc {
 		File fastqcHtmlR1 = "${OutDir}${SampleID}/${WorkflowType}/FastqcDir/${SampleID}${Suffix1}_fastqc.html"
 		File fastqcZipR2 = "${OutDir}${SampleID}/${WorkflowType}/FastqcDir/${SampleID}${Suffix2}_fastqc.zip"
 		File fastqcHtmlR2 = "${OutDir}${SampleID}/${WorkflowType}/FastqcDir/${SampleID}${Suffix2}_fastqc.html"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

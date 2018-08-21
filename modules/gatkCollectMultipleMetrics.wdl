@@ -1,7 +1,6 @@
 task gatkCollectMultipleMetrics {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_CollectMultipleMetrics.php
 	#global variables
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -9,8 +8,11 @@ task gatkCollectMultipleMetrics {
 	File RefFasta
 	#task specific variables
 	File BamFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} CollectMultipleMetrics \
+		${GatkExe} CollectMultipleMetrics \
 		-I ${BamFile} \
 		-R ${RefFasta} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_multiple_metrics" \
@@ -30,5 +32,9 @@ task gatkCollectMultipleMetrics {
 		File qualityByCycleMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_multiple_metrics.quality_by_cycle.pdf"
 		File qualityDistributionMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_multiple_metrics.quality_distribution_metrics"
 		File qualityDistributionMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_multiple_metrics.quality_distribution.pdf"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

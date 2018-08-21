@@ -1,19 +1,21 @@
 task gatkCollectHsMetrics {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_directed_CollectHsMetrics.php
 	#global variables
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
 	String GatkExe
 	File RefFasta
 	File RefFai
-	#task specific variables	
-	File BamFile
+	#task specific variables
+ 	File BamFile
 	File BaitIntervals
 	File TargetIntervals
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} CollectHsMetrics \
+		${GatkExe} CollectHsMetrics \
 		-R ${RefFasta} \
 		-I ${BamFile} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt" \
@@ -23,4 +25,8 @@ task gatkCollectHsMetrics {
 	output {
 		File hsMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt"
 	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
+	}	
 }

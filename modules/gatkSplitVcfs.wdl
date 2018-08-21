@@ -1,15 +1,17 @@
 task gatkSplitVcfs {
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
-	String GatkExe	
-	#task specific variables
+	String GatkExe
+ 	#task specific variables
 	File Vcf
 	File VcfIndex
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} SplitVcfs \
+		${GatkExe} SplitVcfs \
 		-I ${Vcf} \
 		--SNP_OUTPUT "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.snp.vcf" \
 		--INDEL_OUTPUT "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.vcf" \
@@ -20,5 +22,9 @@ task gatkSplitVcfs {
 		File snpVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.snp.vcf.idx"
 		File indelVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.vcf"
 		File indelVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.vcf.idx"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

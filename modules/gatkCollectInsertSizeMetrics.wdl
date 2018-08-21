@@ -1,7 +1,6 @@
 task gatkCollectInsertSizeMetrics {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_CollectMultipleMetrics.php
 	#global variables
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -9,8 +8,11 @@ task gatkCollectInsertSizeMetrics {
 	File RefFasta
 	#task specific variables
 	File BamFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} CollectInsertSizeMetrics \
+		${GatkExe} CollectInsertSizeMetrics \
 		-I ${BamFile} \
 		-H "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt" \
@@ -19,5 +21,9 @@ task gatkCollectInsertSizeMetrics {
 	output {
 		File insertSizeMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt"
 		File insertSizeMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

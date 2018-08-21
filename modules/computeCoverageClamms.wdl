@@ -1,5 +1,4 @@
 task computeCoverageClamms {
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -7,6 +6,9 @@ task computeCoverageClamms {
 	String SortExe
 	#task specific variables
 	File BedCovFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 
 	command <<<
 		${SortExe} -k1,1 -k2,2n -k3,3n ${BedCovFile} \
@@ -15,5 +17,9 @@ task computeCoverageClamms {
 	>>>
 	output {
 		File ClammsCoverageFile = "${OutDir}${SampleID}/${WorkflowType}/coverage/${SampleID}_coverage.bed"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

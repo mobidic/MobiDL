@@ -1,20 +1,22 @@
 task computePoorCoverage {
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
 	String GenomeVersion
 	String BedToolsExe
 	String AwkExe
-	String SortExe	
-	#task specific variables
+	String SortExe
+ 	#task specific variables
 	File IntervalBedFile
 	Int BedtoolsLowCoverage
 	Int BedToolsSmallInterval
 	File BamFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 
 	command <<<
-		${SrunLow} ${BedToolsExe} genomecov -ibam ${BamFile} -bga \
+		${BedToolsExe} genomecov -ibam ${BamFile} -bga \
 		| ${AwkExe} -v low_coverage="${BedtoolsLowCoverage}" '$4<low_coverage' \
 		| ${BedToolsExe} intersect -a ${IntervalBedFile} -b - \
 		| ${SortExe} -k1,1 -k2,2n -k3,3n \
@@ -25,5 +27,9 @@ task computePoorCoverage {
 	>>>
 	output {
 		File poorCoverageFile = "${OutDir}${SampleID}/${WorkflowType}/coverage/${SampleID}_poor_coverage.tsv"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

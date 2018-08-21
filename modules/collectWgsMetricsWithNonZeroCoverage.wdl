@@ -2,7 +2,6 @@ task collectWgsMetricsWithNonZeroCoverage {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_CollectWgsMetricsWithNonZeroCoverage.php
 	#TOOOOOOO LOOONNNGGG
 	#global variables
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -10,8 +9,11 @@ task collectWgsMetricsWithNonZeroCoverage {
 	File RefFasta
 	#task specific variables
 	File BamFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} CollectWgsMetricsWithNonZeroCoverage \
+		${GatkExe} CollectWgsMetricsWithNonZeroCoverage \
 		-I ${BamFile} \
 		-R ${RefFasta} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_wgs_metrics.txt" \
@@ -21,6 +23,10 @@ task collectWgsMetricsWithNonZeroCoverage {
 		File wgsMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_wgs_metrics.txt"
 		File wgsMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_wgs_metrics.pdf"
 	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
+ }
 }
 
-		#--CHART "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_wgs_metrics.pdf" \
+ #--CHART "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_wgs_metrics.pdf" \

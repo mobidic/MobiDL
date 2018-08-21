@@ -1,28 +1,34 @@
 task gatkApplyBQSR {
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
-	String GatkExe	
-	File RefFasta
+	String GatkExe
+ 	File RefFasta
 	File RefFai
 	File RefDict
-	##task specific variables
+	#task specific variables
 	File GatkInterval
 	File BamFile
 	File BamIndex
-	String intervalName = basename("${GatkInterval}", ".intervals")
+	String IntervalName = basename("${GatkInterval}", ".intervals")
 	File GatheredRecaltable
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-			${SrunLow} ${GatkExe} ApplyBQSR \
-			-R ${RefFasta} \
-			-I ${BamFile} \
-			--bqsr-recal-file ${GatheredRecaltable} \
-			-L ${GatkInterval} \
-			-O "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${intervalName}.dupmarked.recal.bam"		
+		${GatkExe} ApplyBQSR \
+		-R ${RefFasta} \
+		-I ${BamFile} \
+		--bqsr-recal-file ${GatheredRecaltable} \
+		-L ${GatkInterval} \
+		-O "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.bam" 
 	}
 	output {
-		File recalBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${intervalName}.dupmarked.recal.bam"
+		File recalBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.bam"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

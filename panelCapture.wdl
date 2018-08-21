@@ -43,10 +43,14 @@ workflow panelCapture {
 		email: "david.baux(at)inserm.fr"
 	}
 	#variables declarations
-	#global
-	String srunHigh
-	String srunLow
-	Int threads
+	##Resources
+	Int cpuHigh
+	Int cpuLow
+	Int memoryLow
+	Int memoryHigh
+	#memoryLow = scattered tasks =~ mem_per_cpu in HPC or not
+	#memoryHigh = one cpu tasks => high mem ex 10Gb
+	##Global
 	String sampleID
 	String suffix1
 	String suffix2
@@ -57,7 +61,8 @@ workflow panelCapture {
 	File refFai
 	File intervalBedFile
 	String workflowType
-	#bioinfo execs
+	String outDir
+	##Bioinfo execs
 	String fastqcExe
 	String bwaExe
 	String samtoolsExe
@@ -68,55 +73,54 @@ workflow panelCapture {
 	String bgZipExe
 	String tabixExe
 	String multiqcExe
-	#standard execs
+	##Standard execs
 	String awkExe
 	String sortExe
-	String javaRam
 	String gatkExe
 	String javaExe
-	#fastqc	
-	String outDir
-	#bwaSamtools	
+	##bwaSamtools	
 	String platform
 	File refAmb
 	File refAnn
 	File refBwt
 	File refPac
 	File refSa
-	#sambambaIndex
+	##sambambaIndex
 	String suffixIndex
 	String suffixIndex2
-	#gatk splitintervals
+	##gatk splitintervals
 	String subdivisionMode
-	#gatk Base recal
+	##gatk Base recal
 	File knownSites1
 	File knownSites1Index
 	File knownSites2
 	File knownSites2Index
 	File knownSites3
 	File knownSites3Index
-	#cram conversion
+	##cram conversion
 	File refFastaGz
 	File refFaiGz
 	File refFaiGzi
-	#gatherVcfs
+	##gatherVcfs
 	String vcfHcSuffix
 	String vcfSISuffix
-	#gatk-picard
+	##gatk-picard
 	File refDict
-	#computePoorCoverage
+	##computePoorCoverage
 	Int bedtoolsLowCoverage
 	Int bedToolsSmallInterval
-	#computeCoverage
+	##computeCoverage
 	Int minCovBamQual
-	#haplotypeCaller
+	##haplotypeCaller
 	String swMode
-	#jvarkit
+	##jvarkit
 	String vcfPolyXJar
 
+	#Tasks calls
 	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType
@@ -124,8 +128,8 @@ workflow panelCapture {
 	#if (preparePanelCaptureTmpDirs.dirsPrepared) {
 	call runFastqc.fastqc {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+    Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -139,8 +143,8 @@ workflow panelCapture {
 	#}
 	call runBwaSamtools.bwaSamtools {
 		input: 
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+    Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -159,8 +163,8 @@ workflow panelCapture {
 	}
 	call runSambambaIndex.sambambaIndex {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+    Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -170,8 +174,8 @@ workflow panelCapture {
 	}
 	call runSambambaMarkDup.sambambaMarkDup {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+    Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -180,7 +184,8 @@ workflow panelCapture {
 	}
 	call runBedToGatkIntervalList.bedToGatkIntervalList {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+    Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -190,8 +195,8 @@ workflow panelCapture {
 	}
 	call runGatkSplitIntervals.gatkSplitIntervals {
 		input:
-		SrunLow = srunLow,
-		Threads = threads,
+		Cpu = cpuLow,
+    Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -200,12 +205,14 @@ workflow panelCapture {
 		RefFai = refFai,
 		RefDict = refDict,
 		GatkInterval = bedToGatkIntervalList.gatkIntervals,
-		SubdivisionMode = subdivisionMode
+		SubdivisionMode = subdivisionMode,
+		ScatterCount = cpuHigh
 	}
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
 		call runGatkBaseRecalibrator.gatkBaseRecalibrator {
 			input:
-			SrunLow = srunLow,
+			Cpu = cpuLow,
+			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
@@ -229,7 +236,8 @@ workflow panelCapture {
 	}
 	call runGatkGatherBQSRReports.gatkGatherBQSRReports {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -239,7 +247,8 @@ workflow panelCapture {
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
 		call runGatkApplyBQSR.gatkApplyBQSR {
 			input:
-			SrunLow = srunLow,
+			Cpu = cpuLow,
+			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
@@ -254,7 +263,8 @@ workflow panelCapture {
 		}
 		call runGatkLeftAlignIndels.gatkLeftAlignIndels {
 			input:
-			SrunLow = srunLow,
+			Cpu = cpuLow,
+			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
@@ -271,7 +281,8 @@ workflow panelCapture {
 	}
 	call runGatkGatherBamFiles.gatkGatherBamFiles {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -280,8 +291,8 @@ workflow panelCapture {
 	}
 	call runSamtoolsSort.samtoolsSort {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+		Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -290,8 +301,8 @@ workflow panelCapture {
 	}
 	call runSambambaIndex.sambambaIndex as finalIndexing {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+		Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -301,7 +312,8 @@ workflow panelCapture {
 	}
 	call runSamtoolsCramConvert.samtoolsCramConvert {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -313,7 +325,8 @@ workflow panelCapture {
 	}
 	call runSamtoolsCramIndex.samtoolsCramIndex {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -322,8 +335,8 @@ workflow panelCapture {
 	}
 	call runSambambaFlagStat.sambambaFlagStat {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
+		Cpu = cpuHigh,
+		Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -332,7 +345,8 @@ workflow panelCapture {
 	}
 	call runGatkCollectMultipleMetrics.gatkCollectMultipleMetrics {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -342,7 +356,8 @@ workflow panelCapture {
 	}
 	call runGatkCollectInsertSizeMetrics.gatkCollectInsertSizeMetrics {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -352,9 +367,8 @@ workflow panelCapture {
 	}
 	call runQualimapBamQc.qualimapBamQc {
 		input:
-		SrunHigh = srunHigh,
-		Threads = threads,
-		JavaRam = javaRam,
+		Cpu = cpuHigh,
+		Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -364,7 +378,8 @@ workflow panelCapture {
 	}
 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -375,7 +390,8 @@ workflow panelCapture {
 	}
 	call runComputePoorCoverage.computePoorCoverage {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -390,7 +406,8 @@ workflow panelCapture {
 	}
 	call runSamtoolsBedCov.samtoolsBedCov {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -402,7 +419,8 @@ workflow panelCapture {
 	}
 	call runComputeCoverage.computeCoverage {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -412,7 +430,8 @@ workflow panelCapture {
 	}
 	call runComputeCoverageClamms.computeCoverageClamms {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -422,11 +441,12 @@ workflow panelCapture {
 	}
 	call runGatkCollectHsMetrics.gatkCollectHsMetrics {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-			GatkExe = gatkExe,
+		GatkExe = gatkExe,
 		RefFasta = refFasta,
 		RefFai = refFai,
 		BamFile = samtoolsSort.sortedBam,
@@ -436,7 +456,8 @@ workflow panelCapture {
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
 		call runGatkHaplotypeCaller.gatkHaplotypeCaller {
 			input:
-			SrunLow = srunLow,
+			Cpu = cpuLow,
+			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
@@ -457,7 +478,8 @@ workflow panelCapture {
 	}
 	call runGatkGatherVcfs.gatkGatherVcfs {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -467,7 +489,8 @@ workflow panelCapture {
 	}
 	call runJvarkitVcfPolyX.jvarkitVcfPolyX {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -478,11 +501,11 @@ workflow panelCapture {
 		VcfPolyXJar = vcfPolyXJar,
 		Vcf = gatkGatherVcfs.gatheredHcVcf,
 		VcfIndex = gatkGatherVcfs.gatheredHcVcfIndex
-
 	}
 	call runGatkSplitVcfs.gatkSplitVcfs {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -492,7 +515,8 @@ workflow panelCapture {
 	}
 	call runGatkVariantFiltrationSnp.gatkVariantFiltrationSnp {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -505,7 +529,8 @@ workflow panelCapture {
 	}
 	call runGatkVariantFiltrationIndel.gatkVariantFiltrationIndel {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -518,7 +543,8 @@ workflow panelCapture {
 	}
 	call runGatkMergeVcfs.gatkMergeVcfs {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -528,7 +554,8 @@ workflow panelCapture {
 	}
 	call runGatkSortVcf.gatkSortVcf {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -537,7 +564,8 @@ workflow panelCapture {
 	}
 	call runBcftoolsNorm.bcftoolsNorm {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -546,7 +574,8 @@ workflow panelCapture {
 	}
 	call runCompressIndexVcf.compressIndexVcf {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -557,7 +586,8 @@ workflow panelCapture {
 	String dataPath = "${outDir}${sampleID}/${workflowType}/"
 	call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
@@ -571,7 +601,8 @@ workflow panelCapture {
 	}
 	call runMultiqc.multiqc {
 		input:
-		SrunLow = srunLow,
+		Cpu = cpuLow,
+		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,

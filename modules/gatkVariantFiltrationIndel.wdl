@@ -2,9 +2,8 @@ task gatkVariantFiltrationIndel {
 	#https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set
 	#https://software.broadinstitute.org/gatk/documentation/article?id=11069
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
 	String GatkExe
 	File RefFasta
@@ -13,8 +12,11 @@ task gatkVariantFiltrationIndel {
 	#task specific variables
 	File Vcf
 	File VcfIndex
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} VariantFiltration \
+		${GatkExe} VariantFiltration \
 		-R ${RefFasta} \
 		-V ${Vcf} \
 		--filter-expression "QD < 2.0" --filter-name "LowQualByDepth" \
@@ -27,5 +29,9 @@ task gatkVariantFiltrationIndel {
 	output {
 		File filteredIndelVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.filtered.vcf"
 		File filteredIndelVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.filtered.vcf.idx"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

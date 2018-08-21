@@ -1,25 +1,31 @@
 task gatkLeftAlignIndels {
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
-	String GatkExe	
-	File RefFasta
+	String GatkExe
+ 	File RefFasta
 	File RefFai
 	File RefDict
 	#task specific variables
 	File BamFile
 	File GatkInterval
-	String intervalName = basename("${GatkInterval}", ".intervals")
+	String IntervalName = basename("${GatkInterval}", ".intervals")
+	#runtime attributes
+	Int Cpu
+	Int Memory	
 	command {
-			${SrunLow} ${GatkExe} LeftAlignIndels \
-			-R ${RefFasta} \
-			-I ${BamFile} \
-			--OUTPUT "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${intervalName}.dupmarked.recal.laligned.bam"		
+		${GatkExe} LeftAlignIndels \
+		-R ${RefFasta} \
+		-I ${BamFile} \
+		--OUTPUT "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam" 
 	}
 	output {
-		File lAlignedBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${intervalName}.dupmarked.recal.laligned.bam"
-		File lAlignedBamIndex = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${intervalName}.dupmarked.recal.laligned.bai"
+		File lAlignedBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam"
+		File lAlignedBamIndex = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bai"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

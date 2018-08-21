@@ -1,16 +1,14 @@
 task cleanUpPanelCaptureTmpDirs {
 	#global variables
-	String SrunLow
-	String SampleID	
-	String OutDir
+	String SampleID
+ 	String OutDir
 	String WorkflowType
 	File FinalVcf
 	Array[String] BamArray
-	#String FinalBam
-	#String FinalBamIndex
-	#String FinalCram
-	#String FinalCramIndex
 	Array[String] VcfArray
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
 		if [ -d "${OutDir}${SampleID}/${WorkflowType}/splitted_intervals" ];then \
 			rm -r "${OutDir}${SampleID}/${WorkflowType}/splitted_intervals"; \
@@ -24,14 +22,14 @@ task cleanUpPanelCaptureTmpDirs {
 		if [ -d "${OutDir}${SampleID}/${WorkflowType}/vcfs" ];then \
 			rm -r "${OutDir}${SampleID}/${WorkflowType}/vcfs"; \
 		fi
-		rm ${sep=" " BamArray} 
-		rm ${sep=" " VcfArray}
+		rm ${sep=" " BamArray}
+	  rm ${sep=" " VcfArray}
 	}
 	output {
-		#File finalBam = "${FinalBam}"
-		#File finalBamIndex = "${FinalBamIndex}"
-		#File finalCram = "${FinalCram}"
-		#File finalCramIndex = "${FinalCramIndex}"
 		File finalVcf = "${FinalVcf}"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }

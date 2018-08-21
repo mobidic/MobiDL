@@ -1,7 +1,6 @@
 task gatkCollectAlignmentSummaryMetrics {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_CollectAlignmentSummaryMetrics.php
 	#global variables
-	String SrunLow
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -9,13 +8,20 @@ task gatkCollectAlignmentSummaryMetrics {
 	File RefFasta
 	#task specific variables
 	File BamFile
+	#runtime attributes
+	Int Cpu
+	Int Memory
 	command {
-		${SrunLow} ${GatkExe} CollectAlignmentSummaryMetrics \
+		${GatkExe} CollectAlignmentSummaryMetrics \
 		-R ${RefFasta} \
 		-I ${BamFile} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_alignment_summary.txt"
 	}
 	output {
 		File alignmentSummary = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_alignment_summary.txt"
+	}
+	runtime {
+		cpu: "${Cpu}"
+		requested_memory_mb_per_core: "${Memory}"
 	}
 }
