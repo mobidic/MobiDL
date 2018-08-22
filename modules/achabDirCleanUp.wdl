@@ -12,13 +12,17 @@ task achabDirCleanUp {
 	command {
 		if [ -d "${OutDir}${SampleID}/${WorkflowType}/bcftools" ]; then \
 			rm -rf "${OutDir}${SampleID}/${WorkflowType}/bcftools"; \
-		fi   if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput" ]; then \
+		fi
+		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput"; \
-		fi   if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.txt" ]; then \
+		fi
+		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.txt" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.txt"; \
-		fi   if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.vcf" ]; then \
+		fi
+		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.vcf" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.vcf"; \
-		fi   if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf" ]; then \
+		fi
+		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf"; \
 		fi
 		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf.idx" ]; then \
