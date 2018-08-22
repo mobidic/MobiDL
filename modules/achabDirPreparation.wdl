@@ -32,8 +32,8 @@ task achabDirPreparation {
 	output {
 		Boolean isPrepared = true
 		File outDir = "${OutDir}"
-		File sampleDir = "${OutDir}${sampleID}"
-		File workflowTypeDir = "${OutDir}${sampleID}/${WorkflowType}"
+		File sampleDir = "${OutDir}${SampleID}"
+		File workflowTypeDir = "${OutDir}${SampleID}/${WorkflowType}"
 	}
 	runtime {
 		cpu: "${Cpu}"
