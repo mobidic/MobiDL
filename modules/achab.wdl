@@ -35,7 +35,7 @@ task achab {
   --phenolyzerFile ${OutPhenolyzer} \
   --popFreqThr ${AllelicFrequency} \
   --filterList ${FilterList} \
-  --cnvGeneList ${CnvGeneList}\
+  --cnvGeneList ${CnvGeneList} \
   --customInfoList ${CustomInfo} \
   --customVCF ${CustomVCF} \
   --mozaicRate ${MozaicRate} \
