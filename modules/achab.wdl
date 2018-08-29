@@ -42,7 +42,7 @@ task achab {
   --mozaicDP ${MozaicDP}
  }
  output {
-  File outAchab = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/achab_catch.xlsx"
+  File outAchab = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/${SampleID}_achab_catch.xlsx"
  }
  runtime {                                                                                                                                                                    
   cpu: "${Cpu}"
