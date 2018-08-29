@@ -27,6 +27,7 @@ task achabNewHope {
   ${PerlPath} ${AchabExe} \
   --vcf ${OutMpa} \
   --outDir ${OutDir}${SampleID}/${WorkflowType}/achab_excel/ \
+  --outPrefix ${SampleID} \
   --case ${CaseSample} \
   --dad ${FatherSample} \
   --mum ${MotherSample} \
