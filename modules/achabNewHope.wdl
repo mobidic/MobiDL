@@ -44,7 +44,7 @@ task achabNewHope {
 
  }
  output {
-  File outAchabNewHope = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/achab_catch_newHope.xlsx"
+  File outAchabNewHope = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/${SampleID}_achab_catch_newHope.xlsx"
  }
  runtime {                                                                                                                                                                    
   cpu: "${Cpu}"
