@@ -36,7 +36,7 @@ task achabNewHope {
   --popFreqThr ${AllelicFrequency} \
   --newHope \
   --filterList ${FilterList} \
-  --cnvGeneList ${CnvGeneList}\
+  --cnvGeneList ${CnvGeneList} \
   --customInfoList ${CustomInfo} \
   --customVCF ${CustomVCF} \
   --mozaicRate ${MozaicRate} \
