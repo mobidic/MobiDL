@@ -23,7 +23,7 @@ task achabNewHope {
  Int Memory
 
 
- command {
+ command <<<
   ${PerlPath} ${AchabExe} \
   --vcf ${OutMpa} \
   --outDir ${OutDir}${SampleID}/${WorkflowType}/achab_excel/ \
@@ -42,7 +42,8 @@ task achabNewHope {
   --mozaicRate ${MozaicRate} \
   --mozaicDP ${MozaicDP} \
   --customInfoList ${CustomInfo}
- }
+ >>>
+ 
  output {
   File outAchabNewHope = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/${SampleID}_achab_catch_newHope.xlsx"
  }
