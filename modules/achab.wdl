@@ -37,10 +37,10 @@ task achab {
   --popFreqThr ${AllelicFrequency} \
   --filterList ${FilterList} \
   --cnvGeneList ${CnvGeneList} \
-  --customInfoList ${CustomInfo} \
   --customVCF ${CustomVCF} \
   --mozaicRate ${MozaicRate} \
-  --mozaicDP ${MozaicDP}
+  --mozaicDP ${MozaicDP} \
+  --customInfoList ${CustomInfo}
  }
  output {
   File outAchab = "${OutDir}${SampleID}/${WorkflowType}/achab_excel/${SampleID}_achab_catch.xlsx"
