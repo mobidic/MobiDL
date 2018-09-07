@@ -24,7 +24,7 @@ task achab {
  Int Memory
 
  command <<<
-   ${PerlPath} ${AchabExe} \
+   "${PerlPath}" ${AchabExe} \
   --vcf ${OutMpa} \
   --outDir ${OutDir}${SampleID}/${WorkflowType}/achab_excel/ \
   --outPrefix ${SampleID} \
