@@ -86,8 +86,8 @@ workflow panelCapture {
 	File refPac
 	File refSa
 	##sambambaIndex
-	String suffixIndex
-	String suffixIndex2
+	#String suffixIndex
+	#String suffixIndex2
 	##gatk splitintervals
 	String subdivisionMode
 	##gatk Base recal
@@ -161,17 +161,16 @@ workflow panelCapture {
 		RefPac = refPac,
 		RefSa = refSa
 	}
-	call runSambambaIndex.sambambaIndex {
-		input:
-		Cpu = cpuHigh,
-    Memory = memoryLow,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		SambambaExe = sambambaExe,
-		BamFile = bwaSamtools.sortedBam,
-		SuffixIndex = suffixIndex
-	}
+	#call runSambambaIndex.sambambaIndex {
+	#	input:
+	#	Cpu = cpuHigh,
+  #  Memory = memoryLow,
+	#	SampleID = sampleID,
+	#	OutDir = outDir,
+	#	WorkflowType = workflowType,
+	#	SambambaExe = sambambaExe,
+	#	BamFile = bwaSamtools.sortedBam
+	#}
 	call runSambambaMarkDup.sambambaMarkDup {
 		input:
 		Cpu = cpuHigh,
@@ -307,8 +306,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		SambambaExe = sambambaExe,
-		BamFile = samtoolsSort.sortedBam,
-		SuffixIndex = suffixIndex2
+		BamFile = samtoolsSort.sortedBam
 	}
 	call runSamtoolsCramConvert.samtoolsCramConvert {
 		input:

@@ -6,17 +6,17 @@ task sambambaIndex {
 	String SambambaExe
 	#task specific variables
 	File BamFile
-	String SuffixIndex
+	#String SuffixIndex
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
 		${SambambaExe} index -t ${Cpu} \
 		${BamFile} \
-		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}${SuffixIndex}.bam.bai"
+		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam.bai"
 	}
 	output {
-		File bamIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${SuffixIndex}.bam.bai"
+		File bamIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam.bai"
 	}
 	runtime {
 		cpu: "${Cpu}"
