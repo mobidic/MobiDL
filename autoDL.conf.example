@@ -1,0 +1,39 @@
+BASE_DIR=/basedir/of/all/your/sequence/data/
+#if you have multiple sequencers outputing in several dirs -- then you need to adjust autoDL.sh variable RUN_PATHS accordingly and you migh hav to modifiy the assignVariables function (e.g. add an HiSeq section or so)
+#you need in autoDLDir a sampleSheets.txt file which will describe your samplesheets names and associated BED files and potentially keywords lying in the descritpion field of the samplesheets which will also point to a particualr BED file (in case you can't name your samplesheets as you like).
+MINISEQ_RUNS_DIR=${BASE_DIR}MiniSeq/
+MISEQ_RUNS_DIR=${BASE_DIR}MiSeqDx/RUO/
+NEXTSEQ_RUNS_DIR=${BASE_DIR}NAS_CHU/NEXTSEQ/runs/converted/
+NEXTSEQ_RUNS_DEST_DIR=${BASE_DIR}NextSeq/
+MINISEQ_MAX_DEPTH=3
+MISEQ_MAX_DEPTH=2
+NEXTSEQ_MAX_DEPTH=2
+MINISEQ_TRIGGER_FILE=AnalysisLog.txt
+MISEQ_TRIGGER_FILE=AnalysisLog.txt
+NEXTSEQ_TRIGGER_FILE=bcl2fastq/bcl2fastq.log
+MINISEQ_TRIGGER_EXPR="Total execution time"
+MISEQ_TRIGGER_EXPR="Total execution time"
+NEXTSEQ_TRIGGER_EXPR="Processing completed"
+MINISEQ_SAMPLESHEET_PATH=Alignment_*/*/SampleSheetUsed.csv
+MISEQ_SAMPLESHEET_PATH=SampleSheet.csv
+NEXTSEQ_SAMPLESHEET_PATH=bcl2fastq/SampleSheet.csv
+AUTODL_DIR=./autoDLDir/
+RUNS_FILE=${AUTODL_DIR}runs.txt
+ROI_FILE=${AUTODL_DIR}sampleSheets.txt
+ROI_DIR=/path/to/your/BED/files/
+#_inputs.json WDL file
+#https://software.broadinstitute.org/wdl/documentation/inputs.php
+MOBIDL_JSON_DIR=/path/to/your/mobidlJson/models/
+INPUT_DIR=${AUTODL_DIR}
+CWW=cww.sh
+CROMWELL=/softs/cromwell.jar
+#Cromwell options and conf file see
+#https://cromwell.readthedocs.io/en/develop/
+CROMWELL_OPTIONS=/softs/conf/options_mediummonster.json
+CROMWELL_CONF=/softs/conf/mediummonster.conf 
+SERVICE=autoDL.sh
+RSYNC=/usr/bin/rsync
+AWK=/usr/bin/awk
+MULTIQC=/usr/bin/multiqc
+PYTHON=/usr/bin/python
+MOBICNV=MobiCNV/MobiCNV.py
