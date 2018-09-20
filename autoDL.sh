@@ -163,7 +163,8 @@ modifyJsonAndLaunch() {
 	#bash native character replacement
 	FASTQ_SED=${FASTQ_DIR////\\/}
 	ROI_SED=${ROI_DIR////\\/}
-	RUN_SED=${RUN_PATH////\\/}
+	#RUN_SED=${RUN_PATH////\\/}
+	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR////\\/}
 	sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${WDL}.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
 		-e "s/\(  \"${WDL}.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
@@ -171,7 +172,7 @@ modifyJsonAndLaunch() {
 		-e "s/\(  \"${WDL}.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}.fastq.gz\",/" \
 		-e "s/\(  \"${WDL}.workflowType\": \"\).*/\1${WDL}\",/" \
 		-e "s/\(  \"${WDL}.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${RUN_SED}${RUN}\/MobiDL\/\",/" "${JSON}"
+		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" "${JSON}"
 	if [ "${GENOME}" != "hg19" ];then
 		sed "s/hg19/${GENOME}/g" "${JSON}"
 	fi
@@ -179,7 +180,14 @@ modifyJsonAndLaunch() {
 	debug "$(cat ${JSON})"
 	info "${RUN} - ${SAMPLE} ready for ${WDL}"
 	info "Launching:"
-	info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"	
+	info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
+	#actual launch and copy in the end
+	#sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
+	#if [ $? -eq 0 ];then
+	#	${RSYNC} -az --delete "{TMP_OUTPUT_SED}/${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+	#else
+	#	error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+	#fi	
 }
 
 
@@ -206,6 +214,15 @@ do
 				if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
 					debug "SAMPLESHEET TESTED:${RUN_PATH}${RUN}/${SAMPLESHEET}"
 					info "RUN ${RUN} found for analysis"
+					if [ !-d "${RUN_PATH}${RUN}/MobiDL" ];then
+						mkdir "${RUN_PATH}${RUN}/MobiDL"
+					fi
+					if [ !-d "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
+						mkdir "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+					fi
+					if [ !-d "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
+						mkdir "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+					fi
 					unset MANIFEST
 					unset BED
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${RUN_PATH}${RUN}/${SAMPLESHEET} | cut -d ',' -f 2)
@@ -245,9 +262,19 @@ do
 						done
 						for SAMPLE in ${!SAMPLES[@]};do
 							modifyJsonAndLaunch
+							ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+							ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
 							debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 						done 
 					fi
+					#MobiCNV && multiqc
+					info "launching MobiCNV on run ${RUN}"
+					#"${PYTHON}" "${MOBICNV}" -i "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+					debug "${PYTHON} ${MOBICNV} -i ${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+					info "Launching MultiQC on run ${RUN}"
+					#"${MULTIQC}" "${RUN_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${RUN_PATH}${RUN}/MobiDL/"
+					debug "${MULTIQC} ${RUN_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${RUN_PATH}${RUN}/MobiDL/"
+					info "RUN ${RUN} treated"
 				fi
 			fi
 		fi
