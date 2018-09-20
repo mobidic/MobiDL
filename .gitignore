@@ -4,3 +4,6 @@ cromwell-workflow-logs/
 input/
 output/
 option*
+MobiCNV/
+autoDL.conf
+autoDLDir/*
