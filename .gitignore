@@ -6,4 +6,6 @@ output/
 option*
 MobiCNV/
 autoDL.conf
-autoDLDir/*
+auto/*
+autoA*
+cww.sh
