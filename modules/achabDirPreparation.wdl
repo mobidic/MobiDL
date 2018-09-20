@@ -30,10 +30,10 @@ task achabDirPreparation {
 		cp "${InputVcf}" "${OutDir}${SampleID}/${WorkflowType}"
 	}
 	output {
-		Boolean isPrepared = true
 		File outDir = "${OutDir}"
 		File sampleDir = "${OutDir}${SampleID}"
 		File workflowTypeDir = "${OutDir}${SampleID}/${WorkflowType}"
+		Boolean isPrepared = true
 	}
 	runtime {
 		cpu: "${Cpu}"
