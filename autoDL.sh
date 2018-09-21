@@ -182,12 +182,12 @@ modifyJsonAndLaunch() {
 	info "Launching:"
 	info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
 	#actual launch and copy in the end
-	#sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
-	#if [ $? -eq 0 ];then
-	#	${RSYNC} -az --delete "{TMP_OUTPUT_SED}/${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
-	#else
-	#	error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-	#fi	
+	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
+	if [ $? -eq 0 ];then
+		${RSYNC} -avq -remove-source-files "{TMP_OUTPUT_SED}/${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+	else
+		error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+	fi	
 }
 
 
@@ -214,6 +214,14 @@ do
 				if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
 					debug "SAMPLESHEET TESTED:${RUN_PATH}${RUN}/${SAMPLESHEET}"
 					info "RUN ${RUN} found for analysis"
+					if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+						echo ${RUN}=1 >> ${RUNS_FILE}
+						RUN_ARRAY[${RUN}]=1
+					elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+						#Change value on array and file to running
+						sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
+						RUN_ARRAY[${RUN}]=1
+					fi
 					if [ !-d "${RUN_PATH}${RUN}/MobiDL" ];then
 						mkdir "${RUN_PATH}${RUN}/MobiDL"
 					fi
@@ -269,11 +277,14 @@ do
 					fi
 					#MobiCNV && multiqc
 					info "launching MobiCNV on run ${RUN}"
-					#"${PYTHON}" "${MOBICNV}" -i "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+					"${PYTHON}" "${MOBICNV}" -i "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 					debug "${PYTHON} ${MOBICNV} -i ${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 					info "Launching MultiQC on run ${RUN}"
-					#"${MULTIQC}" "${RUN_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${RUN_PATH}${RUN}/MobiDL/"
+					"${MULTIQC}" "${RUN_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${RUN_PATH}${RUN}/MobiDL/"
 					debug "${MULTIQC} ${RUN_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${RUN_PATH}${RUN}/MobiDL/"
+					chmod -R 777 "${RUN_PATH}${RUN}/MobiDL/"
+					sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
+					RUN_ARRAY[${RUN}]=2
 					info "RUN ${RUN} treated"
 				fi
 			fi

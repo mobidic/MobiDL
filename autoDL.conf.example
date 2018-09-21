@@ -25,6 +25,7 @@ ROI_DIR=/path/to/your/BED/files/
 #https://software.broadinstitute.org/wdl/documentation/inputs.php
 MOBIDL_JSON_DIR=/path/to/your/mobidlJson/models/
 INPUT_DIR=${AUTODL_DIR}
+TMP_OUTPUT_DIR=/path/to/tmp_output/
 CWW=cww.sh
 CROMWELL=/softs/cromwell.jar
 #Cromwell options and conf file see
