@@ -590,7 +590,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		FinalVcf = compressIndexVcf.bgZippedVcf,
-		BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam)],
+		BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
 		#FinalBam = "${dataPath}" + basename(samtoolsSort.sortedBam),
 		#FinalBamIndex = "${dataPath}" + basename(finalIndexing.bamIndex),
 		#FinalCram = "${dataPath}" + basename(samtoolsCramConvert.cram),

@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log 
 
-VERBOSITY=4
+VERBOSITY=3
 # -- Log variables 
 
 ERROR=1
@@ -184,7 +184,8 @@ modifyJsonAndLaunch() {
 	#actual launch and copy in the end
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
 	if [ $? -eq 0 ];then
-		${RSYNC} -avq -remove-source-files "{TMP_OUTPUT_SED}/${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+		info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 	else
 		error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 	fi	
@@ -222,13 +223,13 @@ do
 						sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 						RUN_ARRAY[${RUN}]=1
 					fi
-					if [ !-d "${RUN_PATH}${RUN}/MobiDL" ];then
+					if [ ! -d "${RUN_PATH}${RUN}/MobiDL" ];then
 						mkdir "${RUN_PATH}${RUN}/MobiDL"
 					fi
-					if [ !-d "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
+					if [ ! -d "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
 						mkdir "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
 					fi
-					if [ !-d "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
+					if [ ! -d "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
 						mkdir "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
 					fi
 					unset MANIFEST
@@ -246,6 +247,7 @@ do
 						#look for samplesheet Description field
 						DESC=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2)
 						debug "Description:${DESC}"
+						TREATED=0
 						#here we'll have to determine WDL adn BED depending on description fiels
 						#...
 					else
@@ -270,22 +272,29 @@ do
 						done
 						for SAMPLE in ${!SAMPLES[@]};do
 							modifyJsonAndLaunch
-							ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-							ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+							TREATED=1
+							#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+							#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+							cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+							cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
 							debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 						done 
 					fi
-					#MobiCNV && multiqc
-					info "launching MobiCNV on run ${RUN}"
-					"${PYTHON}" "${MOBICNV}" -i "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-					debug "${PYTHON} ${MOBICNV} -i ${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-					info "Launching MultiQC on run ${RUN}"
-					"${MULTIQC}" "${RUN_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${RUN_PATH}${RUN}/MobiDL/"
-					debug "${MULTIQC} ${RUN_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${RUN_PATH}${RUN}/MobiDL/"
-					chmod -R 777 "${RUN_PATH}${RUN}/MobiDL/"
-					sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
-					RUN_ARRAY[${RUN}]=2
-					info "RUN ${RUN} treated"
+					if [ "${TREATED}" -eq 1 ];then
+						#MobiCNV && multiqc
+						info "launching MobiCNV on run ${RUN}"
+						"${PYTHON}" "${MOBICNV}" -i "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+						debug "${PYTHON} ${MOBICNV} -i ${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+						info "Launching MultiQC on run ${RUN}"
+						"${MULTIQC}" "${RUN_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${RUN_PATH}${RUN}/MobiDL/"
+						debug "${MULTIQC} ${RUN_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${RUN_PATH}${RUN}/MobiDL/"
+						chmod -R 777 "${RUN_PATH}${RUN}/MobiDL/"
+						sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
+						RUN_ARRAY[${RUN}]=2
+						info "RUN ${RUN} treated"
+					else
+						info "nothing done for run ${RUN_PATH}${RUN}"
+					fi
 				fi
 			fi
 		fi
