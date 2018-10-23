@@ -34,6 +34,7 @@ CROMWELL_OPTIONS=/softs/conf/options_mediummonster.json
 CROMWELL_CONF=/softs/conf/mediummonster.conf 
 SERVICE=autoDL.sh
 RSYNC=/usr/bin/rsync
+DOS2UNIX=/usr/bin/dos2unix
 AWK=/usr/bin/awk
 MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python

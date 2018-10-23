@@ -9,3 +9,4 @@ autoDL.conf
 autoDLDir/*
 autoA*
 cww.sh
+logs/

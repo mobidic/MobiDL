@@ -116,9 +116,9 @@ do
 	fi
 done < ${RUNS_FILE}
 
-choosePipeline() {
-	return $(${GREP} -F "${SAMPLE_SHEET}" "${SAMPLE_SHEET_DB}" | cut -d '=' -f 2)	
-}
+#choosePipeline() {
+#	return $(${GREP} -F "${SAMPLE_SHEET}" "${SAMPLE_SHEET_DB}" | cut -d '=' -f 2)	
+#}
 
 
 
@@ -145,6 +145,23 @@ assignVariables() {
 		SAMPLESHEET="${NEXTSEQ_SAMPLESHEET_PATH}"
 	fi
 }
+dos2unixIfPossible() {
+	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
+	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
+		 "${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}"
+	 fi
+}
+#moveRunIfNecessary() {
+#	if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+	#if [ !-w "${RUN_PATH}${RUN}/${SAMPLESHEET}" ];then
+#		${RSYNC} -avq "${RUN_PATH}${RUN}" "${NEXTSEQ_RUNS_DEST_DIR}"
+#		if [ $? -eq 0 ];then
+#			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
+#		else
+#			error "Error while syncing ${RUN_PATH}${RUN} to ${NEXTSEQ_RUNS_DEST_DIR}"
+#		fi
+#	fi
+#}
 
 modifyJsonAndLaunch() {
 	debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
@@ -184,8 +201,16 @@ modifyJsonAndLaunch() {
 	#actual launch and copy in the end
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
 	if [ $? -eq 0 ];then
+		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
+		fi
 		info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
 		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+		if [ $? -eq 0 ];then
+			rm -r "${TMP_OUTPUT_DIR}${SAMPLE}"
+		else
+			error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+		fi
 	else
 		error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 	fi	
@@ -202,6 +227,7 @@ for RUN_PATH in ${RUN_PATHS}
 do
 	debug "RUN_PATH:${RUN_PATH}"
 	assignVariables "${RUN_PATH}"
+	OUTPUT_PATH=${RUN_PATH}
 	RUNS=$(ls -l --time-style="long-iso" ${RUN_PATH} | egrep '^d' | awk '{print $8}' |  egrep '^[0-9]{6}_')
 	for RUN in ${RUNS}
 	do
@@ -215,23 +241,8 @@ do
 				if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
 					debug "SAMPLESHEET TESTED:${RUN_PATH}${RUN}/${SAMPLESHEET}"
 					info "RUN ${RUN} found for analysis"
-					if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-						echo ${RUN}=1 >> ${RUNS_FILE}
-						RUN_ARRAY[${RUN}]=1
-					elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-						#Change value on array and file to running
-						sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
-						RUN_ARRAY[${RUN}]=1
-					fi
-					if [ ! -d "${RUN_PATH}${RUN}/MobiDL" ];then
-						mkdir "${RUN_PATH}${RUN}/MobiDL"
-					fi
-					if [ ! -d "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
-						mkdir "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
-					fi
-					if [ ! -d "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
-						mkdir "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-					fi
+					dos2unixIfPossible
+					TREATED=0
 					unset MANIFEST
 					unset BED
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${RUN_PATH}${RUN}/${SAMPLESHEET} | cut -d ',' -f 2)
@@ -244,22 +255,56 @@ do
 					debug "${MANIFEST%?}:${BED}"
 					info "BED file to be used for analysis of run ${RUN}:${BED}"
 					if [ ${BED} == "FASTQ" ];then
+						#... if NEXTSEQ we need to move the run to treat it
+						#moveRunIfnecessary
+						#no will stay there we just put analysed data
 						#look for samplesheet Description field
-						DESC=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2)
-						debug "Description:${DESC}"
-						TREATED=0
-						#here we'll have to determine WDL adn BED depending on description fiels
-						#...
+						#DESC=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2)
+						#Description,BED;WDL
+						#"${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}"
+						#dos2unixIfPossible ##mounted nas looks writable, but is not!
+						#FIXME FIXME FIXME
+						#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
+						#FIXME FIXME
+						BED=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2 | cut -d ';' -f 1)
+						WDL=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2| cut -d ';' -f 2)
+						debug "BED:${BED} - WDL:${WDL}"
+						#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 					else
 						WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
+					fi
+					if [[ ${WDL} != '' && ${BED} != '' ]];then
 						info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
+						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							echo ${RUN}=1 >> ${RUNS_FILE}
+							RUN_ARRAY[${RUN}]=1
+						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							#Change value on array and file to running
+							sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
+							RUN_ARRAY[${RUN}]=1
+						fi
+						if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+							OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
+							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
+								mkdir "${OUTPUT_PATH}${RUN}"
+							fi
+						fi
+						if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
+							mkdir "${OUTPUT_PATH}${RUN}/MobiDL"
+						fi
+						if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
+							mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+						fi
+						if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
+							mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+						fi
 						#now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 						declare -A SAMPLES
 						FASTQS=$(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
 						for FASTQ in ${FASTQS[@]};do
 							FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 							debug "SAMPLE FILENAME:${FILENAME}"
-							REGEXP='^([a-zA-Z0-9]+)_(.+)$'
+							REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 							if [[ ${FILENAME} =~ ${REGEXP} ]];then
 								if [ ${SAMPLES["${BASH_REMATCH[1]}"]} ];then
 									SAMPLES["${BASH_REMATCH[1]}"]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
@@ -283,12 +328,12 @@ do
 					if [ "${TREATED}" -eq 1 ];then
 						#MobiCNV && multiqc
 						info "launching MobiCNV on run ${RUN}"
-						"${PYTHON}" "${MOBICNV}" -i "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-						debug "${PYTHON} ${MOBICNV} -i ${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${RUN_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+						"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+						debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 						info "Launching MultiQC on run ${RUN}"
-						"${MULTIQC}" "${RUN_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${RUN_PATH}${RUN}/MobiDL/"
-						debug "${MULTIQC} ${RUN_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${RUN_PATH}${RUN}/MobiDL/"
-						chmod -R 777 "${RUN_PATH}${RUN}/MobiDL/"
+						"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
+						debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+						chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 						sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 						RUN_ARRAY[${RUN}]=2
 						info "RUN ${RUN} treated"
