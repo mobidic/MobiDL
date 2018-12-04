@@ -267,6 +267,9 @@ do
 						#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
 						#FIXME FIXME
 						BED=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2 | cut -d ';' -f 1)
+						if [ ! -f "${BED_DIR}${BED}" ];then
+							BED=''
+						fi
 						WDL=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2| cut -d ';' -f 2)
 						debug "BED:${BED} - WDL:${WDL}"
 						#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
@@ -339,6 +342,10 @@ do
 						info "RUN ${RUN} treated"
 					else
 						info "nothing done for run ${RUN_PATH}${RUN}"
+						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							echo ${RUN}=2 >> ${RUNS_FILE}
+							RUN_ARRAY[${RUN}]=2
+						fi
 					fi
 				fi
 			fi
