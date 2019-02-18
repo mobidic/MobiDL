@@ -18,7 +18,7 @@ task gatkLeftAlignIndels {
 		${GatkExe} LeftAlignIndels \
 		-R ${RefFasta} \
 		-I ${BamFile} \
-		--OUTPUT "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam" 
+		-O "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam" 
 	}
 	output {
 		File lAlignedBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam"
