@@ -24,7 +24,7 @@ task gatkSplitIntervals {
 		-O "${OutDir}${SampleID}/${WorkflowType}/splitted_intervals/"
 	}
 	output {
-		Array[File] splittedIntervals = glob("${OutDir}${SampleID}/${WorkflowType}/splitted_intervals/*-scattered.intervals")
+		Array[File] splittedIntervals = glob("${OutDir}${SampleID}/${WorkflowType}/splitted_intervals/*-scattered.interval*")
 	}
 	runtime {
 		cpu: "${Cpu}"
