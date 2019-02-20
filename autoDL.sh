@@ -145,6 +145,8 @@ assignVariables() {
 		TRIGGER_EXPR="${2} ${NEXTSEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${NEXTSEQ_SAMPLESHEET_PATH}"
 	fi
+	TMP_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}/"
+	mkdir "${TMP_OUTPUT_DIR}"
 }
 dos2unixIfPossible() {
 	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
@@ -182,8 +184,8 @@ modifyJsonAndLaunch() {
 	FASTQ_SED=${FASTQ_DIR////\\/}
 	ROI_SED=${ROI_DIR////\\/}
 	#RUN_SED=${RUN_PATH////\\/}
-	TMP_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}/"
-	mkdir "${TMP_OUTPUT_DIR}"
+	#TMP_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}/"
+	#mkdir "${TMP_OUTPUT_DIR}"
 	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR////\\/}
 	sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${WDL}.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
