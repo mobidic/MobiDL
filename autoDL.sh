@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log 
 
-VERBOSITY=3
+VERBOSITY=4
 # -- Log variables 
 
 ERROR=1
@@ -128,20 +128,21 @@ TRIGGER_EXPR=''
 SAMPLESHEET=''
 
 assignVariables() {
-	if [[ "${RUN_PATH}" =~ "MiniSeq" ]];then
+	#${RUN_PATH} ${RUN}
+	if [[ "${1}" =~ "MiniSeq" ]];then
 		MAX_DEPTH="${MINISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MINISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MINISEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${MINISEQ_SAMPLESHEET_PATH}"
-	elif [[ "${RUN_PATH}" =~ "MiSeq" ]];then
+	elif [[ "${1}" =~ "MiSeq" ]];then
 		MAX_DEPTH="${MISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MISEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${MISEQ_SAMPLESHEET_PATH}"
-	elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+	elif [[ "${1}" =~ "NEXTSEQ" ]];then
 		MAX_DEPTH="${NEXTSEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${NEXTSEQ_TRIGGER_FILE}"
-		TRIGGER_EXPR="${NEXTSEQ_TRIGGER_EXPR}"
+		TRIGGER_EXPR="${2} ${NEXTSEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${NEXTSEQ_SAMPLESHEET_PATH}"
 	fi
 }
@@ -181,6 +182,8 @@ modifyJsonAndLaunch() {
 	FASTQ_SED=${FASTQ_DIR////\\/}
 	ROI_SED=${ROI_DIR////\\/}
 	#RUN_SED=${RUN_PATH////\\/}
+	TMP_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}/"
+	mkdir "${TMP_OUTPUT_DIR}"
 	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR////\\/}
 	sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${WDL}.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
@@ -226,13 +229,14 @@ RUN_PATHS="${MINISEQ_RUNS_DIR} ${MISEQ_RUNS_DIR} ${NEXTSEQ_RUNS_DIR}"
 for RUN_PATH in ${RUN_PATHS}
 do
 	debug "RUN_PATH:${RUN_PATH}"
-	assignVariables "${RUN_PATH}"
+	#assignVariables "${RUN_PATH}"
 	OUTPUT_PATH=${RUN_PATH}
 	RUNS=$(ls -l --time-style="long-iso" ${RUN_PATH} | egrep '^d' | awk '{print $8}' |  egrep '^[0-9]{6}_')
 	for RUN in ${RUNS}
 	do
 		######do not look at runs set to 2 in the runs.txt file
 		if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
+			assignVariables "${RUN_PATH}" "${RUN}"
 			debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
 			#now we must look for the AnalysisLog.txt file
 			#get finished run
@@ -311,6 +315,7 @@ do
 							if [[ ${FILENAME} =~ ${REGEXP} ]];then
 								if [ ${SAMPLES["${BASH_REMATCH[1]}"]} ];then
 									SAMPLES["${BASH_REMATCH[1]}"]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+									debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 								else
 									SAMPLES["${BASH_REMATCH[1]}"]=${BASH_REMATCH[2]}
 								fi

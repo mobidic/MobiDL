@@ -3,8 +3,10 @@ cromwell-executions/
 cromwell-workflow-logs/
 input/
 output/
+tmp_output/
 option*
 MobiCNV/
+nohup.out
 autoDL.conf
 autoDLDir/*
 autoA*
