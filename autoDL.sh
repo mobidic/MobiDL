@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log 
 
-VERBOSITY=4
+VERBOSITY=3
 # -- Log variables 
 
 ERROR=1
