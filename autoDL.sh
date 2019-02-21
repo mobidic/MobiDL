@@ -145,8 +145,7 @@ assignVariables() {
 		TRIGGER_EXPR="${2} ${NEXTSEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${NEXTSEQ_SAMPLESHEET_PATH}"
 	fi
-	TMP_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}/"
-	mkdir "${TMP_OUTPUT_DIR}"
+	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
 dos2unixIfPossible() {
 	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
@@ -184,9 +183,8 @@ modifyJsonAndLaunch() {
 	FASTQ_SED=${FASTQ_DIR////\\/}
 	ROI_SED=${ROI_DIR////\\/}
 	#RUN_SED=${RUN_PATH////\\/}
-	#TMP_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}/"
-	#mkdir "${TMP_OUTPUT_DIR}"
-	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR////\\/}
+	mkdir "${TMP_OUTPUT_DIR2}"
+	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR2////\\/}
 	sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${WDL}.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
 		-e "s/\(  \"${WDL}.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
@@ -210,9 +208,9 @@ modifyJsonAndLaunch() {
 			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
 		fi
 		info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
-		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 		if [ $? -eq 0 ];then
-			rm -r "${TMP_OUTPUT_DIR}${SAMPLE}"
+			rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 		else
 			error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 		fi
