@@ -12,6 +12,7 @@ task gatkVariantFiltrationSnp {
 	#task specific variables
 	File Vcf
 	File VcfIndex
+	Int LowCoverage
 	#runtime attributes
 	Int Cpu
 	Int Memory
@@ -26,6 +27,7 @@ task gatkVariantFiltrationSnp {
 		--filter-expression "ReadPosRankSum < -4.0" --filter-name "LowreadPosRankSum" \
 		--filter-expression "SOR > 3.0" --filter-name "SORStrandBias" \
 		--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
+		--filter-expression "DP < ${LowCoverage}" --filter-name "LowCoverage" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.snp.filtered.vcf"
 	}
 	output {

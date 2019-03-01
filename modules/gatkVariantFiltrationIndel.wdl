@@ -12,6 +12,7 @@ task gatkVariantFiltrationIndel {
 	#task specific variables
 	File Vcf
 	File VcfIndex
+	Int LowCoverage
 	#runtime attributes
 	Int Cpu
 	Int Memory
@@ -24,6 +25,7 @@ task gatkVariantFiltrationIndel {
 		--filter-expression "ReadPosRankSum < -5.0" --filter-name "LowreadPosRankSum" \
 		--filter-expression "SOR > 10.0" --filter-name "SORStrandBias" \
 		--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
+		--filter-expression "DP < ${LowCoverage}" --filter-name "LowCoverage" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.filtered.vcf"
 	}
 	output {

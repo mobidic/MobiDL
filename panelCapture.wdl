@@ -523,7 +523,8 @@ workflow panelCapture {
 		RefFai = refFai,
 		RefDict = refDict,
 		Vcf = gatkSplitVcfs.snpVcf,
-		VcfIndex = gatkSplitVcfs.snpVcfIndex
+		VcfIndex = gatkSplitVcfs.snpVcfIndex,
+		LowCoverage = bedtoolsLowCoverage
 	}
 	call runGatkVariantFiltrationIndel.gatkVariantFiltrationIndel {
 		input:
@@ -537,7 +538,8 @@ workflow panelCapture {
 		RefFai = refFai,
 		RefDict = refDict,
 		Vcf = gatkSplitVcfs.indelVcf,
-		VcfIndex = gatkSplitVcfs.indelVcfIndex
+		VcfIndex = gatkSplitVcfs.indelVcfIndex,
+		LowCoverage = bedtoolsLowCoverage
 	}
 	call runGatkMergeVcfs.gatkMergeVcfs {
 		input:
