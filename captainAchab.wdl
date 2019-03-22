@@ -40,6 +40,9 @@ workflow captainAchab {
   File refRetrieveSeqFromFasta
   File refVariantsReduction
   String humanDb
+  String genome
+  String operationSuffix
+  String comma
   ## From phenolyzer
   Boolean withPhenolyzer
   String diseaseFile
@@ -136,7 +139,10 @@ workflow captainAchab {
       OutAchabNewHope = achabNewHope.outAchabNewHope
     }
   }
-  
+  #if (genome == 'hg38') {
+  #  operationSuffix = ''
+  #  comma = ''
+	#}
   call runAnnovarForMpa.annovarForMpa {
     input:
 		Cpu = cpu,

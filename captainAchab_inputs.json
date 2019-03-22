@@ -36,6 +36,15 @@
   "captainAchab.allelicFrequency": "Float",
   "captainAchab.refConvert2Annovar": "File",
   "captainAchab.tableAnnovarExe": "File",
-  "captainAchab.customInfo": "String"
+  "captainAchab.customInfo": "String",
+  "captainAchab.Genome": "String",
+  "captainAchab.Clinvar": "String",
+  "captainAchab.Dbnsfp": "String",
+  "captainAchab.Spidex": "String",
+  "captainAchab.Dbscsnv": "String",
+  "captainAchab.Gnomad_exome": "String",
+  "captainAchab.Gnomad_genome": "String",
+  "captainAchab.Pop_freq_max": "String",
+  "captainAchab.Intervar": "String"
 }
 
