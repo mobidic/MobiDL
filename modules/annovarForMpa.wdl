@@ -28,6 +28,7 @@ task annovarForMpa {
  String Intervar
  #String OperationSuffix
  #String Comma
+  #-protocol refGene,refGene,clinvar_20180603,dbnsfp33a,spidex,dbscsnv11,gnomad_exome,gnomad_genome,popfreq_max_20150413,intervar_20180118 -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
  command <<<
    "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
@@ -35,7 +36,6 @@ task annovarForMpa {
   -buildver "${Genome}" \
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
-  #-protocol refGene,refGene,clinvar_20180603,dbnsfp33a,spidex,dbscsnv11,gnomad_exome,gnomad_genome,popfreq_max_20150413,intervar_20180118 -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
   -protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Spidex}","${Dbscsnv}","${Gnomad_exome}","${Gnomad_genome}","${Intervar}","${Pop_freq_max}" -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
   -xref "${CustomXref}"
  >>>
