@@ -41,8 +41,8 @@ workflow captainAchab {
   File refVariantsReduction
   String humanDb
   String genome
-  String operationSuffix
-  String comma
+  #String operationSuffix
+  #String comma
   ## From phenolyzer
   Boolean withPhenolyzer
   String diseaseFile
