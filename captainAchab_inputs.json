@@ -38,13 +38,13 @@
   "captainAchab.tableAnnovarExe": "File",
   "captainAchab.customInfo": "String",
   "captainAchab.Genome": "String",
-  "captainAchab.Clinvar": "String",
-  "captainAchab.Dbnsfp": "String",
-  "captainAchab.Spidex": "String",
-  "captainAchab.Dbscsnv": "String",
-  "captainAchab.Gnomad_exome": "String",
-  "captainAchab.Gnomad_genome": "String",
-  "captainAchab.Pop_freq_max": "String",
-  "captainAchab.Intervar": "String"
+  "captainAchab.annovarForMPA.Clinvar": "String",
+  "captainAchab.annovarForMPA.Dbnsfp": "String",
+  "captainAchab.annovarForMPA.Spidex": "String",
+  "captainAchab.annovarForMPA.Dbscsnv": "String",
+  "captainAchab.annovarForMPA.Gnomad_exome": "String",
+  "captainAchab.annovarForMPA.Gnomad_genome": "String",
+  "captainAchab.annovarForMPA.Pop_freq_max": "String",
+  "captainAchab.annovarForMPA.Intervar": "String"
 }
 
