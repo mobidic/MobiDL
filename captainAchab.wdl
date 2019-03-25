@@ -136,13 +136,10 @@ workflow captainAchab {
       PhenolyzerExe = phenolyzerExe,
       OutPhenolyzer = phenolyzer.outPhenolyzer,
       OutAchab = achab.outAchab, 
-      OutAchabNewHope = achabNewHope.outAchabNewHope
+      OutAchabNewHope = achabNewHope.outAchabNewHope,
+			Genome = genome
     }
   }
-  #if (genome == 'hg38') {
-  #  operationSuffix = ''
-  #  comma = ''
-	#}
   call runAnnovarForMpa.annovarForMpa {
     input:
 		Cpu = cpu,
@@ -172,7 +169,8 @@ workflow captainAchab {
     OutAnnotation = annovarForMpa.outAnnotationVcf,
     SampleID = sampleID,
     OutDir = outDir,
-    PythonPath = pythonPath
+    PythonPath = pythonPath,
+		Genome = genome
   }
 
   if (withPhenolyzer) {

@@ -6,6 +6,7 @@ task achabDirCleanUp {
 	String? OutPhenolyzer
 	File OutAchab
 	File OutAchabNewHope
+	String Genome
 	#runtime attributes
 	Int Cpu
 	Int Memory
@@ -16,11 +17,11 @@ task achabDirCleanUp {
 		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput"; \
 		fi
-		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.txt" ]; then \
-			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.txt"; \
+		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.txt" ]; then \
+			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.txt"; \
 		fi
-		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.vcf" ]; then \
-			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.vcf"; \
+		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.vcf" ]; then \
+			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.vcf"; \
 		fi
 		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf"; \
