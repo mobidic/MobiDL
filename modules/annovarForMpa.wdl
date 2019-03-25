@@ -34,8 +34,8 @@ task annovarForMpa {
  command <<<
 	OPERATION_SUFFIX=',f'
 	COMMA=','
-	POPFREQMAX=',"${PopFreqMax}"'
-	SPIDEX=',"${Spidex}"'
+	POPFREQMAX=',${PopFreqMax}'
+	SPIDEX=',${Spidex}'
   if [ ${Genome} == 'hg38' ];then
 		OPERATION_SUFFIX=''
 		COMMA=''
