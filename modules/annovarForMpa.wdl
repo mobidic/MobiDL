@@ -53,9 +53,9 @@ task annovarForMpa {
  >>>
 
  output {
-  File outAnnotationVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.vcf"
+  File outAnnotationVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.vcf"
   File outAnnotationAvinput = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput"
-  File outAnnotationTxt = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno.txt"
+  File outAnnotationTxt = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.txt"
  }
  runtime {                                                                                                                                                                    
   cpu: "${Cpu}"
