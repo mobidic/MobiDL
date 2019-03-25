@@ -34,9 +34,13 @@ task annovarForMpa {
  command <<<
 	OPERATION_SUFFIX=',f'
 	COMMA=','
+	POPFREQMAX=',"${PopFreqMax}"'
+	SPIDEX=',"${Spidex}"'
   if [ ${Genome} == 'hg38' ];then
 		OPERATION_SUFFIX=''
 		COMMA=''
+		POPFREQMAX=''
+		SPIDEX=''
 	fi
   "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
@@ -44,7 +48,7 @@ task annovarForMpa {
   -buildver "${Genome}" \
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
-  -protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Spidex}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}","${PopFreqMax}" -operation gx,g,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,"${Dollar}{COMMA}" \
+  -protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}""${Dollar}{SPIDEX}""${Dollar}{POPFREQMAX}" -operation gx,g,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}""${Dollar}{OPERATION_SUFFIX}" -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,"${Dollar}{COMMA}""${Dollar}{COMMA}" \
   -xref "${CustomXref}"
  >>>
 
