@@ -22,21 +22,29 @@ task annovarForMpa {
  String Dbnsfp
  String Spidex
  String Dbscsnv
- String Gnomad_exome
- String Gnomad_genome
- String Pop_freq_max
+ String GnomadExome
+ String GnomadGenome
+ String PopFreqMax
  String Intervar
- #String OperationSuffix
- #String Comma
+ #String OperationSuffix = ",f"
+ #String Comma = ","
+ String Dollar = "$"
   #-protocol refGene,refGene,clinvar_20180603,dbnsfp33a,spidex,dbscsnv11,gnomad_exome,gnomad_genome,popfreq_max_20150413,intervar_20180118 -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
+  #-protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Spidex}","${Dbscsnv}","${Gnomad_exome}","${Gnomad_genome}","${Intervar}","${Pop_freq_max}" -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
  command <<<
-   "${PerlPath}" "${TableAnnovarExe}" \
+	OPERATION_SUFFIX=',f'
+	COMMA=','
+  if [ ${Genome} == 'hg38' ];then
+		OPERATION_SUFFIX=''
+		COMMA=''
+	fi
+  "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
   "${HumanDb}" \
   -buildver "${Genome}" \
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
-  -protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Spidex}","${Dbscsnv}","${Gnomad_exome}","${Gnomad_genome}","${Intervar}","${Pop_freq_max}" -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
+  -protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Spidex}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}","${PopFreqMax}" -operation gx,g,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,"${Dollar}{COMMA}" \
   -xref "${CustomXref}"
  >>>
 
