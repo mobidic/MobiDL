@@ -15,7 +15,7 @@ task mpa {
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno_MPA.vcf"
 	}
 	output {
-		File outMpa = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.hg19_multianno_MPA.vcf"
+		File outMpa = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno_MPA.vcf"
 	}
 	runtime {
 		cpu: "${Cpu}"
