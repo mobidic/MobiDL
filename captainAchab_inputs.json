@@ -42,9 +42,9 @@
   "captainAchab.annovarForMPA.Dbnsfp": "String",
   "captainAchab.annovarForMPA.Spidex": "String",
   "captainAchab.annovarForMPA.Dbscsnv": "String",
-  "captainAchab.annovarForMPA.Gnomad_exome": "String",
-  "captainAchab.annovarForMPA.Gnomad_genome": "String",
-  "captainAchab.annovarForMPA.Pop_freq_max": "String",
+  "captainAchab.annovarForMPA.GnomadExome": "String",
+  "captainAchab.annovarForMPA.GnomadGenome": "String",
+  "captainAchab.annovarForMPA.PopFreqMax": "String",
   "captainAchab.annovarForMPA.Intervar": "String"
 }
 
