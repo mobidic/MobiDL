@@ -159,7 +159,8 @@ workflow captainAchab {
     HumanDb = humanDb,
     SampleID = sampleID,
     OutDir = outDir,
-    PerlPath = perlPath
+    PerlPath = perlPath,
+		Genome = genome
   }
 
   call runMpa.mpa {
