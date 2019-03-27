@@ -38,6 +38,7 @@
   "captainAchab.tableAnnovarExe": "File",
   "captainAchab.customInfo": "String",
   "captainAchab.Genome": "String",
+  "captainAchab.annovarForMPA.CpuHigh": "String",
   "captainAchab.annovarForMPA.Clinvar": "String",
   "captainAchab.annovarForMPA.Dbnsfp": "String",
   "captainAchab.annovarForMPA.Spidex": "String",
@@ -45,6 +46,7 @@
   "captainAchab.annovarForMPA.GnomadExome": "String",
   "captainAchab.annovarForMPA.GnomadGenome": "String",
   "captainAchab.annovarForMPA.PopFreqMax": "String",
-  "captainAchab.annovarForMPA.Intervar": "String"
+  "captainAchab.annovarForMPA.Intervar": "String",
+  "captainAchab.annovarForMPA.SpliceAI": "String"
 }
 
