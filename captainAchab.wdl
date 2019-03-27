@@ -142,7 +142,6 @@ workflow captainAchab {
   }
   call runAnnovarForMpa.annovarForMpa {
     input:
-		Cpu = cpu,
 		Memory = memory,
     WorkflowType = workflowType, 
     CustomXref = customXref,
