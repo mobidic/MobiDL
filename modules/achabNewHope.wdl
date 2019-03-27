@@ -24,24 +24,24 @@ task achabNewHope {
 
 
  command <<<
-  ${PerlPath} ${AchabExe} \
-  --vcf ${OutMpa} \
-  --outDir ${OutDir}${SampleID}/${WorkflowType}/achab_excel/ \
-  --outPrefix ${SampleID} \
-  --case ${CaseSample} \
-  --dad ${FatherSample} \
-  --mum ${MotherSample} \
+  "${PerlPath}" "${AchabExe}" \
+  --vcf "${OutMpa}" \
+  --outDir "${OutDir}${SampleID}/${WorkflowType}/achab_excel/" \
+  --outPrefix "${SampleID}" \
+  --case "${CaseSample}" \
+  --dad "${FatherSample}" \
+  --mum "${MotherSample}" \
   ${CheckTrio} \
-  --candidates ${GenesOfInterest} \
-  --phenolyzerFile ${OutPhenolyzer} \
-  --popFreqThr ${AllelicFrequency} \
+  --candidates "${GenesOfInterest}" \
+  --phenolyzerFile "${OutPhenolyzer}" \
+  --popFreqThr "${AllelicFrequency}" \
   --newHope \
-  --filterList ${FilterList} \
-  --cnvGeneList ${CnvGeneList} \
-  --customVCF ${CustomVCF} \
-  --mozaicRate ${MozaicRate} \
-  --mozaicDP ${MozaicDP} \
-  --customInfoList ${CustomInfo}
+  --filterList "${FilterList}" \
+  --cnvGeneList "${CnvGeneList}" \
+  --customVCF "${CustomVCF}" \
+  --mozaicRate "${MozaicRate}" \
+  --mozaicDP "${MozaicDP}" \
+  --customInfoList "${CustomInfo}"
  >>>
  
  output {
