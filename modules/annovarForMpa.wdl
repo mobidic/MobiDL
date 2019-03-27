@@ -14,7 +14,7 @@ task annovarForMpa {
  String OutDir
  String PerlPath
  #runtime attributes
- Int Cpu
+ Int CpuHigh
  Int Memory
  #dataabses
  String Genome
@@ -26,11 +26,8 @@ task annovarForMpa {
  String GnomadGenome
  String PopFreqMax
  String Intervar
- #String OperationSuffix = ",f"
- #String Comma = ","
  String Dollar = "$"
   #-protocol refGene,refGene,clinvar_20180603,dbnsfp33a,spidex,dbscsnv11,gnomad_exome,gnomad_genome,popfreq_max_20150413,intervar_20180118 -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
-  #-protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Spidex}","${Dbscsnv}","${Gnomad_exome}","${Gnomad_genome}","${Intervar}","${Pop_freq_max}" -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
  command <<<
 	OPERATION_SUFFIX=',f'
 	COMMA=','
@@ -45,6 +42,7 @@ task annovarForMpa {
   "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
   "${HumanDb}" \
+  -thread "${CpuHigh}" \
   -buildver "${Genome}" \
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
@@ -58,7 +56,7 @@ task annovarForMpa {
   File outAnnotationTxt = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.txt"
  }
  runtime {                                                                                                                                                                    
-  cpu: "${Cpu}"
+  cpu: "${CpuHigh}"
   requested_memory_mb_per_core: "${Memory}"
  }
 }
