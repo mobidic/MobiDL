@@ -63,58 +63,21 @@ workflow panelCapture {
 	String workflowType
 	String outDir
 	##Bioinfo execs
-	String fastqcExe
-	String bwaExe
 	String samtoolsExe
 	String sambambaExe
 	String bedToolsExe
-	String qualimapExe
-	String bcfToolsExe
-	String bgZipExe
-	String tabixExe
-	String multiqcExe
 	##Standard execs
 	String awkExe
 	String sortExe
 	String gatkExe
 	String javaExe
-	##bwaSamtools	
-	String platform
-	File refAmb
-	File refAnn
-	File refBwt
-	File refPac
-	File refSa
-	##sambambaIndex
-	#String suffixIndex
-	#String suffixIndex2
-	##gatk splitintervals
-	String subdivisionMode
 	##gatk Base recal
-	File knownSites1
-	File knownSites1Index
-	File knownSites2
-	File knownSites2Index
 	File knownSites3
 	File knownSites3Index
-	##cram conversion
-	File refFastaGz
-	File refFaiGz
-	File refFaiGzi
-	##gatherVcfs
-	String vcfHcSuffix
-	String vcfSISuffix
 	##gatk-picard
 	File refDict
 	##computePoorCoverage
 	Int bedtoolsLowCoverage
-	Int bedToolsSmallInterval
-	##computeCoverage
-	Int minCovBamQual
-	##haplotypeCaller
-	String swMode
-	##jvarkit
-	String vcfPolyXJar
 
 	#Tasks calls
 	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
@@ -133,7 +96,6 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		FastqcExe = fastqcExe,
 		FastqR1 = fastqR1,
 		FastqR2 = fastqR2,
 		Suffix1 = suffix1,
@@ -151,15 +113,7 @@ workflow panelCapture {
 		FastqR1 = fastqR1,
 		FastqR2 = fastqR2,
 		SamtoolsExe = samtoolsExe,
-		BwaExe = bwaExe,
-		Platform = platform,
-		RefFasta = refFasta,
-		#RefFai = refFai,
-		RefAmb = refAmb,
-		RefAnn = refAnn,
-		RefBwt = refBwt,
-		RefPac = refPac,
-		RefSa = refSa
+		RefFasta = refFasta
 	}
 	#call runSambambaIndex.sambambaIndex {
 	#	input:
@@ -204,7 +158,6 @@ workflow panelCapture {
 		RefFai = refFai,
 		RefDict = refDict,
 		GatkInterval = bedToGatkIntervalList.gatkIntervals,
-		SubdivisionMode = subdivisionMode,
 		ScatterCount = cpuHigh
 	}
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
@@ -222,10 +175,6 @@ workflow panelCapture {
 			GatkInterval = interval,
 			BamFile = sambambaMarkDup.markedBam,
 			BamIndex = sambambaMarkDup.markedBamIndex,
-			KnownSites1 = knownSites1,
-			KnownSites1Index = knownSites1Index,
-			KnownSites2 = knownSites2,
-			KnownSites2Index = knownSites2Index,
 			KnownSites3 = knownSites3,
 			KnownSites3Index = knownSites3Index
 		}
@@ -316,10 +265,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		SamtoolsExe = samtoolsExe,
-		BamFile = samtoolsSort.sortedBam,
-		RefFastaGz = refFastaGz,
-		RefFaiGz = refFaiGz,	
-		RefFaiGzi = refFaiGzi
+		BamFile = samtoolsSort.sortedBam
 	}
 	call runSamtoolsCramIndex.samtoolsCramIndex {
 		input:
@@ -370,7 +316,6 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		QualimapExe = qualimapExe,
 		BamFile = samtoolsSort.sortedBam,
 		IntervalBedFile = intervalBedFile,
 	}
@@ -399,7 +344,6 @@ workflow panelCapture {
 		SortExe = sortExe,
 		IntervalBedFile = intervalBedFile,
 		BedtoolsLowCoverage = bedtoolsLowCoverage,
-		BedToolsSmallInterval = bedToolsSmallInterval,
 		BamFile = samtoolsSort.sortedBam
 	}
 	call runSamtoolsBedCov.samtoolsBedCov {
@@ -412,8 +356,7 @@ workflow panelCapture {
 		SamtoolsExe = samtoolsExe,
 		IntervalBedFile = intervalBedFile,
 		BamFile = samtoolsSort.sortedBam,
-		BamIndex = finalIndexing.bamIndex,
-		MinCovBamQual = minCovBamQual
+		BamIndex = finalIndexing.bamIndex
 	}
 	call runComputeCoverage.computeCoverage {
 		input:
@@ -467,8 +410,7 @@ workflow panelCapture {
 			DbSNPIndex = knownSites3Index,
 			GatkInterval = interval,
 			BamFile = samtoolsSort.sortedBam,
-			BamIndex = finalIndexing.bamIndex,
-			SwMode = swMode
+			BamIndex = finalIndexing.bamIndex
 		}
 	}
 	output {
@@ -482,8 +424,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		GatkExe = gatkExe,
-		HcVcfs = hcVcfs,
-		VcfSuffix = vcfHcSuffix
+		HcVcfs = hcVcfs
 	}
 	call runJvarkitVcfPolyX.jvarkitVcfPolyX {
 		input:
@@ -496,7 +437,6 @@ workflow panelCapture {
 		RefFai = refFai,
 		RefDict = refDict,
 		JavaExe = javaExe,
-		VcfPolyXJar = vcfPolyXJar,
 		Vcf = gatkGatherVcfs.gatheredHcVcf,
 		VcfIndex = gatkGatherVcfs.gatheredHcVcfIndex
 	}
@@ -549,8 +489,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		GatkExe = gatkExe,
-		Vcfs = [gatkVariantFiltrationSnp.filteredSnpVcf, gatkVariantFiltrationIndel.filteredIndelVcf],
-		VcfSuffix = vcfSISuffix
+		Vcfs = [gatkVariantFiltrationSnp.filteredSnpVcf, gatkVariantFiltrationIndel.filteredIndelVcf]
 	}
 	call runGatkSortVcf.gatkSortVcf {
 		input:
@@ -569,7 +508,6 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		BcfToolsExe = bcfToolsExe,
 		SortedVcf = gatkSortVcf.sortedVcf
 	}
 	call runCompressIndexVcf.compressIndexVcf {
@@ -579,8 +517,6 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		BgZipExe = bgZipExe,
-		TabixExe = tabixExe,
 		NormVcf = bcftoolsNorm.normVcf
 	}
 	String dataPath = "${outDir}${sampleID}/${workflowType}/"
@@ -606,7 +542,6 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		MultiqcExe = multiqcExe,
 		Vcf = cleanUpPanelCaptureTmpDirs.finalVcf
 	}
 	output {
