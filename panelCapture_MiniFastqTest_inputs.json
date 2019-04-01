@@ -8,7 +8,7 @@
   "panelCapture.genomeVersion": "hg19",
   "panelCapture.workflowType": "panelCapture",
   "panelCapture.intervalBedFile" : "/usr/local/share/refData/examples/Intervals.bed",
-  "panelCapture.outDir": "/home/mobidic/Devs/wdlDev/test_output/",
+  "panelCapture.outDir": "/softs/MobiDL/tmp_output/",
   "panelCapture.bedtoolsLowCoverage" : "20",
   "panelCapture.computePoorCoverage.BedToolsSmallInterval" : "20",
   "panelCapture.refFai": "/usr/local/share/refData/genome/hg19/hg19.fa.fai",
