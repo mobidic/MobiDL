@@ -275,7 +275,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		SamtoolsExe = samtoolsExe,
-		CramFile = samtoolsCramConvert.cram,
+		CramFile = samtoolsCramConvert.cram
 	}
 	call runSambambaFlagStat.sambambaFlagStat {
 		input:
@@ -317,7 +317,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		BamFile = samtoolsSort.sortedBam,
-		IntervalBedFile = intervalBedFile,
+		IntervalBedFile = intervalBedFile
 	}
 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
 		input:
