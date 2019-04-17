@@ -250,105 +250,119 @@ do
 					unset MANIFEST
 					unset BED
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${RUN_PATH}${RUN}/${SAMPLESHEET} | cut -d ',' -f 2)
-					BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
-					if [[ ${BED} =~ '(hg[0-9]{2})\.bed' ]];then
-						GENOME=${BASH_REMATCH[1]}
-					else
-						GENOME=hg19
-					fi
-					debug "${MANIFEST%?}:${BED}"
-					info "BED file to be used for analysis of run ${RUN}:${BED}"
-					if [ ${BED} == "FASTQ" ];then
-						#... if NEXTSEQ we need to move the run to treat it
-						#moveRunIfnecessary
-						#no will stay there we just put analysed data
-						#look for samplesheet Description field
-						#DESC=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2)
-						#Description,BED;WDL
-						#"${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}"
-						#dos2unixIfPossible ##mounted nas looks writable, but is not!
-						#FIXME FIXME FIXME
-						#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
-						#FIXME FIXME
-						BED=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2 | cut -d ';' -f 1)
-						if [ ! -f "${BED_DIR}${BED}" ];then
-							BED=''
+					if [[ ${MANIFEST} != '' ]];then
+						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
+						debug "MANIFEST:${MANIFEST}"
+						debug "BED:${BED}"
+						if [[ ${BED} =~ '(hg[0-9]{2})\.bed' ]];then
+							GENOME=${BASH_REMATCH[1]}
+						else
+							GENOME=hg19
 						fi
-						WDL=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2| cut -d ';' -f 2)
-						debug "BED:${BED} - WDL:${WDL}"
-						#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
-					else
-						WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
-					fi
-					if [[ ${WDL} != '' && ${BED} != '' ]];then
-						info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
-						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-							echo ${RUN}=1 >> ${RUNS_FILE}
-							RUN_ARRAY[${RUN}]=1
-						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							#Change value on array and file to running
-							sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
-							RUN_ARRAY[${RUN}]=1
-						fi
-						if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
-							OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
-							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-								mkdir "${OUTPUT_PATH}${RUN}"
+						debug "${MANIFEST%?}:${BED}"
+						info "BED file to be used for analysis of run ${RUN}:${BED}"
+						if [ ${BED} == "FASTQ" ];then
+							#... if NEXTSEQ we need to move the run to treat it
+							#moveRunIfnecessary
+							#no will stay there we just put analysed data
+							#look for samplesheet Description field
+							#DESC=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2)
+							#Description,BED;WDL
+							#"${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}"
+							#dos2unixIfPossible ##mounted nas looks writable, but is not!
+							#FIXME FIXME FIXME
+							#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
+							#FIXME FIXME
+							BED=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2 | cut -d ';' -f 1)
+							if [ ! -f "${BED_DIR}${BED}" ];then
+								BED=''
 							fi
+							WDL=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2| cut -d ';' -f 2)
+							debug "BED:${BED} - WDL:${WDL}"
+							#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
+						else
+							WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
 						fi
-						if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
-							mkdir "${OUTPUT_PATH}${RUN}/MobiDL"
-						fi
-						if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
-							mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
-						fi
-						if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
-							mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-						fi
-						#now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
-						declare -A SAMPLES
-						FASTQS=$(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
-						for FASTQ in ${FASTQS[@]};do
-							FILENAME=$(basename "${FASTQ}" ".fastq.gz")
-							debug "SAMPLE FILENAME:${FILENAME}"
-							REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
-							if [[ ${FILENAME} =~ ${REGEXP} ]];then
-								if [ ${SAMPLES["${BASH_REMATCH[1]}"]} ];then
-									SAMPLES["${BASH_REMATCH[1]}"]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
-									debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
-								else
-									SAMPLES["${BASH_REMATCH[1]}"]=${BASH_REMATCH[2]}
+						if [[ ${MANIFEST} != '' && ${WDL} != '' && ${BED} != '' ]];then
+							info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
+							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+								echo ${RUN}=1 >> ${RUNS_FILE}
+								RUN_ARRAY[${RUN}]=1
+							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+								#Change value on array and file to running
+								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
+								RUN_ARRAY[${RUN}]=1
+							fi
+							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
+								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
+									mkdir "${OUTPUT_PATH}${RUN}"
 								fi
-							else
-								warning "SAMPLE DOES NOT MATCH REGEXP ${REGEXP}: ${FILENAME} ${RUN_PATH}${RUN}"
 							fi
-						done
-						for SAMPLE in ${!SAMPLES[@]};do
-							modifyJsonAndLaunch
-							TREATED=1
-							#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-							#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
-							cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-							cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
-							debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
-						done 
-					fi
-					if [ "${TREATED}" -eq 1 ];then
-						#MobiCNV && multiqc
-						info "launching MobiCNV on run ${RUN}"
-						"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-						debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-						info "Launching MultiQC on run ${RUN}"
-						"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
-						debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
-						chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
-						sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
-						RUN_ARRAY[${RUN}]=2
-						info "RUN ${RUN} treated"
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
+								mkdir "${OUTPUT_PATH}${RUN}/MobiDL"
+							fi
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
+								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+							fi
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
+								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+							fi
+							#now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
+							declare -A SAMPLES
+							FASTQS=$(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
+							for FASTQ in ${FASTQS[@]};do
+								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
+								debug "SAMPLE FILENAME:${FILENAME}"
+								REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
+								if [[ ${FILENAME} =~ ${REGEXP} ]];then
+									if [ ${SAMPLES["${BASH_REMATCH[1]}"]} ];then
+										SAMPLES["${BASH_REMATCH[1]}"]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+										debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+									else
+										SAMPLES["${BASH_REMATCH[1]}"]=${BASH_REMATCH[2]}
+									fi
+								else
+									warning "SAMPLE DOES NOT MATCH REGEXP ${REGEXP}: ${FILENAME} ${RUN_PATH}${RUN}"
+								fi
+							done
+							for SAMPLE in ${!SAMPLES[@]};do
+								modifyJsonAndLaunch
+								TREATED=1
+								#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+								#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+								cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+								cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
+							done 
+						fi
+						if [ "${TREATED}" -eq 1 ];then
+							#MobiCNV && multiqc
+							info "Launching MobiCNV on run ${RUN}"
+							"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+							debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+							info "Launching MultiQC on run ${RUN}"
+							"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
+							debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
+							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
+							RUN_ARRAY[${RUN}]=2
+							info "RUN ${RUN} treated"
+						else
+							info "Nothing done for run ${RUN_PATH}${RUN}"
+							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+								echo ${RUN}=2 >> ${RUNS_FILE}
+								RUN_ARRAY[${RUN}]=2
+							fi
+						fi
 					else
-						info "nothing done for run ${RUN_PATH}${RUN}"
+						info "Nothing done for ${RUN}"
 						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
 							echo ${RUN}=2 >> ${RUNS_FILE}
+							RUN_ARRAY[${RUN}]=2
+						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							#Change value on array and file to running
+							sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
 						fi
 					fi
