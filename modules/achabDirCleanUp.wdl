@@ -14,6 +14,9 @@ task achabDirCleanUp {
 		if [ -d "${OutDir}${SampleID}/${WorkflowType}/bcftools" ]; then \
 			rm -rf "${OutDir}${SampleID}/${WorkflowType}/bcftools"; \
 		fi
+		if [ -d "${OutDir}${SampleID}/${WorkflowType}/disease" ]; then \
+			rm -rf "${OutDir}${SampleID}/${WorkflowType}/disease"; \
+		fi
 		if [ -f "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput" ]; then \
 			rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.avinput"; \
 		fi
