@@ -128,7 +128,7 @@ TRIGGER_EXPR=''
 SAMPLESHEET=''
 
 assignVariables() {
-	#${RUN_PATH} ${RUN}
+	#${RUN_PATH}
 	if [[ "${1}" =~ "MiniSeq" ]];then
 		MAX_DEPTH="${MINISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MINISEQ_TRIGGER_FILE}"
@@ -142,7 +142,8 @@ assignVariables() {
 	elif [[ "${1}" =~ "NEXTSEQ" ]];then
 		MAX_DEPTH="${NEXTSEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${NEXTSEQ_TRIGGER_FILE}"
-		TRIGGER_EXPR="${2} ${NEXTSEQ_TRIGGER_EXPR}"
+		#TRIGGER_EXPR="${2} ${NEXTSEQ_TRIGGER_EXPR}"
+		TRIGGER_EXPR="${NEXTSEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${NEXTSEQ_SAMPLESHEET_PATH}"
 	fi
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
@@ -150,7 +151,7 @@ assignVariables() {
 dos2unixIfPossible() {
 	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
 	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
-		 "${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}"
+		 "${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}" >/dev/null 2>&1
 	 fi
 }
 #moveRunIfNecessary() {
@@ -183,7 +184,9 @@ modifyJsonAndLaunch() {
 	FASTQ_SED=${FASTQ_DIR////\\/}
 	ROI_SED=${ROI_DIR////\\/}
 	#RUN_SED=${RUN_PATH////\\/}
-	mkdir "${TMP_OUTPUT_DIR2}"
+	if [ ! -d "${TMP_OUTPUT_DIR2}" ];then
+		mkdir "${TMP_OUTPUT_DIR2}"
+	fi
 	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR2////\\/}
 	sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${WDL}.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
@@ -202,7 +205,12 @@ modifyJsonAndLaunch() {
 	info "Launching:"
 	info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
 	#actual launch and copy in the end
-	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
+	if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
+		mkdir "${TMP_OUTPUT_DIR2}Logs"
+	fi
+	touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
@@ -236,7 +244,7 @@ do
 	do
 		######do not look at runs set to 2 in the runs.txt file
 		if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
-			assignVariables "${RUN_PATH}" "${RUN}"
+			assignVariables "${RUN_PATH}"
 			debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
 			#now we must look for the AnalysisLog.txt file
 			#get finished run
