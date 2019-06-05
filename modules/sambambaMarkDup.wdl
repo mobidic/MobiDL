@@ -13,6 +13,8 @@ task sambambaMarkDup {
 		${SambambaExe} markdup -t ${Cpu} -l 1 \
 		${BamFile} \
 		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
+		#mv ${BamFile} "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
+		#samtools index "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam.bai"
 	}
 	output {
 		File markedBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"

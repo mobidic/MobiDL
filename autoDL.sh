@@ -215,6 +215,7 @@ modifyJsonAndLaunch() {
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
 		fi
+		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 		info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
 		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 		if [ $? -eq 0 ];then
