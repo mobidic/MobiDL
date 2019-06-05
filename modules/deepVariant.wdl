@@ -8,7 +8,7 @@ task deepVariant {
 
 	String ReferenceFasta
 	#File RefFai
-	#String BamFile
+	File BamFile
 	#File BamIndex
 	String BedFile
 	
@@ -40,7 +40,7 @@ task deepVariant {
 		--reads="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.bam" \
 		--regions=${BedFile} \
 		--num_shards=${Cpu} \
-		--output_vcf="${OutDir}/${SampleID}/${WorkflowType}/${SampleID}.vcf"
+		--output_vcf="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.vcf"
 	}
 
 
@@ -50,7 +50,7 @@ task deepVariant {
 
 
 	runtime {
-		cpu: "${Memory}"
+		cpu: "${Cpu}"
 		requested_memory_mb_per_core: "${Memory}"
 	}
 

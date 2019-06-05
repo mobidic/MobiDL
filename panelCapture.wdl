@@ -472,11 +472,12 @@ workflow panelCapture {
 
 	call runDeepVariant.deepVariant{
 		input:
-		Cpu = cpuHigh
-		Memory = memoryLow
+		Cpu = cpuHigh,
+		Memory = memoryLow,
 		SampleID = sampleID,
     OutDir = outDir,
     WorkflowType = workflowType,
+		BamFile = samtoolsSort.sortedBam,
 		ReferenceFasta = referenceFasta,
     BedFile = bedFile,
     ModelType = modelType,
@@ -485,7 +486,7 @@ workflow panelCapture {
     DvOut = dvOut,
 	  Output = outputMnt,
     DeepExe = deepExe,
-		Singularity = singularity
+		Singularity = singularity,
     SingularityImg = singularityImg
 	}
 	
