@@ -7,9 +7,9 @@ task deepVariant {
 	String WorkflowType
 
 	String ReferenceFasta
-	File RefFai
-	String BamFile
-	File BamIndex
+	#File RefFai
+	#String BamFile
+	#File BamIndex
 	String BedFile
 	
 	String ModelType
