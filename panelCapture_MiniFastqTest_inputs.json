@@ -47,7 +47,7 @@
   "panelCapture.qualimapExe": "/softs/qualimap_v2.2.1/qualimap",
   "panelCapture.vcfPolyXJar": "/softs/jvarkit/dist/vcfpolyx.jar",
   "panelCapture.bcfToolsExe": "/usr/local/bin/bcftools",
-  "panelCapture.multiqcExe": "/usr/bin/multiqc",
+  "panelCapture.multiqcExe": "/home/neuro_admin/anaconda3/bin/multiqc",
   "panelCapture.subdivisionMode": "BALANCING_WITHOUT_INTERVAL_SUBDIVISION",
   "panelCapture.minCovBamQual": "30",
   "panelCapture.swMode": "FASTEST_AVAILABLE",
