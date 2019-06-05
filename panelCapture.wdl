@@ -37,6 +37,8 @@ import "modules/compressIndexVcf.wdl" as runCompressIndexVcf
 import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
 
+import "modules/deepVariant.wdl" as runDeepVariant
+
 workflow panelCapture {
 	meta {
 		author: "David Baux"
@@ -115,6 +117,17 @@ workflow panelCapture {
 	String swMode
 	##jvarkit
 	String vcfPolyXJar
+	##DeepVariant
+	String referenceFasta
+	String modelType
+	String bedFile
+	String data
+	String refData
+	String dvOut
+	String outputMnt
+	String deepExe
+	String singularity
+	String singularityImg
 
 	#Tasks calls
 	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
@@ -451,6 +464,38 @@ workflow panelCapture {
 		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
 		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
 	}
+
+
+
+
+##################################################Deep#################################
+
+	call runDeepVariant.deepVariant{
+		input:
+		Cpu = cpuHigh
+		Memory = memoryLow
+		SampleID = sampleID,
+    OutDir = outDir,
+    WorkflowType = workflowType,
+		ReferenceFasta = referenceFasta,
+    BedFile = bedFile,
+    ModelType = modelType,
+		Data = data,
+	  RefData = refData,
+    DvOut = dvOut,
+	  Output = outputMnt,
+    DeepExe = deepExe,
+		Singularity = singularity
+    SingularityImg = singularityImg
+	}
+	
+	#output {
+	#	File Vcf = deepVariant.DeepVcf
+	#}
+
+
+
+	
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
 		call runGatkHaplotypeCaller.gatkHaplotypeCaller {
 			input:
@@ -500,6 +545,8 @@ workflow panelCapture {
 		Vcf = gatkGatherVcfs.gatheredHcVcf,
 		VcfIndex = gatkGatherVcfs.gatheredHcVcfIndex
 	}
+
+############################################################################Splits#################################
 	call runGatkSplitVcfs.gatkSplitVcfs {
 		input:
 		Cpu = cpuLow,
@@ -508,7 +555,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		GatkExe = gatkExe,
-		Vcf = jvarkitVcfPolyX.polyxedVcf,
+		Vcf=jvarkitVcfPolyX.polyxedVcf,
 		VcfIndex = jvarkitVcfPolyX.polyxedVcfIndex
 	}
 	call runGatkVariantFiltrationSnp.gatkVariantFiltrationSnp {
@@ -541,6 +588,8 @@ workflow panelCapture {
 		VcfIndex = gatkSplitVcfs.indelVcfIndex,
 		LowCoverage = bedtoolsLowCoverage
 	}
+
+########################################################Merge###########################################################@
 	call runGatkMergeVcfs.gatkMergeVcfs {
 		input:
 		Cpu = cpuLow,
@@ -549,7 +598,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		GatkExe = gatkExe,
-		Vcfs = [gatkVariantFiltrationSnp.filteredSnpVcf, gatkVariantFiltrationIndel.filteredIndelVcf],
+		Vcfs = [gatkVariantFiltrationSnp.filteredSnpVcf, gatkVariantFiltrationIndel.filteredIndelVcf, deepVariant.DeepVcf],
 		VcfSuffix = vcfSISuffix
 	}
 	call runGatkSortVcf.gatkSortVcf {
