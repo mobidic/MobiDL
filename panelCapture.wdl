@@ -42,7 +42,7 @@ import "/softs/MobiDL/modules/deepVariant.wdl" as runDeepVariant
 import "/softs/MobiDL/modules/refcallFiltration.wdl" as runRefCallFiltration
 import "/softs/MobiDL/modules/gatkHardFilteringVcf.wdl" as runGatkHardFilteringVcf
 import "/softs/MobiDL/modules/rtgMergeVcfs.wdl" as runRtgMerge
-import "/softs/MobiDL/modules/compressCramToCrumble.wdl" as runCompressCramToCrumble 
+import "/softs/MobiDL/modules/compressToCrumble.wdl" as runCompressToCrumble 
 workflow panelCapture {
 	meta {
 		author: "David Baux"
@@ -359,16 +359,17 @@ workflow panelCapture {
 		SamtoolsExe = samtoolsExe,
 		CramFile = samtoolsCramConvert.cram,
 	}
-	call runCompressCramToCrumble.compressCramToCrumble{
+	call runCompressToCrumble.compressToCrumble{
 		input:
-		Cpu = cpuLow,
-                Memory = memoryHigh,
+		Cpu = cpuHigh,
+                Memory = memoryLow,
                 SampleID = sampleID,
                 OutDir = outDir,
                 WorkflowType = workflowType,
 		CrumbleExe = crumbleExe,
-		CramFile = samtoolsCramConvert.cram,
-		CramFileIndex =  samtoolsCramIndex.cramIndex
+		InputFile = samtoolsCramConvert.cram,
+		InputFileIndex =  samtoolsCramIndex.cramIndex,
+		FileType = "cram"
 }
 	call runSambambaFlagStat.sambambaFlagStat {
 		input:
