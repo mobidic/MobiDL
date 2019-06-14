@@ -24,11 +24,11 @@ task gatkHardFiltering {
 		-V ${Vcf} \
 		--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 		--filter-expression "DP < ${LowCoverage}" --filter-name "LowCoverage" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.filtered.vcf"
+		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.filtered.vcf"
 	}
 	output {
-		File HardFilteredVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.filtered.vcf"
-		File HardFilteredVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.filtered.vcf"
+		File HardFilteredVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.filtered.vcf"
+		File HardFilteredVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.filtered.vcf.idx"
 	}
 	runtime {
 		cpu: "${Cpu}"

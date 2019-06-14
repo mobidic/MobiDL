@@ -21,7 +21,7 @@ task refCallFiltration {
         }
         output {
                 File noRefCalledVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.recode.vcf"
-                File refcalledLog = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.log"
+                #File refcalledLog = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.log"
         }
         runtime {
                 cpu: "${Cpu}"

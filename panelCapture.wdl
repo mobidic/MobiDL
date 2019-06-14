@@ -140,7 +140,7 @@ workflow panelCapture {
 	String end
 	##RtgMerge
 	String rtgExe
-	Array[File] VcfFiles
+	#Array[File] VcfFiles
 	
 	#Tasks calls
 	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
@@ -557,7 +557,7 @@ workflow panelCapture {
       	        WorkflowType = workflowType,
        	        GatkExe = gatkExe,
       	        RefFasta = refFasta,
-       	        RefFai = refFasta,
+       	        RefFai = refFai,
                 RefDict = refDict,
 		Vcf = jvarkitVcfPolyxDv.polyxedVcf,
 	        VcfIndex = jvarkitVcfPolyxDv.polyxedVcfIndex,
@@ -747,7 +747,9 @@ workflow panelCapture {
                 WorkflowType = workflowType,
 		VcfSuffix = vcfSISuffix,
 		RtgExe = rtgExe,
-		VcfFiles= [compressIndexVcfHc.bgZippedVcf, compressIndexVcfDv.bgZippedVcf]
+		VcfFiles= [compressIndexVcfHc.bgZippedVcf, compressIndexVcfDv.bgZippedVcf],
+		VcfFilesIndex = [compressIndexVcfHc.bgZippedVcfIndex, compressIndexVcfDv.bgZippedVcfIndex]
+		
 	}
 
 	
@@ -774,7 +776,18 @@ workflow panelCapture {
                 SortedVcf = gatkSortVcfEnd.sortedVcf 
         }
             
-      
+	call runCompressIndexVcf.compressIndexVcf as finalCompressIndex {
+		input:
+		Cpu = cpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		BgZipExe = bgZipExe,
+		TabixExe = tabixExe,
+		VcSuffix = end,
+		NormVcf = bcftoolsNormEnd.normVcf
+  }    
 	String dataPath = "${outDir}${sampleID}/${workflowType}/"
 	call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs {
 		input:

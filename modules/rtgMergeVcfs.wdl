@@ -8,21 +8,21 @@ task rtgMerge {
         
         #task specific variables
         Array[File] VcfFiles
+        Array[File] VcfFilesIndex
 	String RtgExe
         
         #runtime attributes
         Int Cpu
         Int Memory
         command {
-                 ${RtgExe} \
-                 
-                -I ${VcfFiles} \
-                -o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}_rtg.vcf.gz" \
-                --force-merge-all
+                 ${RtgExe} vcfmerge \
+                --force-merge-all \
+                -o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcfSuffix}_rtg.vcf.gz" \
+                ${sep=' ' VcfFiles}
         }
         output {
-                File rtgMergedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}_rtg.vcf.gz"
-                File rtgMergedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}_rtg.vcf.gz.tbi"
+                File rtgMergedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcfSuffix}_rtg.vcf.gz"
+                File rtgMergedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcfSuffix}_rtg.vcf.gz.tbi"
         }
         runtime {
                 cpu: "${Cpu}"

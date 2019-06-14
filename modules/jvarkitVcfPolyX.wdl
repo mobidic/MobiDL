@@ -18,14 +18,14 @@ task jvarkitVcfPolyX {
 	command {
 		${JavaExe} -jar ${VcfPolyXJar} \
 		-R ${RefFasta} \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.polyx.vcf" \
+		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.polyx.vcf" \
 		"${Vcf}"
-		#just mv index file suppose no changes
-		cp ${VcfIndex} "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.polyx.vcf.idx"
+		#just cp index file suppose no changes
+		cp ${VcfIndex} "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.polyx.vcf.idx"
 	}
 	output {
-		File polyxedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.polyx.vcf"
-		File polyxedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}/${VcSuffix}.polyx.vcf.idx"
+		File polyxedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.polyx.vcf"
+		File polyxedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.polyx.vcf.idx"
 	}
 	runtime {
 		cpu: "${Cpu}"

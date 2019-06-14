@@ -62,7 +62,7 @@
   "panelCapture.bedFile": "/dv2/refData/intervals/MedExome_2019.bed",
   "panelCapture.deepExe": "/opt/deepvariant/bin/run_deepvariant",
   "panelCapture.outputMnt": "/softs/MobiDL/tmp_output:/dv2/tmp_output/",
-  "panelCapture.singularity:": "/usr/bin/singularity",
+  "panelCapture.singularity": "/usr/bin/singularity",
   "panelCapture.refData": "/usr/local/share/refData/:/dv2/refData/",
   "panelCapture.modelType": "WES",
   "panelCapture.singularityImg": "/softs/deepVariant/deepvariant-custom.simg",
