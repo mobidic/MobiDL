@@ -42,7 +42,7 @@ import "/softs/MobiDL/modules/deepVariant.wdl" as runDeepVariant
 import "/softs/MobiDL/modules/refcallFiltration.wdl" as runRefCallFiltration
 import "/softs/MobiDL/modules/gatkHardFilteringVcf.wdl" as runGatkHardFilteringVcf
 import "/softs/MobiDL/modules/rtgMergeVcfs.wdl" as runRtgMerge
- 
+import "/softs/MobiDL/modules/compressCramToCrumble.wdl" as runCompressCramToCrumble 
 workflow panelCapture {
 	meta {
 		author: "David Baux"
@@ -121,6 +121,8 @@ workflow panelCapture {
 	String swMode
 	##jvarkit
 	String vcfPolyXJar
+	##ConvertCramtoCrumble
+	String crumbleExe
 	##DeepVariant
 	String referenceFasta
 	String modelType
@@ -140,7 +142,7 @@ workflow panelCapture {
 	String end
 	##RtgMerge
 	String rtgExe
-	#Array[File] VcfFiles
+	
 	
 	#Tasks calls
 	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
@@ -357,6 +359,17 @@ workflow panelCapture {
 		SamtoolsExe = samtoolsExe,
 		CramFile = samtoolsCramConvert.cram,
 	}
+	call runCompressCramToCrumble.compressCramToCrumble{
+		input:
+		Cpu = cpuLow,
+                Memory = memoryHigh,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+		CrumbleExe = crumbleExe,
+		CramFile = samtoolsCramConvert.cram,
+		CramFileIndex =  samtoolsCramIndex.cramIndex
+}
 	call runSambambaFlagStat.sambambaFlagStat {
 		input:
 		Cpu = cpuHigh,
@@ -797,13 +810,13 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		FinalVcf = bcftoolsNormEnd.normVcf,
-		BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
+		BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex), "${dataPath}" + basename(samtoolsCramConvert.cram),"${dataPath}" + basename(samtoolsCramIndex.cramIndex)],
 		#FinalBam = "${dataPath}" + basename(samtoolsSort.sortedBam),
 		#FinalBamIndex = "${dataPath}" + basename(finalIndexing.bamIndex),
 		#FinalCram = "${dataPath}" + basename(samtoolsCramConvert.cram),
 		#FinalCramIndex = "${dataPath}" + basename(samtoolsCramIndex.cramIndex),
-		 VcfArray = ["${dataPath}" + basename(deepVariant.DeepVcf),"${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex),"${dataPath}" + basename(bcftoolsNormDv.normVcf),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),"${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(bcftoolsNormHc.normVcf),"${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex),"${dataPath}" + basename(rtgMerge.rtgMergedVcf),"${dataPath}" + basename(rtgMerge.rtgMergedVcfIndex),"${dataPath}" + basename(gatkSortVcfEnd.sortedVcf),"${dataPath}" + basename(gatkSortVcfEnd.sortedVcfIndex)]
-	}
+		 VcfArray = ["${dataPath}" + basename(deepVariant.DeepVcf),"${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex),"${dataPath}" + basename(bcftoolsNormDv.normVcf),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),"${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(bcftoolsNormHc.normVcf),"${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex),"${dataPath}" + basename(rtgMerge.rtgMergedVcf),"${dataPath}" + basename(rtgMerge.rtgMergedVcfIndex),"${dataPath}"+ basename(gatkSortVcfEnd.sortedVcf),"${dataPath}" + basename(gatkSortVcfEnd.sortedVcfIndex)]
+}
 	call runMultiqc.multiqc {
 		input:
 		Cpu = cpuLow,
