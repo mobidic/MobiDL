@@ -45,6 +45,7 @@
   "panelCapture.bwaExe": "/usr/local/bin/bwa",
   "panelCapture.sambambaExe" : "/usr/local/bin/sambamba",
   "panelCapture.bedToolsExe" : "/usr/local/bin/bedtools",
+  "panelCapture.crumbleExe": "/usr/local/bin/crumble",
   "panelCapture.gatkExe" : "/softs/gatk",
   "panelCapture.qualimapExe": "/softs/qualimap_v2.2.1/qualimap",
   "panelCapture.vcfPolyXJar": "/softs/jvarkit/dist/vcfpolyx.jar",
