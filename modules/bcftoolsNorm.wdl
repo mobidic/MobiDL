@@ -12,11 +12,11 @@ task bcftoolsNorm {
 	Int Memory
 	command {
 		${BcfToolsExe} norm -O v -m - \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.vcf" \
+		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf" \
 		${SortedVcf}
 	}
 	output {
-		File normVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${VcSuffix}.vcf"
+		File normVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf"
 	}
 	runtime {
 		cpu: "${Cpu}"

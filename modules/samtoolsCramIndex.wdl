@@ -6,16 +6,17 @@ task samtoolsCramIndex {
 	String SamtoolsExe
 	#task specific variables
 	File CramFile
+	String CramSuffix
 	#runtime attributes
 	Int Cpu
 	Int Memory
  	command {
 		${SamtoolsExe} index \
 		${CramFile} \
-		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}.cram.crai"
+		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}${CramSuffix}.cram.crai"
 	}
 	output {
-		File cramIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.cram.crai"
+		File cramIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${CramSuffix}.cram.crai"
 	}
 	runtime {
 		cpu: "${Cpu}"

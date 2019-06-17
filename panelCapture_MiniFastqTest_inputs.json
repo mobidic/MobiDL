@@ -54,19 +54,14 @@
   "panelCapture.subdivisionMode": "BALANCING_WITHOUT_INTERVAL_SUBDIVISION",
   "panelCapture.minCovBamQual": "30",
   "panelCapture.swMode": "FASTEST_AVAILABLE",
-  "panelCapture.vcfHcSuffix": ".raw",
-  "panelCapture.vcfSISuffix": ".merged",
-  "panelCapture.dV":"DV",
-  "panelCapture.hC":"HC",
-  "panelCapture.end": "End",
   "panelCapture.data": "/RS_IURC/data:/dv2/data",
   "panelCapture.bedFile": "/dv2/refData/intervals/MedExome_2019.bed",
   "panelCapture.deepExe": "/opt/deepvariant/bin/run_deepvariant",
-  "panelCapture.outputMnt": "/softs/MobiDL/tmp_output:/dv2/tmp_output/",
+  "panelCapture.outputMnt": "/softs/MobiDL/tmp_output:/dv2/tmp_output",
   "panelCapture.singularity": "/usr/bin/singularity",
   "panelCapture.refData": "/usr/local/share/refData/:/dv2/refData/",
   "panelCapture.modelType": "WES",
   "panelCapture.singularityImg": "/softs/deepVariant/deepvariant-custom.simg",
   "panelCapture.referenceFasta": "/dv2/refData/genome/hg19/hg19.fa",
-  "panelCapture.dvOut" : "/dv2/tmp_output/"
+  "panelCapture.dvOut" : "/dv2/tmp_output"
 }
