@@ -192,7 +192,8 @@ modifyJsonAndLaunch() {
 		-e "s/\(  \"${WDL}.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}.fastq.gz\",/" \
 		-e "s/\(  \"${WDL}.workflowType\": \"\).*/\1${WDL}\",/" \
 		-e "s/\(  \"${WDL}.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" "${JSON}"
+		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
+		-e "s#\(  \"${WDL}.dvOut\": \"/dv2/tmp_output\).*#\1/${RUN}\"#" "${JSON}"
 	if [ "${GENOME}" != "hg19" ];then
 		sed "s/hg19/${GENOME}/g" "${JSON}"
 	fi
