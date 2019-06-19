@@ -121,6 +121,7 @@ workflow panelCapture {
 	String vcfPolyXJar
 	##ConvertCramtoCrumble
 	String crumbleExe
+	String ldLibraryPath
 	##DeepVariant
 	String referenceFasta
 	String modelType
@@ -365,6 +366,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		CrumbleExe = crumbleExe,
+		LdLibraryPath = ldLibraryPath,
 		InputFile = samtoolsCramConvert.cram,
 		InputFileIndex =  samtoolsCramIndex.cramIndex,
 		FileType = "cram"

@@ -9,10 +9,12 @@ task crumble {
 	File InputFileIndex
 	String CrumbleExe
 	String FileType
+	String LdLibraryPath
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
+		export LD_LIBRARY_PATH="${LdLibraryPath}"
 		${CrumbleExe} \
 		-O ${FileType},nthreads=${Cpu} ${InputFile} "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.crumble.${FileType}"       
 	}
