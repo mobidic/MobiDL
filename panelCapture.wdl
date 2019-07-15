@@ -768,6 +768,7 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
+		SedExe = sedExe,
 		VcfFile = gatkSortVcfEnd.sortedVcf,
 		VcfIndex = gatkSortVcfEnd.sortedVcfIndex
 	}
