@@ -80,6 +80,7 @@ workflow panelCapture {
 	String multiqcExe
 	##Standard execs
 	String awkExe
+	String sedExe
 	String sortExe
 	String gatkExe
 	String javaExe
