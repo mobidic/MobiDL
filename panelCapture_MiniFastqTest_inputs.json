@@ -35,6 +35,7 @@
   "panelCapture.refFaiGzi": "/usr/local/share/refData/genome/hg19/hg19.fa.gz.gzi",
   "panelCapture.samtoolsExe": "/usr/local/bin/samtools",
   "panelCapture.awkExe" : "/usr/bin/awk",
+  "panelCapture.sedExe" : "/usr/bin/sed",
   "panelCapture.sortExe" : "/usr/bin/sort",
   "panelCapture.rtgExe":"/softs/rtg-tools-3.10.1/rtg",
   "panelCapture.javaExe": "/usr/bin/java",
