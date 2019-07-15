@@ -790,7 +790,7 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		FinalFile1 = gatkSortVcfEnd.sortedVcf,
+		FinalFile1 = fixVcfHeaders.finalVcf,
 		FinalFile2 = crumbleIndexing.cramIndex,
 		BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex), "${dataPath}" + basename(samtoolsCramConvert.cram),"${dataPath}" + basename(samtoolsCramIndex.cramIndex)],
 		#FinalBam = "${dataPath}" + basename(samtoolsSort.sortedBam),
