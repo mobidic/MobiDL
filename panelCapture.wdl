@@ -767,7 +767,8 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		VcfFile = gatkSortVcfEnd.sortedVcf
+		VcfFile = gatkSortVcfEnd.sortedVcf,
+		VcfIndex = gatkSortVcfEnd.sortedVcfIndex
 	}
 	call runCompressIndexVcf.compressIndexVcf as finalCompressIndex {
 		input:
