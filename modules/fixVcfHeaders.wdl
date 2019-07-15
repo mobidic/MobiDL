@@ -14,7 +14,7 @@ task fixVcfHeaders {
 		-e "s/##INFO=<ID=MLEAC,Number=A,/##INFO=<ID=MLEAC,Number=.,/" \ 
 		-e "s/##INFO=<ID=MLEAF,Number=A,/##INFO=<ID=MLEAF,Number=.,/" \ 
 		${VcfFile}" > "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
-		mv "${VcfIndex}" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf.idx"
+		mv "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.vcf.idx"  "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf.idx"
 	}
 	output {
 		File finalVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf" 
