@@ -11,7 +11,7 @@ task mpa {
 	Int Memory
 	command {
 		"${PythonPath}" "${MpaExe}" \
-		-i "${OutAnnotation}" \
+		-i "${OutAnnotation}" -l INFO \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno_MPA.vcf"
 	}
 	output {
