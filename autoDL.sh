@@ -204,7 +204,13 @@ modifyJsonAndLaunch() {
 	info "Launching:"
 	info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
 	#actual launch and copy in the end
-	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}"
+	if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
+		mkdir "${TMP_OUTPUT_DIR2}Logs"
+	fi
+	touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" 
+	#actual launch and copy in the end
+	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
@@ -264,7 +270,7 @@ do
 						fi
 						debug "${MANIFEST%?}:${BED}"
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
-						if [ ${BED} == "FASTQ" ];then
+						if [ "${BED}" == "FASTQ" ];then
 							#... if NEXTSEQ we need to move the run to treat it
 							#moveRunIfnecessary
 							#no will stay there we just put analysed data
