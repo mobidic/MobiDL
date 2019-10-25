@@ -6,14 +6,14 @@ task compressIndexVcf {
 	String BgZipExe
 	String TabixExe
 	#task specific variables
-	File NormVcf
+	File VcfFile
 	String VcSuffix
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
 		${BgZipExe} -c \
-		${NormVcf} \
+		${VcfFile} \
 		> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf.gz"
 		${TabixExe} -fp vcf \
 		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf.gz"
