@@ -11,8 +11,9 @@ task bedToGatkIntervalList {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	#Bed files are 0-based
 	command <<<
-		${AwkExe} 'BEGIN {OFS=""} {if ($1 !~ /track/) {print $1,":",$2+1,"-",$3}}' \
+		${AwkExe} 'BEGIN {OFS=""} {if ($1 !~ /track/) {if ($3 == $2) {print $1,":",$2+1,"-",$3+1}else{print $1,":",$2+1,"-",$3}}}' \
 		${IntervalBedFile} \
 		> "${OutDir}${SampleID}/${WorkflowType}/intervals/gatkIntervals.list"
 	>>>
