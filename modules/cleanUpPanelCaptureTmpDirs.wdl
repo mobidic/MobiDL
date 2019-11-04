@@ -3,7 +3,8 @@ task cleanUpPanelCaptureTmpDirs {
 	String SampleID
  	String OutDir
 	String WorkflowType
-	File FinalVcf
+	File FinalFile1
+	File FinalFile2
 	Array[String] BamArray
 	Array[String] VcfArray
 	#runtime attributes
@@ -26,7 +27,8 @@ task cleanUpPanelCaptureTmpDirs {
 	  rm ${sep=" " VcfArray}
 	}
 	output {
-		File finalVcf = "${FinalVcf}"
+		File finalFile1 = "${FinalFile1}"
+		File finalFile2 = "${FinalFile2}"
 	}
 	runtime {
 		cpu: "${Cpu}"

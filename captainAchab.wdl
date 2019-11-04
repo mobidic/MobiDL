@@ -64,6 +64,7 @@ workflow captainAchab {
   File inputVcf
   ## From BcftoolsLeftAlign 
   File fastaGenome
+	String vcSuffix = ""
 
   #Call section
 
@@ -99,6 +100,7 @@ workflow captainAchab {
     SampleID = sampleID, 
     OutDir = outDir, 
     BcfToolsExe = bcftoolsExe, 
+		VcSuffix = vcSuffix,
     SortedVcf = bcftoolsLeftAlign.outBcfLeftAlign
   }
 
@@ -109,7 +111,8 @@ workflow captainAchab {
     WorkflowType = workflowType, 
     SampleID = sampleID, 
     OutDir = outDir, 
-    GatkExe = gatkExe, 
+    GatkExe = gatkExe,
+		VcSuffix = vcSuffix,
     UnsortedVcf = bcftoolsNorm.normVcf
   }
 

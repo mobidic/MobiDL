@@ -195,7 +195,9 @@ modifyJsonAndLaunch() {
 		-e "s/\(  \"${WDL}.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}.fastq.gz\",/" \
 		-e "s/\(  \"${WDL}.workflowType\": \"\).*/\1${WDL}\",/" \
 		-e "s/\(  \"${WDL}.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" "${JSON}"
+		-e "s/\(  \"${WDL}.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
+		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
+		-e "s/\(  \"${WDL}.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
 	if [ "${GENOME}" != "hg19" ];then
 		sed "s/hg19/${GENOME}/g" "${JSON}"
 	fi
@@ -209,7 +211,12 @@ modifyJsonAndLaunch() {
 		mkdir "${TMP_OUTPUT_DIR2}Logs"
 	fi
 	touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+<<<<<<< HEAD
 	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+=======
+	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" 
+	#actual launch and copy in the end
+>>>>>>> deepvariant
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
@@ -270,7 +277,7 @@ do
 						fi
 						debug "${MANIFEST%?}:${BED}"
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
-						if [ ${BED} == "FASTQ" ];then
+						if [ "${BED}" == "FASTQ" ];then
 							#... if NEXTSEQ we need to move the run to treat it
 							#moveRunIfnecessary
 							#no will stay there we just put analysed data
