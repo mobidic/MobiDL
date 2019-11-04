@@ -42,7 +42,7 @@ The best way to run this workflow is by using the [singularity container](https:
 
 ## Workflow panelCapture
 
-This workflow is dedicated to NGS experiments based on capture libraries, and focusing on gene panels/exomes.
+This workflow is dedicated to NGS experiments based on capture libraries, and focusing on gene panels/exomes. It uses  [GATK 4](https://software.broadinstitute.org/gatk/) Haplotype Caller and google [DeepVariant](https://github.com/google/deepvariant) for variant calling. Alignment output is a [crumbled](https://github.com/jkbonfield/crumble) CRAM file.
 
 This workflow requires as input 2 fastqs and one ROI bed file.
 
