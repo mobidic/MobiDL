@@ -211,12 +211,8 @@ modifyJsonAndLaunch() {
 		mkdir "${TMP_OUTPUT_DIR2}Logs"
 	fi
 	touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
-<<<<<<< HEAD
-	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
-=======
 	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" 
 	#actual launch and copy in the end
->>>>>>> deepvariant
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
