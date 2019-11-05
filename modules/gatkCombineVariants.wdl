@@ -16,8 +16,8 @@ task gatkCombineVariants {
 	command {
 		${JavaExe} -jar ${Gatk3Jar} -T CombineVariants \
 		-R RefFasta \
-		-I ${sep=' --variant ' VcfFiles} \
-		-genotypeMergeOptions GenotypeMergeOptions
+		--variant ${sep=' --variant ' VcfFiles} \
+		-genotypeMergeOptions ${GenotypeMergeOptions}
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
 	}
 	output {
