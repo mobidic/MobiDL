@@ -1,4 +1,4 @@
-task gatkCombienVariants {
+task gatkCombineVariants {
 	#global variables
 	String SampleID
  	String OutDir
