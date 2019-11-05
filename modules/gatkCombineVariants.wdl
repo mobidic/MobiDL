@@ -3,7 +3,8 @@ task gatkCombineVariants {
 	String SampleID
  	String OutDir
 	String WorkflowType
-	String Gatk3Exe
+	String JavaExe
+	String Gatk3Jar
 	#task specific variables
 	Array[File] VcfFiles
 	File RefFasta
@@ -13,7 +14,7 @@ task gatkCombineVariants {
 	Int Cpu
 	Int Memory
 	command {
-		${Gatk3Exe} -T CombineVariants \
+		${JavaExe} -jar ${Gatk3Jar} -T CombineVariants \
 		-R RefFasta \
 		-I ${sep=' --variant ' VcfFiles} \
 		-genotypeMergeOptions GenotypeMergeOptions

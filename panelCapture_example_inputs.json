@@ -51,7 +51,7 @@
   "panelCapture.crumbleExe": "/Path/to/crumble",
   "panelCapture.ldLibraryPath": "/usr/local/lib",
   "panelCapture.gatkExe": "/Path/to/gatkexe",
-  "panelCapture.gatk3Exe": "/Path/to/gatk3exe",
+  "panelCapture.gatk3Jar": "/Path/to/gatk3exe",
   "panelCapture.qualimapExe": "/Path/to/qualimap",
   "panelCapture.vcfPolyXJar": "/Path/to//jvarkit/dist/vcfpolyx.jar",
   "panelCapture.bcfToolsExe": "/Path/to/bcftools",

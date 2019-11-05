@@ -84,7 +84,7 @@ workflow panelCapture {
 	String sedExe
 	String sortExe
 	String gatkExe
-	String gatk3Exe
+	String gatk3Jar
 	String javaExe
 	##bwaSamtools	
 	String platform
@@ -762,7 +762,8 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		Gatk3Exe = gatk3Exe,
+		JavaExe = javaExe,
+		Gatk3Jar = gatk3Jar,
 		RefFasta = refFasta,
 		RefFai = refFai,
 		VcfFiles = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
