@@ -36,7 +36,7 @@ import "/softs/MobiDL/modules/compressIndexVcf.wdl" as runCompressIndexVcf
 import "/softs/MobiDL/modules/deepVariant.wdl" as runDeepVariant
 import "/softs/MobiDL/modules/refcallFiltration.wdl" as runRefCallFiltration
 import "/softs/MobiDL/modules/gatkHardFilteringVcf.wdl" as runGatkHardFilteringVcf
-import "/softs/MobiDL/modules/gatkcombineVariants.wdl" as runGatkCombineVariants
+import "/softs/MobiDL/modules/gatkCombineVariants.wdl" as runGatkCombineVariants
 #import "/softs/MobiDL/modules/rtgMergeVcfs.wdl" as runRtgMerge
 #import "/softs/MobiDL/modules/fixVcfHeaders.wdl" as runFixVcfHeaders 
 import "/softs/MobiDL/modules/crumble.wdl" as runCrumble
