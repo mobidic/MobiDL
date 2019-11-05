@@ -33,14 +33,15 @@ import "/softs/MobiDL/modules/gatkMergeVcfs.wdl" as runGatkMergeVcfs
 import "/softs/MobiDL/modules/gatkSortVcf.wdl" as runGatkSortVcf
 import "/softs/MobiDL/modules/bcftoolsNorm.wdl" as runBcftoolsNorm
 import "/softs/MobiDL/modules/compressIndexVcf.wdl" as runCompressIndexVcf
-import "/softs/MobiDL/modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
-import "/softs/MobiDL/modules/multiqc.wdl" as runMultiqc
 import "/softs/MobiDL/modules/deepVariant.wdl" as runDeepVariant
 import "/softs/MobiDL/modules/refcallFiltration.wdl" as runRefCallFiltration
 import "/softs/MobiDL/modules/gatkHardFilteringVcf.wdl" as runGatkHardFilteringVcf
-import "/softs/MobiDL/modules/rtgMergeVcfs.wdl" as runRtgMerge
-import "/softs/MobiDL/modules/fixVcfHeaders.wdl" as runFixVcfHeaders 
-import "/softs/MobiDL/modules/crumble.wdl" as runCrumble 
+import "/softs/MobiDL/modules/gatkcombineVariants.wdl" as runGatkCombineVariants
+#import "/softs/MobiDL/modules/rtgMergeVcfs.wdl" as runRtgMerge
+#import "/softs/MobiDL/modules/fixVcfHeaders.wdl" as runFixVcfHeaders 
+import "/softs/MobiDL/modules/crumble.wdl" as runCrumble
+import "/softs/MobiDL/modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
+import "/softs/MobiDL/modules/multiqc.wdl" as runMultiqc
 workflow panelCapture {
 	meta {
 		author: "David Baux, Djenaba Barry"
@@ -112,6 +113,7 @@ workflow panelCapture {
 	String vcfSISuffix = ".merged"
 	##gatk-picard
 	File refDict
+	String genotypeMergeOptions = "UNSORTED"
 	##computePoorCoverage
 	Int bedtoolsLowCoverage
 	Int bedToolsSmallInterval
@@ -578,30 +580,30 @@ workflow panelCapture {
 		VcSuffix = dvSuffix,
 		LowCoverage = bedtoolsLowCoverage
 	}
-	#call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDv {
-	#	input:
-	#	Cpu = cpuLow,
-	#	Memory = memoryHigh,
-	#	SampleID = sampleID,
-	#	OutDir = outDir,
-	#	WorkflowType = workflowType,
-	#	BcfToolsExe = bcfToolsExe,
-	#	VcSuffix = dvSuffix,
-	#	SortedVcf = gatkHardFiltering.HardFilteredVcf
-	#}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv{
+	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDv {
 		input:
 		Cpu = cpuLow,
 		Memory = memoryHigh,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		BgZipExe = bgZipExe,
-		TabixExe = tabixExe,
+		BcfToolsExe = bcfToolsExe,
 		VcSuffix = dvSuffix,
+		SortedVcf = gatkHardFiltering.HardFilteredVcf
+	}
+	#call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv{
+	#	input:
+	#	Cpu = cpuLow,
+	#	Memory = memoryHigh,
+	#	SampleID = sampleID,
+	#	OutDir = outDir,
+	#	WorkflowType = workflowType,
+	#	BgZipExe = bgZipExe,
+	#	TabixExe = tabixExe,
+	#	VcSuffix = dvSuffix,
 		#NormVcf = bcftoolsNormDv.normVcf
-		VcfFile = gatkHardFiltering.HardFilteredVcf
-	}                       
+	#	VcfFile = bcftoolsNormDv.normVcf
+	#}                       
 ##############################################HaplotypeCaller######################@
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
 		call runGatkHaplotypeCaller.gatkHaplotypeCaller {
@@ -716,65 +718,7 @@ workflow panelCapture {
 		VcSuffix = hcSuffix,
 		UnsortedVcf = gatkMergeVcfs.mergedVcf
 	}
-	#call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormHc {
-	#	input:
-	#	Cpu = cpuLow,
-	#	Memory = memoryHigh,
-	#	SampleID = sampleID,
-	#	OutDir = outDir,
-	#	WorkflowType = workflowType,
-	#	BcfToolsExe = bcfToolsExe,
-	#	VcSuffix = hcSuffix,
-	#	SortedVcf = gatkSortVcfHc.sortedVcf
-	#}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		BgZipExe = bgZipExe,
-		TabixExe = tabixExe,
-		VcSuffix = hcSuffix,
-		#NormVcf = bcftoolsNormHc.normVcf
-		VcfFile = gatkSortVcfHc.sortedVcf
-	}
-	call runRtgMerge.rtgMerge{
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		VcfSuffix = vcfSISuffix,
-		RtgExe = rtgExe,
-		VcfFiles= [compressIndexVcfHc.bgZippedVcf, compressIndexVcfDv.bgZippedVcf],
-		VcfFilesIndex = [compressIndexVcfHc.bgZippedVcfIndex, compressIndexVcfDv.bgZippedVcfIndex]
-	}
-	call runGatkSortVcf.gatkSortVcf as gatkSortVcfEnd {
-		input: 
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		GatkExe = gatkExe,	
-		VcSuffix = finalSuffix,
-		UnsortedVcf  = rtgMerge.rtgMergedVcf
-	}       
-	call runFixVcfHeaders.fixVcfHeaders {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		SedExe = sedExe,
-		VcfFile = gatkSortVcfEnd.sortedVcf,
-		VcfIndex = gatkSortVcfEnd.sortedVcfIndex
-	}
-	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormEnd {
+	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormHc {
 		input:
 		Cpu = cpuLow,
 		Memory = memoryHigh,
@@ -783,8 +727,80 @@ workflow panelCapture {
 		WorkflowType = workflowType,
 		BcfToolsExe = bcfToolsExe,
 		VcSuffix = hcSuffix,
-		SortedVcf = fixVcfHeaders.finalVcf
+		SortedVcf = gatkSortVcfHc.sortedVcf
 	}
+#	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
+#		input:
+#		Cpu = cpuLow,
+#		Memory = memoryHigh,
+#		SampleID = sampleID,
+#		OutDir = outDir,
+#		WorkflowType = workflowType,
+#		BgZipExe = bgZipExe,
+#		TabixExe = tabixExe,
+#		VcSuffix = hcSuffix,
+#		#NormVcf = bcftoolsNormHc.normVcf
+#		VcfFile = gatkSortVcfHc.sortedVcf
+#	}
+#	call runRtgMerge.rtgMerge{
+#		input:
+#		Cpu = cpuLow,
+#		Memory = memoryHigh,
+#		SampleID = sampleID,
+#		OutDir = outDir,
+#		WorkflowType = workflowType,
+#		VcfSuffix = vcfSISuffix,
+#		RtgExe = rtgExe,
+#		VcfFiles= [compressIndexVcfHc.bgZippedVcf, compressIndexVcfDv.bgZippedVcf],
+#		VcfFilesIndex = [compressIndexVcfHc.bgZippedVcfIndex, compressIndexVcfDv.bgZippedVcfIndex]
+#	}
+	call runGatkCombineVariants.gatkCombineVariants{
+		input:
+		Cpu = cpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		Gatk3Exe = gatk3Exe,
+		RefFasta = refFasta,
+		RefFai = refFai,
+		VcfFiles = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
+		GenotypeMergeOptions = genotypeMergeOptions
+		#VcfFilesIndex = [compressIndexVcfHc.bgZippedVcfIndex, compressIndexVcfDv.bgZippedVcfIndex]
+	}
+#	call runGatkSortVcf.gatkSortVcf as gatkSortVcfEnd {
+#		input: 
+#		Cpu = cpuLow,
+#		Memory = memoryHigh,
+#		SampleID = sampleID,
+#		OutDir = outDir,
+#		WorkflowType = workflowType,
+#		GatkExe = gatkExe,	
+#		VcSuffix = finalSuffix,
+#		UnsortedVcf  = rtgMerge.rtgMergedVcf
+#	}
+#	call runFixVcfHeaders.fixVcfHeaders {
+#		input:
+#		Cpu = cpuLow,
+#		Memory = memoryHigh,
+#		SampleID = sampleID,
+#		OutDir = outDir,
+#		WorkflowType = workflowType,
+#		SedExe = sedExe,
+#		VcfFile = gatkSortVcfEnd.sortedVcf,
+#		VcfIndex = gatkSortVcfEnd.sortedVcfIndex
+#	}
+#	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormEnd {
+#		input:
+#		Cpu = cpuLow,
+#		Memory = memoryHigh,
+#		SampleID = sampleID,
+#		OutDir = outDir,
+#		WorkflowType = workflowType,
+#		BcfToolsExe = bcfToolsExe,
+#		VcSuffix = hcSuffix,
+#		SortedVcf = fixVcfHeaders.finalVcf
+#	}
 	call runCompressIndexVcf.compressIndexVcf as finalCompressIndex {
 		input:
 		Cpu = cpuLow,
@@ -796,7 +812,7 @@ workflow panelCapture {
 		TabixExe = tabixExe,
 		VcSuffix = "",
 		#NormVcf = fixVcfHeaders.finalVcf
-		VcfFile = bcftoolsNormEnd.normVcf
+		VcfFile = gatkCombineVariants.mergedVcf
 	}
 	if (!debug) {
 		String dataPath = "${outDir}${sampleID}/${workflowType}/"
@@ -810,9 +826,9 @@ workflow panelCapture {
 			FinalFile1 = fixVcfHeaders.finalVcf,
 			FinalFile2 = crumbleIndexing.cramIndex,
 			BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex), "${dataPath}" + basename(samtoolsCramConvert.cram),"${dataPath}" + basename(samtoolsCramIndex.cramIndex)],
-			VcfArray = ["${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),"${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex),"${dataPath}" + basename(rtgMerge.rtgMergedVcf),"${dataPath}" + basename(rtgMerge.rtgMergedVcfIndex), "${dataPath}" + basename(gatkSortVcfEnd.sortedVcf),  "${dataPath}" + basename(bcftoolsNormEnd.normVcf)]
+			VcfArray = ["${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex),"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "${dataPath}" + basename(bcftoolsNormDv.normVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(bcftoolsNormHc.normVcf)]
 		}
-	
+	#,"${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf),"${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex),"${dataPath}" + basename(rtgMerge.rtgMergedVcf),"${dataPath}" + basename(rtgMerge.rtgMergedVcfIndex), "${dataPath}" + basename(gatkSortVcfEnd.sortedVcf),  "${dataPath}" + basename(bcftoolsNormEnd.normVcf)
 		call runMultiqc.multiqc {
 			input:
 			Cpu = cpuLow,
