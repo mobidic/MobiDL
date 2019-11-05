@@ -10,15 +10,17 @@ task gatkCombineVariants {
 	File RefFasta
 	File RefFai
 	String GenotypeMergeOptions
+	String FilteredRecordsMergeType
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
 		${JavaExe} -jar ${Gatk3Jar} -T CombineVariants \
-		-R RefFasta \
+		-R ${RefFasta} \
 		--variant ${sep=' --variant ' VcfFiles} \
 		-genotypeMergeOptions ${GenotypeMergeOptions} \
 		-mergeInfoWithMaxAC \
+		-filteredRecordsMergeType ${FilteredRecordsMergeType} \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
 	}
 	output {

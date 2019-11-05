@@ -115,6 +115,7 @@ workflow panelCapture {
 	##gatk-picard
 	File refDict
 	String genotypeMergeOptions = "UNSORTED"
+	String filteredRecordsMergeType = "KEEP_IF_ANY_UNFILTERED"
 	##computePoorCoverage
 	Int bedtoolsLowCoverage
 	Int bedToolsSmallInterval
@@ -767,7 +768,8 @@ workflow panelCapture {
 		RefFasta = refFasta,
 		RefFai = refFai,
 		VcfFiles = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
-		GenotypeMergeOptions = genotypeMergeOptions
+		GenotypeMergeOptions = genotypeMergeOptions,
+		FilteredRecordsMergeType = filteredRecordsMergeType
 		#VcfFilesIndex = [compressIndexVcfHc.bgZippedVcfIndex, compressIndexVcfDv.bgZippedVcfIndex]
 	}
 #	call runGatkSortVcf.gatkSortVcf as gatkSortVcfEnd {
