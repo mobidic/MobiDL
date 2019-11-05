@@ -84,6 +84,7 @@ workflow panelCapture {
 	String sedExe
 	String sortExe
 	String gatkExe
+	String gatk3Exe
 	String javaExe
 	##bwaSamtools	
 	String platform
