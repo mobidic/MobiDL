@@ -47,5 +47,6 @@ This workflow is dedicated to NGS experiments based on capture libraries, and fo
 This workflow requires as input 2 fastqs and one ROI bed file.
 
 All software paths and input paths are to be modified in the json file (example: [panelCapture_example_inputs.json](panelCapture_example_inputs.json)).
+See also the [changelog](changelog.md) file.
 
 ![panelCapture workflow description](/img/panelCapture_v1.1.svg)

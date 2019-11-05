@@ -2,6 +2,7 @@
 cromwell-executions/
 cromwell-workflow-logs/
 input/
+Validation/
 output/
 tmp_output/
 option*

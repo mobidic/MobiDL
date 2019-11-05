@@ -7,11 +7,11 @@ WDL workflows need [cromwell](https://github.com/broadinstitute/cromwell) to run
  - [bwa](http://bio-bwa.sourceforge.net/)
  - [sambamba](http://lomereiter.github.io/sambamba/)
  - [GATK 4](https://software.broadinstitute.org/gatk/)
+ - [GATK3](https://software.broadinstitute.org/gatk/)
  - [samtools](http://www.htslib.org/)
  - [crumble](https://github.com/jkbonfield/crumble)
  - [deepvariant](https://github.com/google/deepvariant)*
  - [jvarkit](https://github.com/lindenb/jvarkit)
- - [rtg-tools](https://github.com/RealTimeGenomics/rtg-tools)
  - [bcftools](http://samtools.github.io/bcftools/)
  - [fastqc](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
  - [qualimap](http://qualimap.bioinfo.cipf.es/)

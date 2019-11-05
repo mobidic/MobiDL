@@ -7,6 +7,7 @@ task gatkCombineVariants {
 	String Gatk3Jar
 	#task specific variables
 	Array[File] VcfFiles
+	String VcfSuffix
 	File RefFasta
 	File RefFai
 	File RefDict
@@ -22,11 +23,11 @@ task gatkCombineVariants {
 		-genotypeMergeOptions ${GenotypeMergeOptions} \
 		-mergeInfoWithMaxAC \
 		-filteredRecordsMergeType ${FilteredRecordsMergeType} \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
+		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf"
 	}
 	output {
-		File mergedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
-		File mergedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf.idx"
+		File mergedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf"
+		File mergedVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf.idx"
 	}
 	runtime {
 		cpu: "${Cpu}"
