@@ -767,6 +767,7 @@ workflow panelCapture {
 		Gatk3Jar = gatk3Jar,
 		RefFasta = refFasta,
 		RefFai = refFai,
+		RefDict = refDict,
 		VcfFiles = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
 		GenotypeMergeOptions = genotypeMergeOptions,
 		FilteredRecordsMergeType = filteredRecordsMergeType

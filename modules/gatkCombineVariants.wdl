@@ -9,6 +9,7 @@ task gatkCombineVariants {
 	Array[File] VcfFiles
 	File RefFasta
 	File RefFai
+	File RefDict
 	String GenotypeMergeOptions
 	String FilteredRecordsMergeType
 	#runtime attributes
