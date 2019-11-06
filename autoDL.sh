@@ -253,15 +253,18 @@ do
 			#now we must look for the AnalysisLog.txt file
 			#get finished run
 			if [ -n $(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name '${TRIGGER_FILE}' -exec egrep '${TRIGGER_EXPR}' '{}' \; -quit) ]; then
-				#need to determine BED ROI from samplsheet
-				if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
-					debug "SAMPLESHEET TESTED:${RUN_PATH}${RUN}/${SAMPLESHEET}"
+				#need to determine BED ROI from samplesheet
+				SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${SAMPLESHEET}"
+				#if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
+				debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
+				if [ -f ${SAMPLESHEET_PATH} ];then 
+					debug "SAMPLESHEET TESTED:${SAMPLESHEET_PATH}"
 					info "RUN ${RUN} found for analysis"
 					dos2unixIfPossible
 					TREATED=0
 					unset MANIFEST
 					unset BED
-					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${RUN_PATH}${RUN}/${SAMPLESHEET} | cut -d ',' -f 2)
+					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 					if [[ ${MANIFEST} != '' ]];then
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						debug "MANIFEST:${MANIFEST}"
@@ -285,11 +288,11 @@ do
 							#FIXME FIXME FIXME
 							#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
 							#FIXME FIXME
-							BED=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2 | cut -d ';' -f 1)
+							BED=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d ';' -f 1)
 							if [ ! -f "${BED_DIR}${BED}" ];then
 								BED=''
 							fi
-							WDL=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2| cut -d ';' -f 2)
+							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2| cut -d ';' -f 2)
 							debug "BED:${BED} - WDL:${WDL}"
 							#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 						else
@@ -307,6 +310,12 @@ do
 							fi
 							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
+								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
+									mkdir "${OUTPUT_PATH}${RUN}"
+								fi
+							fi
+							if [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+								OUTPUT_PATH=${MISEQ_RUNS_DEST_DIR}
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 									mkdir "${OUTPUT_PATH}${RUN}"
 								fi
