@@ -21,8 +21,8 @@ task gatkCombineVariants {
 		-R ${RefFasta} \
 		--variant ${sep=' --variant ' VcfFiles} \
 		-genotypeMergeOptions ${GenotypeMergeOptions} \
-		-mergeInfoWithMaxAC \
 		-filteredRecordsMergeType ${FilteredRecordsMergeType} \
+		-nt "${Cpu}" \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf"
 	}
 	output {
