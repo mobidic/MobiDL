@@ -11,7 +11,7 @@ task bcftoolsNorm {
 	Int Cpu
 	Int Memory
 	command {
-		${BcfToolsExe} norm -O v -m - \
+		${BcfToolsExe} norm -O v -m -both \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf" \
 		${SortedVcf}
 	}

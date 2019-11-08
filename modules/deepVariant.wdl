@@ -14,9 +14,10 @@ task deepVariant {
 	String DvOut
 	String Output
 	String DeepExe
+	String GatkExe
 	Int Cpu
 	Int Memory
-  String Singularity
+	String Singularity
 	String SingularityImg
 	command{
 		${Singularity} run \
@@ -29,10 +30,19 @@ task deepVariant {
 		--reads="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.bam" \
 		--regions=${BedFile} \
 		--num_shards=${Cpu} \
-		--output_vcf="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.vcf"
+		--output_vcf="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf"
+		${GatkExe} SortVcf \
+		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" \
+		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf"
+		${GatkExe} RenameSampleInVcf \
+		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" \
+		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv_raw.vcf" \
+		--NEW_SAMPLE_NAME "${SampleID}.dv" \
+		--OLD_SAMPLE_NAME "${SampleID}"
+		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf.idx"
 	}
 	output{
-		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
+		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv_raw.vcf"
 	}
 	runtime {
 		cpu: "${Cpu}"

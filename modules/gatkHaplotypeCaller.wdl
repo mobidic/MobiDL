@@ -28,7 +28,13 @@ task gatkHaplotypeCaller {
 		-L ${GatkInterval} \
 		--dbsnp ${DbSNP} \
 		--smith-waterman ${SwMode} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf"
+		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
+		${GatkExe} RenameSampleInVcf \
+		-I "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf" \
+		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf" \
+		--NEW_SAMPLE_NAME "${SampleID}.hc" \
+		--OLD_SAMPLE_NAME "${SampleID}"
+		rm "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
 	}
 	output {
 		File hcVcf = "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf"
