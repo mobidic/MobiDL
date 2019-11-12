@@ -4,6 +4,7 @@ task refCallFiltration {
 	String OutDir
 	String WorkflowType
 	#task specific variables
+	String VcSuffix
 	File VcfToRefCalled
 	String VcftoolsExe 
   #runtime attributes
@@ -12,10 +13,10 @@ task refCallFiltration {
   command {
 		${VcftoolsExe} --vcf ${VcfToRefCalled} \
 		--remove-filtered "RefCall" \
-		--recode --out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}"  \
+		--recode --out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}"  \
   }
   output {
-		File noRefCalledVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.recode.vcf"
+		File noRefCalledVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.recode.vcf"
 		#File refcalledLog = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.log"
   }
   runtime {

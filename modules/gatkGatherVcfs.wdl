@@ -6,18 +6,18 @@ task gatkGatherVcfs {
 	String GatkExe
 	#task specific variables
 	Array[File] HcVcfs
-	String VcfSuffix
+	String VcSuffix
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
 		${GatkExe} GatherVcfs \
 		-I ${sep=' -I ' HcVcfs} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf"
+		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf"
 	}
 	output {
-		File gatheredHcVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf"
-		File gatheredHcVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcfSuffix}.vcf.idx"
+		File gatheredHcVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf"
+		File gatheredHcVcfIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf.idx"
 	}
 	runtime {
 		cpu: "${Cpu}"

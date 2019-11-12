@@ -5,6 +5,7 @@ task cleanUpPanelCaptureTmpDirs {
 	String WorkflowType
 	File FinalFile1
 	File FinalFile2
+	File FinalFile3
 	Array[String] BamArray
 	Array[String] VcfArray
 	#runtime attributes
@@ -28,15 +29,15 @@ task cleanUpPanelCaptureTmpDirs {
 		echo "#####MobiDL panelCapture November 2019" > "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo "You will Find several vcf files in the directory, MobiDL using two variant callers:" >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo " - SampleID.hc.vcf is the vcf genereated with GATK4 HaplotypeCaller." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		echo " - SampleID.hc.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.hc.vcf.gz.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo " - SampleID.dv.vcf is the vcf generated with DeepVariant." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
-		echo " - SampleID.vcf, SampleID.vcf.gz are the same files, the results of the 2 callers being merged (the.gz is the bgzip compressed version)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
-		echo "In the FORMAT field, two 'samples' are present, one for each caller."  >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
-		echo "The SampleID.vcf.idx and SampleID.vcf.gz.tbi are index files, not useful by themselves." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"		
-		echo "In the case you want to use the Captain Achab trio capabilities, do not use the merged file, and in any case, use uncompressed VCF as input." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		echo " - SampleID.dv.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.dv.vcf.gz.tbi.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		echo "In the case you want to use the Captain Achab workflow use uncompressed VCF of your choice as input." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 	}
 	output {
 		File finalFile1 = "${FinalFile1}"
 		File finalFile2 = "${FinalFile2}"
+		File finalFile3 = "${FinalFile3}"
 	}
 	runtime {
 		cpu: "${Cpu}"

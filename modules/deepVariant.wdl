@@ -13,6 +13,7 @@ task deepVariant {
 	String RefData
 	String DvOut
 	String Output
+	String VcSuffix
 	String DeepExe
 	String GatkExe
 	Int Cpu
@@ -36,13 +37,13 @@ task deepVariant {
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf"
 		${GatkExe} RenameSampleInVcf \
 		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv_raw.vcf" \
+		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf" \
 		--NEW_SAMPLE_NAME "${SampleID}.dv" \
 		--OLD_SAMPLE_NAME "${SampleID}"
 		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf.idx"
 	}
 	output{
-		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv_raw.vcf"
+		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf"
 	}
 	runtime {
 		cpu: "${Cpu}"
