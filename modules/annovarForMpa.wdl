@@ -16,7 +16,7 @@ task annovarForMpa {
  #runtime attributes
  Int CpuHigh
  Int Memory
- #dataabses
+ #databases
  String Genome
  String Clinvar
  String Dbnsfp
@@ -28,18 +28,16 @@ task annovarForMpa {
  String Intervar
  String SpliceAI
  String Dollar = "$"
-  #-protocol refGene,refGene,clinvar_20180603,dbnsfp33a,spidex,dbscsnv11,gnomad_exome,gnomad_genome,popfreq_max_20150413,intervar_20180118 -operation gx,g,f,f,f,f,f,f,f,f -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,, \
-	#SPIDEX=',${Spidex}'
-	#	SPIDEX=''
-  #-protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}","${SpliceAI}""${Dollar}{SPIDEX}""${Dollar}{POPFREQMAX}" -operation gx,g,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}""${Dollar}{OPERATION_SUFFIX}" -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,"${Dollar}{COMMA}""${Dollar}{COMMA}" \
  command <<<
 	OPERATION_SUFFIX=',f'
 	COMMA=','
 	POPFREQMAX=',${PopFreqMax}'
-  if [ ${Genome} == 'hg38' ];then
+  REFGENE='refGeneWithVer'
+	if [ ${Genome} == 'hg38' ];then
 		OPERATION_SUFFIX=''
 		COMMA=''
 		POPFREQMAX=''
+		REFGENE='refGene'
 	fi
   "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
@@ -48,7 +46,13 @@ task annovarForMpa {
   -buildver "${Genome}" \
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
-  -protocol refGene,refGene,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}","${SpliceAI}""${Dollar}{POPFREQMAX}" -operation gx,g,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" -nastring . -vcfinput -otherinfo -arg '-splicing 100','-hgvs',,,,,,,"${Dollar}{COMMA}" \
+	-intronhgvs 200 \
+  -protocol "${Dollar}{REFGENE}","${Dollar}{REFGENE}","${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}",regsnpintron,"${SpliceAI}""${Dollar}{POPFREQMAX}" \
+	-operation gx,g,f,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" \
+	-nastring . \
+	-vcfinput \
+	-otherinfo \
+	-arg '-splicing 5','-hgvs',,,,,,,,"${Dollar}{COMMA}" \
   -xref "${CustomXref}"
  >>>
 
