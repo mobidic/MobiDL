@@ -217,7 +217,6 @@ modifyJsonAndLaunch() {
 	if [ $? -eq 0 ];then
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
-		fi
 		elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 			RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 		fi
