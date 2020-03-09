@@ -1,4 +1,8 @@
-## 20191112 - removed vcf merging
+## 20200118 - Workflow: captainAchab; Annovar modules uses version with RefSeq
+Until now annovar in achab did not use version number in RefSeq accession numbers (NM).
+This is corrected using the pragma 'refgeneWithVer' in annovar MobiDL module (hg19 and hg38)
+
+## 20191112 - Workflow: panelCapture; removed vcf merging
 rtg-tools merge was not satisfying and returned a bad number of AD fields when:
 - one caller called 2 variants at one site
 - the other one called only one variant

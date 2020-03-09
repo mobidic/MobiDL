@@ -32,12 +32,12 @@ task annovarForMpa {
 	OPERATION_SUFFIX=',f'
 	COMMA=','
 	POPFREQMAX=',${PopFreqMax}'
-  REFGENE='refGeneWithVer'
+  #REFGENE='refGeneWithVer'
 	if [ ${Genome} == 'hg38' ];then
 		OPERATION_SUFFIX=''
 		COMMA=''
 		POPFREQMAX=''
-		REFGENE='refGene'
+		#REFGENE='refGene'
 	fi
   "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
@@ -47,7 +47,7 @@ task annovarForMpa {
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
 	-intronhgvs 200 \
-  -protocol "${Dollar}{REFGENE}","${Dollar}{REFGENE}","${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}",regsnpintron,"${SpliceAI}""${Dollar}{POPFREQMAX}" \
+  -protocol refGeneWithVer,refGeneWithVer,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}",regsnpintron,"${SpliceAI}""${Dollar}{POPFREQMAX}" \
 	-operation gx,g,f,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" \
 	-nastring . \
 	-vcfinput \

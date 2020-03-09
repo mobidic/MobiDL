@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log 
 
-VERBOSITY=3
+VERBOSITY=4
 # -- Log variables 
 
 ERROR=1
@@ -134,7 +134,7 @@ assignVariables() {
 		TRIGGER_FILE="${MINISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MINISEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${MINISEQ_SAMPLESHEET_PATH}"
-	elif [[ "${1}" =~ "MiSeq" ]];then
+	elif [[ "${1}" =~ "MISEQ" ]];then
 		MAX_DEPTH="${MISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MISEQ_TRIGGER_EXPR}"
@@ -218,6 +218,9 @@ modifyJsonAndLaunch() {
 		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
 		fi
+		elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+			RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
+		fi
 		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 		info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
 		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
@@ -288,11 +291,11 @@ do
 							#FIXME FIXME FIXME
 							#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
 							#FIXME FIXME
-							BED=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d ';' -f 1)
+							BED=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d '#' -f 1)
 							if [ ! -f "${BED_DIR}${BED}" ];then
 								BED=''
 							fi
-							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2| cut -d ';' -f 2)
+							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2| cut -d '#' -f 2)
 							debug "BED:${BED} - WDL:${WDL}"
 							#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 						else
