@@ -46,7 +46,7 @@ task annovarForMpa {
   -buildver "${Genome}" \
   -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
   -remove \
-	-intronhgvs 200 \
+	-intronhgvs 80 \
   -protocol refGeneWithVer,refGeneWithVer,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}",regsnpintron,"${SpliceAI}""${Dollar}{POPFREQMAX}" \
 	-operation gx,g,f,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" \
 	-nastring . \

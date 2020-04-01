@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ###########################################################################
-#########							###########
-#########		AutoDL				###########
-######### @uthor : D Baux	david.baux<at>inserm.fr		###########
-######### Date : 14/09/2018					###########
-#########							###########
+#########														###########
+#########		AutoDL											###########
+######### @uthor : D Baux	david.baux<at>inserm.fr				###########
+######### Date : 14/09/2018										###########
+#########														###########
 ###########################################################################
 
 ###########################################################################
@@ -189,15 +189,15 @@ modifyJsonAndLaunch() {
 	fi
 	TMP_OUTPUT_SED=${TMP_OUTPUT_DIR2////\\/}
 	sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
-		-e "s/\(  \"${WDL}.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
-		-e "s/\(  \"${WDL}.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
-		-e "s/\(  \"${WDL}.fastqR1\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX1}.fastq.gz\",/" \
-		-e "s/\(  \"${WDL}.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}.fastq.gz\",/" \
-		-e "s/\(  \"${WDL}.workflowType\": \"\).*/\1${WDL}\",/" \
-		-e "s/\(  \"${WDL}.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-		-e "s/\(  \"${WDL}.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
-		-e "s/\(  \"${WDL}.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-		-e "s/\(  \"${WDL}.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
+		-e "s/\(  \"${WDL}\.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
+		-e "s/\(  \"${WDL}\.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
+		-e "s/\(  \"${WDL}\.fastqR1\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX1}\.fastq\.gz\",/" \
+		-e "s/\(  \"${WDL}\.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}\.fastq\.gz\",/" \
+		-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
+		-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
+		-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
+		-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
+		-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
 	if [ "${GENOME}" != "hg19" ];then
 		sed "s/hg19/${GENOME}/g" "${JSON}"
 	fi
@@ -234,30 +234,94 @@ modifyJsonAndLaunch() {
 }
 
 
+modifyAchabJson() {
+	ACHAB_DIR=CaptainAchab
+	ACHAB=captainAchab
+	ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
+	GENE_FILE_SED=${GENE_FILE////\\/}
+	RUN_PATH_SED=${RUN_PATH////\\/}
+	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}" ];then
+		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
+	fi
+	sed -i.bak -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
+		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
+		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
+		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+		"${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
+	rm "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json.bak"
+	# move achah binput folder in todo folder for autoachab
+	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/" "${ACHAB_TODO_DIR}"
+}
+
+
+prepareAchab() {
+	# function to prepare dirs for autoachab execution
+	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/" ];then
+		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
+	fi
+	cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
+	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/" ];then
+		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+	fi
+	cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+	# disease and genes of interest files
+	debug "Manifest file: ${MANIFEST}"
+	debug "BED file: ${BED}"
+	unset DISEASE_FILE
+	unset GENE_FILE
+	unset JSON_SUFFIX
+	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
+		DISEASE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 4)
+		GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
+		JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
+	else
+		debug "FASTQ workflows file: ${FASTQ_WORKFLOWS_FILE}"
+		DISEASE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 3)
+		GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
+		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
+	fi
+	debug "Disease file: ${DISEASE_FILE}"
+	debug "Genes file: ${GENE_FILE}"
+	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
+		# cp disease file in achab input dir
+		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/disease.txt"
+		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/disease.txt"
+		# cp json file in achab input dir and modify it		
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+		modifyAchabJson "dv"
+		modifyAchabJson "hc"
+	fi
+}
+
+
+
+
 ###############		Now we'll have a look at the content of the directories ###############################
 
 
-#http://moinne.com/blog/ronald/bash/list-directory-names-in-bash-shell
-#--time-style is used here to ensure awk $8 will return the right thing (dir name)
+# http://moinne.com/blog/ronald/bash/list-directory-names-in-bash-shell
+# --time-style is used here to ensure awk $8 will return the right thing (dir name)
 RUN_PATHS="${MINISEQ_RUNS_DIR} ${MISEQ_RUNS_DIR} ${NEXTSEQ_RUNS_DIR}"
 for RUN_PATH in ${RUN_PATHS}
 do
 	debug "RUN_PATH:${RUN_PATH}"
-	#assignVariables "${RUN_PATH}"
+	# assignVariables "${RUN_PATH}"
 	OUTPUT_PATH=${RUN_PATH}
 	RUNS=$(ls -l --time-style="long-iso" ${RUN_PATH} | egrep '^d' | awk '{print $8}' |  egrep '^[0-9]{6}_')
 	for RUN in ${RUNS}
 	do
-		######do not look at runs set to 2 in the runs.txt file
+		###### do not look at runs set to 2 in the runs.txt file
 		if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
 			assignVariables "${RUN_PATH}"
 			debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
-			#now we must look for the AnalysisLog.txt file
-			#get finished run
+			# now we must look for the AnalysisLog.txt file
+			# get finished run
 			if [ -n $(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name '${TRIGGER_FILE}' -exec egrep '${TRIGGER_EXPR}' '{}' \; -quit) ]; then
-				#need to determine BED ROI from samplesheet
+				# need to determine BED ROI from samplesheet
 				SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${SAMPLESHEET}"
-				#if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
+				# if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
 				debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
 				if [ -f ${SAMPLESHEET_PATH} ];then 
 					debug "SAMPLESHEET TESTED:${SAMPLESHEET_PATH}"
@@ -266,8 +330,9 @@ do
 					TREATED=0
 					unset MANIFEST
 					unset BED
+					unset WDL
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
-					if [[ ${MANIFEST} != '' ]];then
+					if [[ "${MANIFEST}" != '' ]];then
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						debug "MANIFEST:${MANIFEST}"
 						debug "BED:${BED}"
@@ -278,29 +343,19 @@ do
 						fi
 						debug "${MANIFEST%?}:${BED}"
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
-						if [ "${BED}" == "FASTQ" ];then
-							#... if NEXTSEQ we need to move the run to treat it
-							#moveRunIfnecessary
-							#no will stay there we just put analysed data
-							#look for samplesheet Description field
-							#DESC=$(grep 'Description,' "${RUN_PATH}${RUN}/${SAMPLESHEET}" | cut -d ',' -f 2)
-							#Description,BED;WDL
-							#"${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}"
-							#dos2unixIfPossible ##mounted nas looks writable, but is not!
-							#FIXME FIXME FIXME
-							#dos2unix not performed on NEXTSEQ runs - done on bcl2fastq
-							#FIXME FIXME
+						if [ "${BED}" = "FASTQ" ];then
+							# NEXTSEQ
 							BED=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d '#' -f 1)
 							if [ ! -f "${BED_DIR}${BED}" ];then
 								BED=''
 							fi
 							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2| cut -d '#' -f 2)
 							debug "BED:${BED} - WDL:${WDL}"
-							#info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
+							# info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 						else
 							WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
 						fi
-						if [[ ${MANIFEST} != '' && ${WDL} != '' && ${BED} != '' ]];then
+						if [ -n "${MANIFEST}" ] &&  [ -n "${WDL}" ] && [ -n "${BED}" ];then
 							info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
 								echo ${RUN}=1 >> ${RUNS_FILE}
@@ -315,8 +370,7 @@ do
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 									mkdir "${OUTPUT_PATH}${RUN}"
 								fi
-							fi
-							if [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+							elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 								OUTPUT_PATH=${MISEQ_RUNS_DEST_DIR}
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 									mkdir "${OUTPUT_PATH}${RUN}"
@@ -331,7 +385,7 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
 							fi
-							#now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
+							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							FASTQS=$(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
 							for FASTQ in ${FASTQS[@]};do
@@ -351,16 +405,16 @@ do
 							done
 							for SAMPLE in ${!SAMPLES[@]};do
 								modifyJsonAndLaunch
+								prepareAchab
 								TREATED=1
-								#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-								#ln -s "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
-								cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.*.gz" "${RUN_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
-								cp "${RUN_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${RUN_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.hc.vcf.gz" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
 								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
-							done 
+							done
+							unset SAMPLES
 						fi
 						if [ "${TREATED}" -eq 1 ];then
-							#MobiCNV && multiqc
+							# MobiCNV && multiqc
 							info "Launching MobiCNV on run ${RUN}"
 							"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 							debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
@@ -371,6 +425,8 @@ do
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
 							info "RUN ${RUN} treated"
+							touch "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
+							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL panelCapture complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
@@ -384,7 +440,7 @@ do
 							echo ${RUN}=2 >> ${RUNS_FILE}
 							RUN_ARRAY[${RUN}]=2
 						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							#Change value on array and file to running
+							# Change value on array and file to running
 							sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
 						fi
