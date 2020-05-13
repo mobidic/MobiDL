@@ -658,7 +658,8 @@ workflow panelCapture {
 			GatkInterval = interval,
 			BamFile = samtoolsSort.sortedBam,
 			BamIndex = finalIndexing.bamIndex,
-			SwMode = swMode
+			SwMode = swMode,
+			EmitRefConfidence = emitRefConfidence
 		}
 	}
 	output {
