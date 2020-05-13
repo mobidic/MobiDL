@@ -126,6 +126,7 @@ workflow panelCapture {
 	Int minCovBamQual
 	##haplotypeCaller
 	String swMode
+	String emitRefConfidence = "NONE"
 	##jvarkit
 	String vcfPolyXJar
 	##ConvertCramtoCrumble
