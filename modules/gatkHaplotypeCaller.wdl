@@ -18,6 +18,7 @@ task gatkHaplotypeCaller {
 	#does not work in fine...
 	#Pair[File, File] Bam = (BamFile, BamIndex)
 	String SwMode
+	String EmitRefConfidence
 	#runtime attributes
 	Int Cpu
 	Int Memory
@@ -28,6 +29,7 @@ task gatkHaplotypeCaller {
 		-L ${GatkInterval} \
 		--dbsnp ${DbSNP} \
 		--smith-waterman ${SwMode} \
+		--emit-ref-confidence ${EmitRefConfidence} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
 		${GatkExe} RenameSampleInVcf \
 		-I "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf" \

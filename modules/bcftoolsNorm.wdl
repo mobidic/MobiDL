@@ -7,16 +7,17 @@ task bcftoolsNorm {
 	#task specific variables
 	File SortedVcf
 	String VcSuffix
+	String VcfExtension = "vcf"
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
 		${BcfToolsExe} norm -O v -m -both \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf" \
+		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.${VcfExtension}" \
 		${SortedVcf}
 	}
 	output {
-		File normVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf"
+		File normVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.${VcfExtension}"
 	}
 	runtime {
 		cpu: "${Cpu}"
