@@ -215,24 +215,64 @@ modifyJsonAndLaunch() {
 	#actual launch and copy in the end
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
-		if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
-			RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
-		elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
-			RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
-		fi
-		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-		info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
-		${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
-		if [ $? -eq 0 ];then
-			rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
-		else
-			error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-		fi
+		workflowPostTreatment "${WDL}.wdl"
+		#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+		#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
+		#elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+		#	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
+		#fi
+		#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+		#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+		#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+		#if [ $? -eq 0 ];then
+		#	rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
+		#else
+		#	error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+		#fi
 	else
-		error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-	fi	
+		GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+		#search for an error with gatk LAI - if found relaunch without this step
+		if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" !: '' ];then
+			sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+			if [ $? -eq 0 ];then
+				workflowPostTreatment "${WDL}_noGatkLai.wdl"
+				#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+				#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
+				#elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+				#	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
+				#fi
+				#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+				#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+				#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+				#if [ $? -eq 0 ];then
+				#	rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
+				#else
+				#	error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+				#fi
+			else
+				error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+			fi
+		else
+			error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+		fi
+	fi
 }
 
+workflowPostTreatment() {
+	if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+		RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
+	elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+		RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
+	fi
+	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+	if [ $? -eq 0 ];then
+		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	else
+		error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+	fi
+}
 
 modifyAchabJson() {
 	ACHAB_DIR=CaptainAchab
@@ -349,7 +389,7 @@ do
 							if [ ! -f "${BED_DIR}${BED}" ];then
 								BED=''
 							fi
-							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2| cut -d '#' -f 2)
+							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d '#' -f 2)
 							debug "BED:${BED} - WDL:${WDL}"
 							# info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 						else

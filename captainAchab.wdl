@@ -247,6 +247,10 @@ workflow captainAchab {
     PerlPath = perlPath,
     CustomVCF = customVCF,
     MozaicRate = mozaicRate,
-    MozaicDP = mozaicDP
+    MozaicDP = mozaicDP,
+		Affected = affected,
+		FavouriteGeneRef = favouriteGeneRef,
+		FilterCustomVCF = filterCustomVCF,
+		FilterCustomVCFRegex = filterCustomVCFRegex
   }
 }
