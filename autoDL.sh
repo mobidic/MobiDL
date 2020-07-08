@@ -284,6 +284,7 @@ modifyAchabJson() {
 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
 	fi
 	sed -i.bak -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
