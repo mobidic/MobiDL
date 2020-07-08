@@ -215,7 +215,7 @@ modifyJsonAndLaunch() {
 	#actual launch and copy in the end
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
-		workflowPostTreatment "${WDL}.wdl"
+		workflowPostTreatment "${WDL}"
 		#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 		#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
 		#elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
@@ -235,7 +235,7 @@ modifyJsonAndLaunch() {
 		if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" !: '' ];then
 			sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
 			if [ $? -eq 0 ];then
-				workflowPostTreatment "${WDL}_noGatkLai.wdl"
+				workflowPostTreatment "${WDL}_noGatkLai"
 				#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 				#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
 				#elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
@@ -264,13 +264,13 @@ workflowPostTreatment() {
 	elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 		RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	fi
-	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
-		error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+		error "Error while syncing ${1} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 	fi
 }
 
