@@ -19,6 +19,10 @@ task achab {
  String SampleID
  String OutDir
  String PerlPath
+ String Affected
+ String FavouriteGeneRef
+ String FilterCustomVCF
+ String FilterCustomVCFRegex
  #runtime attributes
  Int Cpu
  Int Memory
@@ -40,7 +44,11 @@ task achab {
   --customVCF "${CustomVCF}" \
   --mozaicRate "${MozaicRate}" \
   --mozaicDP "${MozaicDP}" \
-  --customInfoList "${CustomInfo}"
+  --customInfoList "${CustomInfo}" \
+  --affectd "${Affected}" \
+  --favouriteGeneRef "${FavouriteGeneRef}" \
+  --filterCustomVCF "${FilterCustomVCF}" \
+  --filterCustomVCFRegex "${FilterCustomVCFRegex}"
  >>>
  
  output {

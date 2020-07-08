@@ -60,6 +60,10 @@ workflow captainAchab {
   String customInfo
   String cnvGeneList
   String filterList
+  String affected
+  String favouriteGeneRef
+  String filterCustomVCF
+  String filterCustomVCFRegex
   ## From BcftoolsSplit 
   File inputVcf
   ## From BcftoolsLeftAlign 
@@ -214,7 +218,11 @@ workflow captainAchab {
     PerlPath = perlPath,
     CustomVCF = customVCF,
     MozaicRate = mozaicRate,
-    MozaicDP = mozaicDP
+    MozaicDP = mozaicDP,
+		Affected = affected,
+		FavouriteGeneRef = favouriteGeneRef,
+		FilterCustomVCF = filterCustomVCF,
+		FilterCustomVCFRegex = filterCustomVCFRegex
    }
 
   call runAchab.achab {
