@@ -45,7 +45,7 @@ task achab {
   --mozaicRate "${MozaicRate}" \
   --mozaicDP "${MozaicDP}" \
   --customInfoList "${CustomInfo}" \
-  --affectd "${Affected}" \
+  --affected "${Affected}" \
   --favouriteGeneRef "${FavouriteGeneRef}" \
   --filterCustomVCF "${FilterCustomVCF}" \
   --filterCustomVCFRegex "${FilterCustomVCFRegex}"
