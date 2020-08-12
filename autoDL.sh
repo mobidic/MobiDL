@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log 
 
-VERBOSITY=3
+VERBOSITY=4
 # -- Log variables 
 
 ERROR=1
@@ -232,7 +232,8 @@ modifyJsonAndLaunch() {
 	else
 		GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
 		#search for an error with gatk LAI - if found relaunch without this step
-		if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" !: '' ];then
+		# cannot explain this error - maybe a gatk bug?
+		if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
 			sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
 			if [ $? -eq 0 ];then
 				workflowPostTreatment "${WDL}_noGatkLai"
@@ -456,9 +457,10 @@ do
 						fi
 						if [ "${TREATED}" -eq 1 ];then
 							# MobiCNV && multiqc
+							# no VCF anymore fo mobicnv: -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/
 							info "Launching MobiCNV on run ${RUN}"
-							"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -v "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-							debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+							"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+							debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 							info "Launching MultiQC on run ${RUN}"
 							"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
