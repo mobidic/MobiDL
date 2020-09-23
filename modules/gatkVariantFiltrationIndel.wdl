@@ -16,6 +16,7 @@ task gatkVariantFiltrationIndel {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+  #	--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 	command {
 		${GatkExe} VariantFiltration \
 		-R ${RefFasta} \
@@ -24,7 +25,6 @@ task gatkVariantFiltrationIndel {
 		--filter-expression "FS > 200.0" --filter-name "FSStrandBias" \
 		--filter-expression "ReadPosRankSum < -5.0" --filter-name "LowreadPosRankSum" \
 		--filter-expression "SOR > 10.0" --filter-name "SORStrandBias" \
-		--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 		--filter-expression "DP < ${LowCoverage}" --filter-name "LowCoverage" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.indel.filtered.vcf"
 	}

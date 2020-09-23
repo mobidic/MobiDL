@@ -16,6 +16,7 @@ task gatkVariantFiltrationSnp {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	#	--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 	command {
 		${GatkExe} VariantFiltration \
 		-R ${RefFasta} \
@@ -26,7 +27,6 @@ task gatkVariantFiltrationSnp {
 		--filter-expression "MQRankSum < -3.0" --filter-name "LowMappingQualityRankSum" \
 		--filter-expression "ReadPosRankSum < -4.0" --filter-name "LowreadPosRankSum" \
 		--filter-expression "SOR > 3.0" --filter-name "SORStrandBias" \
-		--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 		--filter-expression "DP < ${LowCoverage}" --filter-name "LowCoverage" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.snp.filtered.vcf"
 	}

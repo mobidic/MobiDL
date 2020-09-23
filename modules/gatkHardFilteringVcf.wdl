@@ -18,11 +18,11 @@ task gatkHardFiltering {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	#	--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 	command {
 		${GatkExe} VariantFiltration \
 		-R ${RefFasta} \
 		-V ${Vcf} \
-		--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 		--filter-expression "DP < ${LowCoverage}" --filter-name "LowCoverage" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.filtered.vcf"
 	}
