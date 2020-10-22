@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log 
 
-VERBOSITY=4
+VERBOSITY=3
 # -- Log variables 
 
 ERROR=1
@@ -236,6 +236,7 @@ modifyJsonAndLaunch() {
 		if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
 			sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
 			if [ $? -eq 0 ];then
+				info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 				workflowPostTreatment "${WDL}_noGatkLai"
 				#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 				#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
