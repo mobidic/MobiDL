@@ -937,7 +937,8 @@ workflow panelCapture {
         MultiqcExe = multiqcExe,
         GatkExe = gatkExe,
         JavaExe= javaExe,
-        VcfPolyXJar = vcfPolyXJar
+        VcfPolyXJar = vcfPolyXJar,
+		Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
     }  
 	output {
 		File? FinalVcfHc = cleanUpPanelCaptureTmpDirs.finalFile1

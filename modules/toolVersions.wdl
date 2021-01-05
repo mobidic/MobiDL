@@ -17,6 +17,7 @@ task toolVersions {
     String GatkExe
     String JavaExe
     String VcfPolyXJar
+	File Vcf
 	#runtime attributes
 	Int Cpu
 	Int Memory
