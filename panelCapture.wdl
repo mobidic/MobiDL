@@ -44,6 +44,7 @@ import "modules/gatkVariantEval.wdl" as runGatkVariantEval
 import "modules/crumble.wdl" as runCrumble
 import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
+import "modules/toolVersions.wdl" as runToolVersions
 workflow panelCapture {
 	meta {
 		author: "David Baux, Djenaba Barry"
@@ -915,10 +916,34 @@ workflow panelCapture {
 			Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		}
 	}
+	call runToolVersions.toolVersions {
+		input:
+		Cpu = cpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		GenomeVersion = genomeVersion,
+        FastqcExe = fastqcExe,
+        BwaExe = bwaExe,
+        SamtoolsExe = samtoolsExe,
+        SambambaExe = sambambaExe,
+        BedToolsExe = bedToolsExe,
+        QualimapExe = qualimapExe,
+        BcfToolsExe = bcfToolsExe,
+        BgZipExe = bgZipExe,
+        CrumbleExe = crumbleExe,
+        TabixExe = tabixExe,
+        MultiqcExe = multiqcExe,
+        GatkExe = gatkExe,
+        JavaExe= javaExe,
+        VcfPolyXJar = vcfPolyXJar
+    }  
 	output {
 		File? FinalVcfHc = cleanUpPanelCaptureTmpDirs.finalFile1
 		File? FinalVcfDv = cleanUpPanelCaptureTmpDirs.finalFile2
 		File FinalCram = crumble.crumbled
-		File FinalCramIndex = crumbleIndexing.cramIndex 
+		File FinalCramIndex = crumbleIndexing.cramIndex
+		File VersionFile = toolVersions.versionFile
 	}
 }
