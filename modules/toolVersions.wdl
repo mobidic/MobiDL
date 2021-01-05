@@ -33,7 +33,7 @@ task toolVersions {
         echo "GATK: ${dollar}(${GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"        
         echo "----- Variant Calling -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "GATK Haplotype Caller: ${dollar}(${GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
-        echo "DeepVariant:v 0.10" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+        echo "DeepVariant: v0.10" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "VcfPolyX: ${dollar}(${JavaExe} -jar ${VcfPolyXJar} --version)" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "Bcftools: v${dollar}(${BcfToolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "----- Compression -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
