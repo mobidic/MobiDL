@@ -25,7 +25,7 @@ task toolVersions {
 	command {
         date > "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "Sample ID: ${SampleID}" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
-        echo "Workflow: MobiDL ${WorkflowType}" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+        echo "Workflow: MobiDL ${WorkflowType} executed on ${dollar}(hostname)" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "Genome Version: ${GenomeVersion}" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "----- Alignment -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "BWA: v${dollar}(${BwaExe} 2>&1 | grep 'Version' | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
@@ -46,6 +46,14 @@ task toolVersions {
         echo "Qualimap: ${dollar}(${QualimapExe} -h | grep 'QualiMap' | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "GATK (Picard): ${dollar}(${GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
         echo "MultiQC: v${dollar}(${MultiqcExe} --version | grep 'multiqc' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+		if [ -f /softs/cromwell.jar ];then
+			echo "----- Execution Engine -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+			echo "Cromwell: v${dollar}(${JavaExe} -jar /softs/cromwell.jar --version | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+		fi
+		if command -v srun &> /dev/null ;then
+			echo "----- Workload Manager -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+			echo "SLURM: v${dollar}(srun --version | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt
+		fi
 	}
 	output {
 		File versionFile = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
