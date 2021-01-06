@@ -52,7 +52,7 @@ task toolVersions {
 		fi
 		if command -v srun &> /dev/null ;then
 			echo "----- Workload Manager -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
-			echo "SLURM: v${dollar}(srun --version | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt
+			echo "SLURM: v${dollar}(srun --version | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
 		fi
 	}
 	output {
