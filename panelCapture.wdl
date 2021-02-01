@@ -69,7 +69,7 @@ workflow panelCapture {
 	File refFai
 	File refDict
 	File intervalBedFile
-	File intervalBedFileCnv = intervalBedFile
+	File intervalBedFileCnv
 	String workflowType
 	String outDir
 	Boolean debug = false
