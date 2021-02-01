@@ -18,6 +18,7 @@ task annovarForMpa {
  Int Memory
  #databases
  String Genome
+ Int IntronHgvs = 80
  String Clinvar
  String Dbnsfp
  #String Spidex
@@ -39,21 +40,21 @@ task annovarForMpa {
 		POPFREQMAX=''
 		#REFGENE='refGene'
 	fi
-  "${PerlPath}" "${TableAnnovarExe}" \
-  "${SortedVcf}" \
-  "${HumanDb}" \
-  -thread "${CpuHigh}" \
-  -buildver "${Genome}" \
-  -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
-  -remove \
-	-intronhgvs 80 \
-  -protocol refGeneWithVer,refGeneWithVer,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}",regsnpintron,"${SpliceAI}""${Dollar}{POPFREQMAX}" \
-	-operation gx,g,f,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" \
+ "${PerlPath}" "${TableAnnovarExe}" \
+ "${SortedVcf}" \
+ "${HumanDb}" \
+ -thread "${CpuHigh}" \
+ -buildver "${Genome}" \
+ -out "${OutDir}${SampleID}/${WorkflowType}/${SampleID}" \
+ -remove \
+	-intronhgvs "${IntronHgvs}" \
+ -protocol refGeneWithVer,refGeneWithVer,refGeneWithVer,"${Clinvar}","${Dbnsfp}","${Dbscsnv}","${GnomadExome}","${GnomadGenome}","${Intervar}",regsnpintron,"${SpliceAI}""${Dollar}{POPFREQMAX}" \
+	-operation gx,g,g,f,f,f,f,f,f,f,f"${Dollar}{OPERATION_SUFFIX}" \
 	-nastring . \
 	-vcfinput \
 	-otherinfo \
-	-arg '-splicing 5','-hgvs',,,,,,,,"${Dollar}{COMMA}" \
-  -xref "${CustomXref}"
+	-arg '-splicing 5','-hgvs','-memtotal ${Memory}000',,,,,,,,"${Dollar}{COMMA}" \
+ -xref "${CustomXref}"
  >>>
 
  output {
