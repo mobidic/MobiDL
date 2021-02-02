@@ -198,12 +198,12 @@ modifyJsonAndLaunch() {
 		-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
 		-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
 		-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
-	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
-		JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
-		if [ "${JSON_SUFFIX}" == "CFScreening" ];then
-			sed -i.bak -e "s/\(  \"${WDL}.intervalBedFileCnv\": \"\).*/\1\/usr\/local\/share\/refData\/intervals\/CF_panel_20201203.bed\",/" "${JSON}"
-		fi
-	fi
+	#if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
+	#	JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
+	#	if [ "${JSON_SUFFIX}" == "CFScreening" ];then
+	#		sed -i.bak -e "s/\(  \"${WDL}.intervalBedFileCnv\": \"\).*/\1\/usr\/local\/share\/refData\/intervals\/CF_panel_20201203.bed\",/" "${JSON}"
+	#	fi
+	#fi
 	if [ "${GENOME}" != "hg19" ];then
 		sed "s/hg19/${GENOME}/g" "${JSON}"
 	fi

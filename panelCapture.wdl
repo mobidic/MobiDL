@@ -69,7 +69,6 @@ workflow panelCapture {
 	File refFai
 	File refDict
 	File intervalBedFile
-	File intervalBedFileCnv
 	String workflowType
 	String outDir
 	Boolean debug = false
@@ -471,7 +470,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		SamtoolsExe = samtoolsExe,
-		IntervalBedFile = intervalBedFileCnv,
+		IntervalBedFile = intervalBedFile,
 		BamFile = samtoolsSort.sortedBam,
 		BamIndex = finalIndexing.bamIndex,
 		MinCovBamQual = minCovBamQual
