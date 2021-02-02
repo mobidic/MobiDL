@@ -198,12 +198,6 @@ modifyJsonAndLaunch() {
 		-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
 		-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
 		-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
-	#if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
-	#	JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
-	#	if [ "${JSON_SUFFIX}" == "CFScreening" ];then
-	#		sed -i.bak -e "s/\(  \"${WDL}.intervalBedFileCnv\": \"\).*/\1\/usr\/local\/share\/refData\/intervals\/CF_panel_20201203.bed\",/" "${JSON}"
-	#	fi
-	#fi
 	if [ "${GENOME}" != "hg19" ];then
 		sed "s/hg19/${GENOME}/g" "${JSON}"
 	fi
@@ -284,6 +278,9 @@ workflowPostTreatment() {
 
 modifyAchabJson() {
 	ACHAB_DIR=CaptainAchab
+	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+		ACHAB_DIR=CaptainAchabCFScreening
+	fi
 	ACHAB=captainAchab
 	ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
 	GENE_FILE_SED=${GENE_FILE////\\/}
@@ -299,7 +296,7 @@ modifyAchabJson() {
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
 	rm "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json.bak"
-	# move achah binput folder in todo folder for autoachab
+	# move achah input folder in todo folder for autoachab
 	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/" "${ACHAB_TODO_DIR}"
 }
 
@@ -308,12 +305,11 @@ prepareAchab() {
 	# function to prepare dirs for autoachab execution
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/" ];then
 		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
-	fi
-	cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
+	fi	
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/" ];then
 		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
 	fi
-	cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+	
 	# disease and genes of interest files
 	debug "Manifest file: ${MANIFEST}"
 	debug "BED file: ${BED}"
@@ -330,6 +326,24 @@ prepareAchab() {
 		GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
+	
+	#treat VCF for CF screening => restrain to given regions
+	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+		# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
+		# sed -i.bak -e "s/\(  \"${WDL}.intervalBedFileCnv\": \"\).*/\1\/usr\/local\/share\/refData\/intervals\/CF_panel_20201203.bed\",/" "${JSON}"
+		# https://www.biostars.org/p/69124/
+		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
+		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/${SAMPLE}.dv.vcf"
+		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf"
+		# fi	
+	fi
+	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf" ];then
+		# if not CF then just copy the VCF
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+	fi
+	
+	
 	debug "Disease file: ${DISEASE_FILE}"
 	debug "Genes file: ${GENE_FILE}"
 	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
@@ -341,6 +355,15 @@ prepareAchab() {
 		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
 		modifyAchabJson "dv"
 		modifyAchabJson "hc"
+	fi
+	#If CF than recopy original VCF from CF_panel bed file to Achab ready dir for future analysis
+	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+		# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+		# cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
+		# cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+		# fi
 	fi
 }
 
