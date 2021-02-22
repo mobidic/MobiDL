@@ -5,6 +5,8 @@ task LeftAlignAndTrimVariants {
 	String WorkflowType
 	String GatkExe
  	File RefFasta
+	File RefFai
+	File RefDict
 	#task specific variables
 	File SortedVcf
 	String VcSuffix
