@@ -1,4 +1,4 @@
-task gatkHaplotypeCaller {
+task gatkHaplotypeCallerPool {
 	#global variables
 	String SampleID
 	String OutDir
