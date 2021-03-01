@@ -46,10 +46,10 @@ LIGHTRED='\033[1;31m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
-# -- Script log 
+# -- Script log
 
 VERBOSITY=3
-# -- Log variables 
+# -- Log variables
 
 ERROR=1
 WARNING=2
@@ -62,7 +62,7 @@ warning() { log "${WARNING}" "[${YELLOW}warn${NC}]" "$1" ; }
 info() { log "${INFO}" "[${BLUE}info${NC}]" "$1" ; }
 debug() { log "${DEBUG}" "[${LIGHTRED}debug${NC}]" "$1" ; }
 
-# -- Print log 
+# -- Print log
 
 echoerr() { echo -e "$@" 1>&2 ; }
 
@@ -117,7 +117,7 @@ do
 done < ${RUNS_FILE}
 
 #choosePipeline() {
-#	return $(${GREP} -F "${SAMPLE_SHEET}" "${SAMPLE_SHEET_DB}" | cut -d '=' -f 2)	
+#	return $(${GREP} -F "${SAMPLE_SHEET}" "${SAMPLE_SHEET_DB}" | cut -d '=' -f 2)
 #}
 
 
@@ -173,7 +173,7 @@ modifyJsonAndLaunch() {
 	fi
 	if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
 		error "No json file for ${WDL}"
-	fi		
+	fi
 	cp "${MOBIDL_JSON_DIR}${WDL}_inputs.json" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 	JSON="${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 	SUFFIX1=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 1)
@@ -211,7 +211,7 @@ modifyJsonAndLaunch() {
 		mkdir "${TMP_OUTPUT_DIR2}Logs"
 	fi
 	touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
-	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" 
+	info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	#actual launch and copy in the end
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
@@ -222,7 +222,7 @@ modifyJsonAndLaunch() {
 		#	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 		#fi
 		#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-		#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+		#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
 		#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 		#if [ $? -eq 0 ];then
 		#	rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
@@ -230,7 +230,9 @@ modifyJsonAndLaunch() {
 		#	error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 		#fi
 	else
-		GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+		# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+		# david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
+		GATK_LEFT_ALIGN_INDEL_ERROR=$(egrep 'Job panelCapture.gatkLeftAlignIndels:....? exited with return code 3' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
 		#search for an error with gatk LAI - if found relaunch without this step
 		# cannot explain this error - maybe a gatk bug?
 		if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
@@ -244,7 +246,7 @@ modifyJsonAndLaunch() {
 				#	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 				#fi
 				#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-				#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+				#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
 				#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 				#if [ $? -eq 0 ];then
 				#	rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
@@ -267,7 +269,7 @@ workflowPostTreatment() {
 		RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	fi
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/" 
+	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
@@ -276,28 +278,55 @@ workflowPostTreatment() {
 	fi
 }
 
-modifyAchabJson() {
-	ACHAB_DIR=CaptainAchab
-	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
-		ACHAB_DIR=CaptainAchabCFScreening
-	fi
+
+setvariables() {
 	ACHAB=captainAchab
 	ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
 	GENE_FILE_SED=${GENE_FILE////\\/}
 	RUN_PATH_SED=${RUN_PATH////\\/}
-	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}" ];then
-		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
-	fi
-	sed -i.bak -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+	# useless?? TO BE REMOVED AND TESTED
+	#if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}" ];then
+	#	mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
+	#fi
+}
+
+
+setjsonvariables() {
+	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
-		"${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
-	rm "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json.bak"
+		"${2}"
+}
+
+
+modifyAchabJson() {
+	ACHAB_DIR=CaptainAchab
+	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+		ACHAB_DIR=CaptainAchabCFScreening
+	fi
+	CALLER_SUFFIX="${1}"
+	#ACHAB=captainAchab
+	#ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
+	#GENE_FILE_SED=${GENE_FILE////\\/}
+	#RUN_PATH_SED=${RUN_PATH////\\/}
+	#if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}" ];then
+	#	mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
+	#fi
+	#sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+	#	-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+	#	-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
+	#	-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
+	#	-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
+	#	-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+	#	"${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
+	setjsonvariables "${CALLER_SUFFIX}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
+	# rm "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json.bak"
 	# move achah input folder in todo folder for autoachab
 	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/" "${ACHAB_TODO_DIR}"
+	ACHAB_DIR=CaptainAchab
 }
 
 
@@ -305,11 +334,11 @@ prepareAchab() {
 	# function to prepare dirs for autoachab execution
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/" ];then
 		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
-	fi	
+	fi
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/" ];then
 		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
 	fi
-	
+
 	# disease and genes of interest files
 	debug "Manifest file: ${MANIFEST}"
 	debug "BED file: ${BED}"
@@ -326,7 +355,7 @@ prepareAchab() {
 		GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
-	
+
 	#treat VCF for CF screening => restrain to given regions
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
@@ -335,35 +364,42 @@ prepareAchab() {
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/${SAMPLE}.dv.vcf"
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf"
-		# fi	
+		# fi
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf" ];then
 		# if not CF then just copy the VCF
 		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
 		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
 	fi
-	
-	
+
+
 	debug "Disease file: ${DISEASE_FILE}"
 	debug "Genes file: ${GENE_FILE}"
 	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
 		# cp disease file in achab input dir
 		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/disease.txt"
 		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/disease.txt"
-		# cp json file in achab input dir and modify it		
+		# cp json file in achab input dir and modify it
 		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
 		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+		setvariables
 		modifyAchabJson "dv"
 		modifyAchabJson "hc"
-	fi
-	#If CF than recopy original VCF from CF_panel bed file to Achab ready dir for future analysis
-	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
-		# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
-		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
-		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
-		# cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
-		# cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
-		# fi
+		#fi
+		#If CF than recopy original VCF from CF_panel bed file to Achab ready dir for future analysis
+		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+			# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
+			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
+			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
+			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+			ACHAB_DIR_OLD="${ACHAB_DIR}"
+			ACHAB_DIR=CaptainAchabCFPanel
+			setjsonvariables "dv" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+			setjsonvariables "hc" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
+			ACHAB_DIR="${ACHAB_DIR_OLD}"
+			# fi
+		fi
 	fi
 }
 
@@ -390,12 +426,12 @@ do
 			debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
 			# now we must look for the AnalysisLog.txt file
 			# get finished run
-			if [ -n $(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name '${TRIGGER_FILE}' -exec egrep '${TRIGGER_EXPR}' '{}' \; -quit) ]; then
+			if [[ -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}" -exec egrep "${TRIGGER_EXPR}" "{}" \; -quit) ]]; then
 				# need to determine BED ROI from samplesheet
 				SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${SAMPLESHEET}"
-				# if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then 
+				# if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
 				debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
-				if [ -f ${SAMPLESHEET_PATH} ];then 
+				if [ -f ${SAMPLESHEET_PATH} ];then
 					debug "SAMPLESHEET TESTED:${SAMPLESHEET_PATH}"
 					info "RUN ${RUN} found for analysis"
 					dos2unixIfPossible
