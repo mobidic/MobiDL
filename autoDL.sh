@@ -431,7 +431,20 @@ do
 				SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${SAMPLESHEET}"
 				# if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
 				debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
-				if [ -f ${SAMPLESHEET_PATH} ];then
+				###### if multiple sample sheets found in the run ,if [[ -f ${SAMPLESHEET_PATH} ]] does not work!!!!
+				###### we need to split get the latest - david 20210307
+				if [[ ! -f ${SAMPLESHEET_PATH} ]];then
+					debug "FAILED SAMPLESHEET:${SAMPLESHEET_PATH}"
+					SAMPLESHEET_LIST=$(ls ${SAMPLESHEET_PATH})
+					debug "SAMPLESHEET_LIST:${SAMPLESHEET_LIST}"
+					# https://linuxhint.com/bash_split_examples/
+					IFS=' '
+					readarray -t SAMPLESHEET_ARRAY <<< $(ls ${SAMPLESHEET_PATH})
+					debug "LAST SAMPLESHEET:${SAMPLESHEET_ARRAY[-1]}"
+					SAMPLESHEET_PATH="${SAMPLESHEET_ARRAY[-1]}"
+					IFS=$'\n'
+				fi
+				if [[ -f ${SAMPLESHEET_PATH} ]];then
 					debug "SAMPLESHEET TESTED:${SAMPLESHEET_PATH}"
 					info "RUN ${RUN} found for analysis"
 					dos2unixIfPossible
