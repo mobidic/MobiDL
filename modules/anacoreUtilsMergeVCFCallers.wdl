@@ -1,16 +1,19 @@
 task anacoreUtilsMergeVCFCallers {
-	#global variables
+	# global variables
 	String SampleID
  	String OutDir
 	String WorkflowType
-  #task specific variables
+  # task specific variables
 	Array[File] Vcfs
-  Array[File] Callers
-	#runtime attributes
+  Array[String] Callers
+	# runtime attributes
 	Int Cpu
 	Int Memory
 	command {
-		anacoreUtilsMergeVCFCallers \
+		# anacoreUtilsMergeVCFCallersMobiDL.py must be in PATH
+		# and anacore-utils installed
+		# https://github.com/bialimed/AnaCore-utils
+		anacoreUtilsMergeVCFCallersMobiDL.py \
     -c ${sep=' ' Callers} \
 		-i ${sep=' ' Vcfs} \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.merged.vcf"
