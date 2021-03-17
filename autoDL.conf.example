@@ -40,4 +40,4 @@ MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python
 MOBICNV=MobiCNV/MobiCNV.py
 CONDA_CMD=sources
-CONDA_NEV=name_of_conda_env_to_run_anacore-utils
+CONDA_ENV=name_of_conda_env_to_run_anacore-utils
