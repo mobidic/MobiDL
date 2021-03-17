@@ -291,14 +291,23 @@ setvariables() {
 }
 
 
+# setjsonvariables() {
+# 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+# 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
+# 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
+# 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
+# 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
+# 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+# 		"${2}"
+# }
 setjsonvariables() {
-	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
-		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
-		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
-		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
+	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}}\",/" \
+		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
+		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}}\/${SAMPLE}\.vcf\",/" \
+		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
-		"${2}"
+		"${1}"
 }
 
 
@@ -307,36 +316,17 @@ modifyAchabJson() {
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
-	CALLER_SUFFIX="${1}"
-	#ACHAB=captainAchab
-	#ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
-	#GENE_FILE_SED=${GENE_FILE////\\/}
-	#RUN_PATH_SED=${RUN_PATH////\\/}
-	#if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}" ];then
-	#	mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
-	#fi
-	#sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
-	#	-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
-	#	-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
-	#	-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
-	#	-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
-	#	-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
-	#	"${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
-	setjsonvariables "${CALLER_SUFFIX}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json"
-	# rm "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/captainAchab_inputs.json.bak"
-	# move achah input folder in todo folder for autoachab
-	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.${1}/" "${ACHAB_TODO_DIR}"
+	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+	# move achab input folder in todo folder for autoachab
+	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" "${ACHAB_TODO_DIR}"
 	ACHAB_DIR=CaptainAchab
 }
 
 
 prepareAchab() {
 	# function to prepare dirs for autoachab execution
-	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/" ];then
-		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
-	fi
-	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/" ];then
-		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" ];then
+		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 	fi
 
 	# disease and genes of interest files
@@ -358,18 +348,13 @@ prepareAchab() {
 
 	#treat VCF for CF screening => restrain to given regions
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
-		# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
-		# sed -i.bak -e "s/\(  \"${WDL}.intervalBedFileCnv\": \"\).*/\1\/usr\/local\/share\/refData\/intervals\/CF_panel_20201203.bed\",/" "${JSON}"
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
-		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/${SAMPLE}.dv.vcf"
-		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf"
-		# fi
+		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}./${SAMPLE}.vcf"
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf" ];then
 		# if not CF then just copy the VCF
-		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
-		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 	fi
 
 
@@ -377,34 +362,22 @@ prepareAchab() {
 	debug "Genes file: ${GENE_FILE}"
 	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
 		# cp disease file in achab input dir
-		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/disease.txt"
-		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/disease.txt"
+		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/disease.txt"
 		# cp json file in achab input dir and modify it
-		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
-		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 		setvariables
-		modifyAchabJson "dv"
-		modifyAchabJson "hc"
-		#fi
+		modifyAchabJson
 		#If CF than recopy original VCF from CF_panel bed file to Achab ready dir for future analysis
 		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
-			# if [ "${JSON_SUFFIX}" == "CFScreening" ];then
-			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.dv.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/"
-			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.hc.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/"
-			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
-			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
+			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
+			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
 			ACHAB_DIR=CaptainAchabCFPanel
-			setjsonvariables "dv" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.dv/captainAchab_inputs.json"
-			setjsonvariables "hc" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/captainAchab_inputs.json"
+			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR="${ACHAB_DIR_OLD}"
-			# fi
 		fi
 	fi
 }
-
-
-
 
 ###############		Now we'll have a look at the content of the directories ###############################
 
@@ -528,7 +501,7 @@ do
 								modifyJsonAndLaunch
 								prepareAchab
 								TREATED=1
-								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.hc.vcf.gz" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
 								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
 								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 							done
