@@ -39,5 +39,5 @@ AWK=/usr/bin/awk
 MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python
 MOBICNV=MobiCNV/MobiCNV.py
-CONDA_CMD=sources
+CONDA_CMD=source|conda
 CONDA_ENV=name_of_conda_env_to_run_anacore-utils
