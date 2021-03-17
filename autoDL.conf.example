@@ -31,7 +31,7 @@ CROMWELL=/softs/cromwell.jar
 #Cromwell options and conf file see
 #https://cromwell.readthedocs.io/en/develop/
 CROMWELL_OPTIONS=/softs/conf/options_mediummonster.json
-CROMWELL_CONF=/softs/conf/mediummonster.conf 
+CROMWELL_CONF=/softs/conf/mediummonster.conf
 SERVICE=autoDL.sh
 RSYNC=/usr/bin/rsync
 DOS2UNIX=/usr/bin/dos2unix
@@ -39,3 +39,5 @@ AWK=/usr/bin/awk
 MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python
 MOBICNV=MobiCNV/MobiCNV.py
+CONDA_CMD=sources
+CONDA_NEV=name_of_conda_env_to_run_anacore-utils

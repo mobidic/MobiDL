@@ -98,7 +98,7 @@ if [ "${RESULT}" -gt 3 ]; then
 fi
 
 ###############		Activate conda environment for anacore-utils			 ##################################
-source activate anacore-utils
+${CONDA_CMD} activate ${CONDA_ENV}
 
 ###############		Get run info file				 ##################################
 
