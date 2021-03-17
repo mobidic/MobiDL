@@ -64,11 +64,11 @@ def getNewHeaderAttr(args):
                 if tag not in args.shared_filters:  # Rename filters not based on caller
                     new_tag = "s{}_{}".format(idx_in, tag)
                     data.id = new_tag
-                    # added david to keep source, but in description field
+                    # added david to keep sourec, but in description field
                     data.description += ', {}'.format(args.calling_sources[idx_in])
                     # removed david as ,source in FILTER section is not VCF compliant (at least 4.2)
                     # data.source = args.calling_sources[idx_in]
-                    # end removed
+                    # and removed
                 final_filter[new_tag] = data
             # INFO
             for tag, data in FH_vcf.info.items():
@@ -178,50 +178,51 @@ def getMergedRecords(inputs_variants, calling_sources, annotations_field, shared
                     record.samples[spl_name] = renamed_info
                 # Add to storage
                 if variant_name not in variant_by_name:
-                    variant_by_name[variant_name] = record
-                    # Data source
-                    record.info["SRC"] = [curr_caller]
-                    # Quality
-                    if idx_in != 0:
-                        record.qual = None  # For consistency, the quality of the variant comes only from the first caller of the variant
-                    # AD and DP by sample (from the first caller finding the variant: callers are in user order)
-                    record.format.insert(0, "ADSRC")
-                    record.format.insert(0, "DPSRC")
-                    # david removed as we already have them
-                    # record.format.insert(0, "AD")
-                    # record.format.insert(0, "DP")
-                    # end removed
-                    for spl_name, spl_data in record.samples.items():
+                    if record.samples[spl_name]['GT'] != '0/0':
+                        variant_by_name[variant_name] = record
+                        # Data source
+                        record.info["SRC"] = [curr_caller]
+                        # Quality
+                        if idx_in != 0:
+                            record.qual = None  # For consistency, the quality of the variant comes only from the first caller of the variant
+                        # AD and DP by sample (from the first caller finding the variant: callers are in user order)
+                        record.format.insert(0, "ADSRC")
+                        record.format.insert(0, "DPSRC")
                         # david removed as we already have them
-                        # spl_data["AD"] = [support_by_spl[spl_name]["AD"]]
-                        # spl_data["DP"] = support_by_spl[spl_name]["DP"]
+                        # record.format.insert(0, "AD")
+                        # record.format.insert(0, "DP")
                         # end removed
-                        spl_data["ADSRC"] = [support_by_spl[spl_name]["AD"]]
-                        spl_data["DPSRC"] = [support_by_spl[spl_name]["DP"]]
+                        for spl_name, spl_data in record.samples.items():
+                            # david removed as we already have them
+                            # spl_data["AD"] = [support_by_spl[spl_name]["AD"]]
+                            # spl_data["DP"] = support_by_spl[spl_name]["DP"]
+                            # end removed
+                            spl_data["ADSRC"] = [support_by_spl[spl_name]["AD"]]
+                            spl_data["DPSRC"] = [support_by_spl[spl_name]["DP"]]
                 else:
-                    prev_variant = variant_by_name[variant_name]
-                    prev_variant.info["SRC"].append(curr_caller)
-                    # IDs
-                    if record.id is not None:
-                        prev_ids = prev_variant.id.split(";")
-                        prev_ids.extend(record.id.split(";"))
-                        prev_ids = sorted(list(set(prev_ids)))
-                        prev_variant.id = ";".join(prev_ids)
-                    # FILTERS
-                    if record.filter is not None:
-                        if prev_variant.filter is None:
-                            prev_variant.filter = record.filter
-                        else:
-                            prev_variant.filter = list(set(prev_variant.filter) or set(record.filter))
-                    # FORMAT
-                    if record.format['GT'] != '0/0':
+                    if record.samples[spl_name]['GT'] != '0/0':
+                        prev_variant = variant_by_name[variant_name]
+                        prev_variant.info["SRC"].append(curr_caller)
+                        # IDs
+                        if record.id is not None:
+                            prev_ids = prev_variant.id.split(";")
+                            prev_ids.extend(record.id.split(";"))
+                            prev_ids = sorted(list(set(prev_ids)))
+                            prev_variant.id = ";".join(prev_ids)
+                        # FILTERS
+                        if record.filter is not None:
+                            if prev_variant.filter is None:
+                                prev_variant.filter = record.filter
+                            else:
+                                prev_variant.filter = list(set(prev_variant.filter) or set(record.filter))
+                        # FORMAT
                         prev_variant.format.extend(record.format)
-                    # INFO
-                    prev_variant.info.update(record.info)
-                    for spl_name, spl_data in prev_variant.samples.items():
-                        spl_data.update(record.samples[spl_name])
-                        spl_data["ADSRC"].append(support_by_spl[spl_name]["AD"])
-                        spl_data["DPSRC"].append(support_by_spl[spl_name]["DP"])
+                        # INFO
+                        prev_variant.info.update(record.info)
+                        for spl_name, spl_data in prev_variant.samples.items():
+                            spl_data.update(record.samples[spl_name])
+                            spl_data["ADSRC"].append(support_by_spl[spl_name]["AD"])
+                            spl_data["DPSRC"].append(support_by_spl[spl_name]["DP"])
     return variant_by_name.values()
 
 
