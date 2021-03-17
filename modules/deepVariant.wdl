@@ -44,7 +44,7 @@ task deepVariant {
 		# rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf.idx"
 	}
 	output{
-		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf"
+		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf"
 	}
 	runtime {
 		cpu: "${Cpu}"
