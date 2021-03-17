@@ -20,7 +20,7 @@ task gatkUpdateVCFSequenceDictionary {
     ${GatkExe} SortVcf \
     -I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.ref_updated.vcf" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
-    rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf.idx"
+    rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.ref_updated.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.ref_updated.vcf.idx"
 	}
 	output {
 		File refUpdatedVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.vcf"
