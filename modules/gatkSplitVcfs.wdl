@@ -16,7 +16,7 @@ task gatkSplitVcfs {
 		-I ${Vcf} \
 		--SNP_OUTPUT "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.snp.vcf" \
 		--INDEL_OUTPUT "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.indel.vcf" \
-		--STRICT=false
+		--STRICT false
 	}
 	output {
 		File snpVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.snp.vcf"
