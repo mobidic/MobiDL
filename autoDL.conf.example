@@ -1,6 +1,6 @@
 BASE_DIR=/basedir/of/all/your/sequence/data/
-#if you have multiple sequencers outputing in several dirs -- then you need to adjust autoDL.sh variable RUN_PATHS accordingly and you migh hav to modifiy the assignVariables function (e.g. add an HiSeq section or so)
-#you need in autoDLDir a sampleSheets.txt file which will describe your samplesheets names and associated BED files and potentially keywords lying in the descritpion field of the samplesheets which will also point to a particualr BED file (in case you can't name your samplesheets as you like).
+# if you have multiple sequencers outputing in several dirs -- then you need to adjust autoDL.sh variable RUN_PATHS accordingly and you migh hav to modifiy the assignVariables function (e.g. add an HiSeq section or so)
+# you need in autoDLDir a sampleSheets.txt file which will describe your samplesheets names and associated BED files and potentially keywords lying in the descritpion field of the samplesheets which will also point to a particualr BED file (in case you can't name your samplesheets as you like).
 MINISEQ_RUNS_DIR=${BASE_DIR}MiniSeq/
 MISEQ_RUNS_DIR=${BASE_DIR}MiSeqDx/RUO/
 NEXTSEQ_RUNS_DIR=${BASE_DIR}NAS_CHU/NEXTSEQ/runs/converted/
@@ -39,5 +39,7 @@ AWK=/usr/bin/awk
 MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python
 MOBICNV=MobiCNV/MobiCNV.py
+# you need a conda env to run anacore-utils
+# https://github.com/bialimed/AnaCore-utils
 CONDA_CMD=source|conda
-CONDA_ENV=name_of_conda_env_to_run_anacore-utils
+CONDA_ENV=name_of_conda_env_to_run_anacore_utils
