@@ -922,7 +922,7 @@ workflow panelCapture {
 		BgZipExe = bgZipExe,
 		TabixExe = tabixExe,
 		VcSuffix = '',
-		VcfFile = gatkUpdateVCFSequenceDictionary.finalVcf
+		VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
 	}
 	if (!debug) {
 		String dataPath = "${outDir}${sampleID}/${workflowType}/"
