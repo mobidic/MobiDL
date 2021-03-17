@@ -29,9 +29,11 @@ task cleanUpPanelCaptureTmpDirs {
 		echo "#####MobiDL panelCapture November 2019" > "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo "You will Find several vcf files in the directory, MobiDL using two variant callers:" >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo " - SampleID.hc.vcf is the vcf genereated with GATK4 HaplotypeCaller." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
-		echo " - SampleID.hc.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.hc.vcf.gz.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		# echo " - SampleID.hc.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.hc.vcf.gz.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo " - SampleID.dv.vcf is the vcf generated with DeepVariant." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
-		echo " - SampleID.dv.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.dv.vcf.gz.tbi.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		# echo " - SampleID.dv.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.dv.vcf.gz.tbi.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		echo " - SampleID.vcf is the merged VCF containing bot DV and HC variants." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		echo " - SampleID.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.vcf.gz.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo "In the case you want to use the Captain Achab workflow use uncompressed VCF of your choice as input." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 	}
 	output {

@@ -64,11 +64,11 @@ def getNewHeaderAttr(args):
                 if tag not in args.shared_filters:  # Rename filters not based on caller
                     new_tag = "s{}_{}".format(idx_in, tag)
                     data.id = new_tag
-                    # added david to keep sourec, but in description field
+                    # added david to keep source, but in description field
                     data.description += ', {}'.format(args.calling_sources[idx_in])
                     # removed david as ,source in FILTER section is not VCF compliant (at least 4.2)
                     # data.source = args.calling_sources[idx_in]
-                    # and removed
+                    # end removed
                 final_filter[new_tag] = data
             # INFO
             for tag, data in FH_vcf.info.items():
@@ -214,7 +214,8 @@ def getMergedRecords(inputs_variants, calling_sources, annotations_field, shared
                         else:
                             prev_variant.filter = list(set(prev_variant.filter) or set(record.filter))
                     # FORMAT
-                    prev_variant.format.extend(record.format)
+                    if record.format['GT'] != '0/0':
+                        prev_variant.format.extend(record.format)
                     # INFO
                     prev_variant.info.update(record.info)
                     for spl_name, spl_data in prev_variant.samples.items():

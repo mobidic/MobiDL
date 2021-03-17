@@ -39,7 +39,7 @@ task gatkHaplotypeCaller {
 		# rm "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
 	}
 	output {
-		File hcVcf = "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf"
+		File hcVcf = "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.hc.vcf"
 	}
 	runtime {
 		cpu: "${Cpu}"
