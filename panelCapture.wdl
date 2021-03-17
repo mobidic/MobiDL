@@ -906,6 +906,7 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
+		GatkExe = gatkExe,
 		RefFasta = refFasta,
 		RefFai = refFai,
 		RefDict = refDict,
