@@ -31,16 +31,17 @@ task deepVariant {
 		--reads="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.bam" \
 		--regions=${BedFile} \
 		--num_shards=${Cpu} \
-		--output_vcf="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf"
+		--output_vcf="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf"
 		${GatkExe} SortVcf \
-		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf"
-		${GatkExe} RenameSampleInVcf \
-		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf" \
-		--NEW_SAMPLE_NAME "${SampleID}.dv" \
-		--OLD_SAMPLE_NAME "${SampleID}"
-		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf.idx"
+		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf" \
+		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv.vcf"
+		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf"
+		# ${GatkExe} RenameSampleInVcf \
+		# -I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" \
+		# -O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf" \
+		# --NEW_SAMPLE_NAME "${SampleID}.dv" \
+		# --OLD_SAMPLE_NAME "${SampleID}"
+		# rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf.idx"
 	}
 	output{
 		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf"

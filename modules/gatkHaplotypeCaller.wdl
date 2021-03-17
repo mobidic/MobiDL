@@ -1,5 +1,5 @@
 task gatkHaplotypeCaller {
-	#global variables
+	# global variables
 	String SampleID
 	String OutDir
 	String WorkflowType
@@ -9,17 +9,17 @@ task gatkHaplotypeCaller {
 	File RefDict
 	File DbSNP
 	File DbSNPIndex
-	##task specific variables
+	## task specific variables
 	File GatkInterval
 	String IntervalName = basename("${GatkInterval}", ".intervals")
 	File BamFile
 	File BamIndex
-	#when callcaching on, seem to keep Bam and index in the same directory for HC execution
-	#does not work in fine...
-	#Pair[File, File] Bam = (BamFile, BamIndex)
+	# when callcaching on, seem to keep Bam and index in the same directory for HC execution
+	# does not work in fine...
+	# Pair[File, File] Bam = (BamFile, BamIndex)
 	String SwMode
 	String EmitRefConfidence
-	#runtime attributes
+	# runtime attributes
 	Int Cpu
 	Int Memory
 	command {
@@ -30,13 +30,13 @@ task gatkHaplotypeCaller {
 		--dbsnp ${DbSNP} \
 		--smith-waterman ${SwMode} \
 		--emit-ref-confidence ${EmitRefConfidence} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
-		${GatkExe} RenameSampleInVcf \
-		-I "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf" \
-		--NEW_SAMPLE_NAME "${SampleID}.hc" \
-		--OLD_SAMPLE_NAME "${SampleID}"
-		rm "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
+		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.hc.vcf"
+		# ${GatkExe} RenameSampleInVcf \
+		# -I "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf" \
+		# -O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf" \
+		# --NEW_SAMPLE_NAME "${SampleID}.hc" \
+		# --OLD_SAMPLE_NAME "${SampleID}"
+		# rm "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf"
 	}
 	output {
 		File hcVcf = "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.vcf"
