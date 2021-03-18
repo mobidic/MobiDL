@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log
 
-VERBOSITY=3
+VERBOSITY=4
 # -- Log variables
 
 ERROR=1
@@ -98,7 +98,9 @@ if [ "${RESULT}" -gt 3 ]; then
 fi
 
 ###############		Activate conda environment for anacore-utils			 ##################################
-${CONDA_CMD} activate ${CONDA_ENV}
+debug "${CONDA_CMD} activate ${CONDA_ENV}"
+# source activate anacore_utils
+"${CONDA_CMD}" activate "${CONDA_ENV}"
 
 ###############		Get run info file				 ##################################
 
