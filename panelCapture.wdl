@@ -91,7 +91,6 @@ workflow panelCapture {
 	String sortExe
 	String gatkExe
 	String javaExe
-	String python3Exe
 	## bwaSamtools
 	String platform
 	File refAmb
@@ -890,7 +889,6 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		Python3Exe = python3Exe,
 		MergeVCFMobiDL = mergeVCFMobiDL,
 		Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
 		Callers = ["HaplotypeCaller", "DeepVariant"]

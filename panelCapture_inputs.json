@@ -18,7 +18,6 @@
   "panelCapture.suffix1": "String",
   "panelCapture.refDict": "File",
   "panelCapture.modelType": "String",
-  "panelCapture.python3Exe": "String",
   "panelCapture.referenceFasta": "String",
   "panelCapture.bedtoolsLowCoverage": "Int",
   "panelCapture.singularity": "String",

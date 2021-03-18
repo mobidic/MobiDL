@@ -40,7 +40,6 @@
   "panelCapture.sedExe" : "/Path/to/sed",
   "panelCapture.sortExe": "/Path/to/sort",
   "panelCapture.javaExe": "/Path/to/java",
-  "panelCapture.python3Exe": "/Path/to/python3",
   "panelCapture.rtgExe":"/Path/to/rtg-tools-3.10.1/rtg",
   "panelCapture.vcftoolsExe" :"/Path/to/vcftools",
   "panelCapture.bgZipExe": "/Path/to/bgzip",
