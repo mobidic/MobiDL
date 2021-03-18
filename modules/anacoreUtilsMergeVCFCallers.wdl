@@ -4,6 +4,8 @@ task anacoreUtilsMergeVCFCallers {
  	String OutDir
 	String WorkflowType
   # task specific variables
+	String Python3Exe
+	File MergeVCFMobiDL
 	Array[File] Vcfs
   Array[String] Callers
 	# runtime attributes
@@ -13,7 +15,7 @@ task anacoreUtilsMergeVCFCallers {
 		# anacoreUtilsMergeVCFCallersMobiDL.py must be in PATH
 		# and anacore-utils installed
 		# https://github.com/bialimed/AnaCore-utils
-		anacoreUtilsMergeVCFCallersMobiDL.py \
+		${Python3Exe} ${MergeVCFMobiDL} \
     -c ${sep=' ' Callers} \
 		-i ${sep=' ' Vcfs} \
 		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.merged.vcf"

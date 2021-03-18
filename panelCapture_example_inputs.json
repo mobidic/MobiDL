@@ -40,6 +40,7 @@
   "panelCapture.sedExe" : "/Path/to/sed",
   "panelCapture.sortExe": "/Path/to/sort",
   "panelCapture.javaExe": "/Path/to/java",
+  "panelCapture.python3Exe": "/Path/to/python3",
   "panelCapture.rtgExe":"/Path/to/rtg-tools-3.10.1/rtg",
   "panelCapture.vcftoolsExe" :"/Path/to/vcftools",
   "panelCapture.bgZipExe": "/Path/to/bgzip",
@@ -61,6 +62,7 @@
   "panelCapture.swMode": "FASTEST_AVAILABLE",
   "panelCapture.vcfHcSuffix": ".raw",
   "panelCapture.vcfSISuffix": ".merged",
+  "panelCapture.mergeVCFMobiDL": "/Path/to/anacoreUtilsMergeVCFCallersMobiDL.py",
   "panelCapture.dvOut" : "/dv2/tmp_output",
   "panelCapture.refData": "/Path/to/refData/:/dv2/refData/",
   "panelCapture.data": "/Actual/path/to/data:/dv2/data",
@@ -72,5 +74,3 @@
   "panelCapture.singularityImg": "/Path/to/deepvariant-custom.simg",
   "panelCapture.referenceFasta": "/dv2/refData/genome/hg19/hg19.fa"
 }
-
-

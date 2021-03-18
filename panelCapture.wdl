@@ -58,9 +58,9 @@ workflow panelCapture {
 	Int cpuLow
 	Int memoryLow
 	Int memoryHigh
-	#memoryLow = scattered tasks =~ mem_per_cpu in HPC or not
-	#memoryHigh = one cpu tasks => high mem ex 10Gb
-	##Global
+	# memoryLow = scattered tasks =~ mem_per_cpu in HPC or not
+	# memoryHigh = one cpu tasks => high mem ex 10Gb
+	## Global
 	String sampleID
 	String suffix1
 	String suffix2
@@ -74,7 +74,7 @@ workflow panelCapture {
 	String workflowType
 	String outDir
 	Boolean debug = false
-	##Bioinfo execs
+	## Bioinfo execs
 	String fastqcExe
 	String bwaExe
 	String samtoolsExe
@@ -85,57 +85,50 @@ workflow panelCapture {
 	String bgZipExe
 	String tabixExe
 	String multiqcExe
-	##Standard execs
+	## Standard execs
 	String awkExe
 	String sedExe
 	String sortExe
 	String gatkExe
-	#String gatk3Jar
 	String javaExe
-	##bwaSamtools
+	String python3Exe
+	## bwaSamtools
 	String platform
 	File refAmb
 	File refAnn
 	File refBwt
 	File refPac
 	File refSa
-	##sambambaIndex
-	#String suffixIndex
-	#String suffixIndex2
-	##gatk splitintervals
+	## sambambaIndex
+	## gatk splitintervals
 	String subdivisionMode
-	##gatk Base recal
+	## gatk Base recal
 	File knownSites1
 	File knownSites1Index
 	File knownSites2
 	File knownSites2Index
 	File knownSites3
 	File knownSites3Index
-	##cram conversion
+	## cram conversion
 	File refFastaGz
 	File refFaiGz
 	File refFaiGzi
-	##gatherVcfs
-	#String vcfHcSuffix = ".raw"
-	#String vcfSISuffix = ".merged"
-	##gatk-picard
+	## gatk-picard
 	String variantEvalEV = "MetricsCollection"
-	#String genotypeMergeOptions = "UNIQUIFY"
-	#String filteredRecordsMergeType = "KEEP_IF_ANY_UNFILTERED"
-	##computePoorCoverage
+	## computePoorCoverage
 	Int bedtoolsLowCoverage
 	Int bedToolsSmallInterval
-	##computeCoverage
+	## computeCoverage
 	Int minCovBamQual
-	##haplotypeCaller
+	## haplotypeCaller
 	String swMode
 	String emitRefConfidence = "NONE"
-	##jvarkit
+	## jvarkit
 	String vcfPolyXJar
-	##ConvertCramtoCrumble
+	## ConvertCramtoCrumble
 	String crumbleExe
 	String ldLibraryPath
-	##DeepVariant
+	## DeepVariant
 	String referenceFasta
 	String modelType
 	String bedFile
@@ -146,15 +139,16 @@ workflow panelCapture {
 	String deepExe
 	String singularity
 	String singularityImg
-	##RefCallFiltration
+	## RefCallFiltration
 	String vcftoolsExe
-	##VcSuffix
+	## VcSuffix
 	String dvSuffix = ".dv"
 	String hcSuffix = ".hc"
-	#String finalSuffix = ".final"
+	## Anacore-Utils mcustom mergeVCF script
+	File mergeVCFMobiDL
 
 
-	#Tasks calls
+	# Tasks calls
 	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
 		input:
 		Cpu = cpuLow,
@@ -770,24 +764,24 @@ workflow panelCapture {
 		VcSuffix = hcSuffix,
 		SortedVcf = gatkSortVcfHc.sortedVcf
 	}
-	#not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
-	#call runGatkVariantEval.gatkVariantEval as gatkVariantEvalHc{
-	#	input:
-	#	Cpu = cpuLow,
-	#	Memory = memoryHigh,
-	#	SampleID = sampleID,
-	#	OutDir = outDir,
-	#	WorkflowType = workflowType,
-	#	GatkExe = gatkExe,
-	#	VariantEvalEV = variantEvalEV,
-	#	VcSuffix = hcSuffix,
-	#	VcfFile = bcftoolsNormHc.normVcf,
-	#	RefFasta = refFasta,
-	#	RefFai = refFai,
-	#	RefDict = refDict,
-	#	DbSNP = knownSites3,
-	#	DbSNPIndex = knownSites3Index
-	#}
+	# not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
+	# call runGatkVariantEval.gatkVariantEval as gatkVariantEvalHc{
+	#	 input:
+	#	 Cpu = cpuLow,
+	#	 Memory = memoryHigh,
+	#	 SampleID = sampleID,
+	#	 OutDir = outDir,
+	#	 WorkflowType = workflowType,
+	#	 GatkExe = gatkExe,
+	# 	VariantEvalEV = variantEvalEV,
+	#	 VcSuffix = hcSuffix,
+	#	 VcfFile = bcftoolsNormHc.normVcf,
+	#	 RefFasta = refFasta,
+	#	 RefFai = refFai,
+	#	 RefDict = refDict,
+	#	 DbSNP = knownSites3,
+	#	 DbSNPIndex = knownSites3Index
+	# }
 	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
 		input:
 		Cpu = cpuLow,
@@ -798,7 +792,7 @@ workflow panelCapture {
 		BgZipExe = bgZipExe,
 		TabixExe = tabixExe,
 		VcSuffix = hcSuffix,
-		#NormVcf = bcftoolsNormHc.normVcf
+		# NormVcf = bcftoolsNormHc.normVcf
 		VcfFile = gatkSortVcfHc.sortedVcf
 	}
 #	call runRtgMerge.rtgMerge{
@@ -896,6 +890,8 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
+		Python3Exe = python3Exe,
+		MergeVCFMobiDL = mergeVCFMobiDL,
 		Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
 		Callers = ["HaplotypeCaller", "DeepVariant"]
 	}
