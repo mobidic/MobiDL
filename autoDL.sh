@@ -98,9 +98,9 @@ if [ "${RESULT}" -gt 3 ]; then
 fi
 
 ###############		Activate conda environment for anacore-utils			 ##################################
-debug "${CONDA_CMD} activate ${CONDA_ENV}"
-# source activate anacore_utils
-"${CONDA_CMD}" activate "${CONDA_ENV}"
+# debug "${CONDA_CMD} activate ${CONDA_ENV}"
+# # source activate anacore_utils
+# "${CONDA_CMD}" activate "${CONDA_ENV}"
 
 ###############		Get run info file				 ##################################
 
@@ -306,7 +306,7 @@ setvariables() {
 # 		"${2}"
 # }
 setjsonvariables() {
-	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}}\",/" \
+	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}}\/${SAMPLE}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
@@ -550,3 +550,6 @@ do
 		fi
 	done
 done
+
+# debug "${CONDA_CMD} deactivate"
+# "${CONDA_CMD}" deactivate
