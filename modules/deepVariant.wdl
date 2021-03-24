@@ -35,7 +35,8 @@ task deepVariant {
 		${GatkExe} SortVcf \
 		-I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf" \
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv.vcf"
-		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf"
+		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv.vcf.idx"
+		mv "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.visual_report.html" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.dv.html"
 		# ${GatkExe} RenameSampleInVcf \
 		# -I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" \
 		# -O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf" \

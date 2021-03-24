@@ -1,4 +1,4 @@
-#!/home/bioinfo/miniconda3/envs/anacore-utils/bin/python
+#!/home/neuro_admin/anaconda3/bin/python3
 
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2019 IUCT-O'

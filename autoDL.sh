@@ -48,7 +48,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 # -- Script log
 
-VERBOSITY=4
+VERBOSITY=3
 # -- Log variables
 
 ERROR=1
@@ -96,11 +96,6 @@ debug "${SERVICE} pids: $(ps x | grep -v grep |grep -c ${SERVICE})"
 if [ "${RESULT}" -gt 3 ]; then
 	exit 0
 fi
-
-###############		Activate conda environment for anacore-utils			 ##################################
-# debug "${CONDA_CMD} activate ${CONDA_ENV}"
-# # source activate anacore_utils
-# "${CONDA_CMD}" activate "${CONDA_ENV}"
 
 ###############		Get run info file				 ##################################
 
@@ -355,9 +350,9 @@ prepareAchab() {
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
-		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}./${SAMPLE}.vcf"
+		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${BED_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 	fi
-	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}.hc/${SAMPLE}.hc.vcf" ];then
+	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF
 		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 	fi
@@ -550,6 +545,3 @@ do
 		fi
 	done
 done
-
-# debug "${CONDA_CMD} deactivate"
-# "${CONDA_CMD}" deactivate
