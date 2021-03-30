@@ -8,6 +8,7 @@ __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import os
+import re
 import sys
 import numpy
 import logging
@@ -64,11 +65,11 @@ def getNewHeaderAttr(args):
                 if tag not in args.shared_filters:  # Rename filters not based on caller
                     new_tag = "s{}_{}".format(idx_in, tag)
                     data.id = new_tag
-                    # added david to keep sourec, but in description field
+                    # added david to keep source, but in description field
                     data.description += ', {}'.format(args.calling_sources[idx_in])
                     # removed david as ,source in FILTER section is not VCF compliant (at least 4.2)
                     # data.source = args.calling_sources[idx_in]
-                    # and removed
+                    # end removed
                 final_filter[new_tag] = data
             # INFO
             for tag, data in FH_vcf.info.items():
@@ -78,24 +79,35 @@ def getNewHeaderAttr(args):
                 else:
                     new_tag = "s{}_{}".format(idx_in, tag)
                     data.id = new_tag
-                    data.source = args.calling_sources[idx_in]
+                    # added david to keep source, but in description field
+                    data.description += ', {}'.format(args.calling_sources[idx_in])
+                    # removed david as ,source in INFO section is VCF compliant (at least 4.2) but rejected by GATK 3.8 used for combineVariant
+                    # data.source = args.calling_sources[idx_in]
+                    # end removed
                     final_info[new_tag] = data
             qual_tag = "s{}_VCQUAL".format(idx_in)
-            final_info[qual_tag] = HeaderInfoAttr(qual_tag, type="Float", number="1", description="The variant quality", source=args.calling_sources[idx_in])
+            # modified david to keep source, but in description field
+            final_info[qual_tag] = HeaderInfoAttr(qual_tag, type="Float", number="1", description="The variant quality, {}".format(args.calling_sources[idx_in]))
+            # removed david as ,source in INFO section is VCF compliant (at least 4.2) but rejected by GATK 3.8 used for combineVariant
+            # final_info[qual_tag] = HeaderInfoAttr(qual_tag, type="Float", number="1", description="The variant quality", source=args.calling_sources[idx_in])
+            # end removed
             # FORMAT
             for tag, data in FH_vcf.format.items():
                 # Rename FORMAT
-                # modif david 16/03/2021
+                # modif david 26/03/2021
                 # for s0 or 1st occurence of format we want a double value with and without prefix
-                if tag not in final_format:
-                    data.id = tag
-                    data.source = args.calling_sources[idx_in]
-                    final_format[tag] = data
-                # end modif david
+                if re.search(r'^[^s]', tag) and \
+                         tag not in final_format:
+                    data.description += ', {}'.format(args.calling_sources[idx_in])
+                    final_format[tag] = HeaderFormatAttr(tag, type=data.type, number=data.number, description=data.description)
+                # end modif
+                # if tag in final_format:
                 new_tag = "s{}_{}".format(idx_in, tag)
                 data.id = new_tag
-                data.source = args.calling_sources[idx_in]
+                if not re.search(rf'{args.calling_sources[idx_in]}', data.description):
+                    data.description += ', {}'.format(args.calling_sources[idx_in])
                 final_format[new_tag] = data
+            # print(final_format)
     return {
         "filter": final_filter,
         "info": final_info,
@@ -186,19 +198,25 @@ def getMergedRecords(inputs_variants, calling_sources, annotations_field, shared
                         if idx_in != 0:
                             record.qual = None  # For consistency, the quality of the variant comes only from the first caller of the variant
                         # AD and DP by sample (from the first caller finding the variant: callers are in user order)
-                        record.format.insert(0, "ADSRC")
-                        record.format.insert(0, "DPSRC")
+                        # david removed as it is placed before GT and gatk combinevariant complains
+                        #record.format.insert(0, "ADSRC")
+                        #record.format.insert(0, "DPSRC")
+                        # end removed
                         # david removed as we already have them
                         # record.format.insert(0, "AD")
                         # record.format.insert(0, "DP")
                         # end removed
-                        for spl_name, spl_data in record.samples.items():
+                        # david removed as now useless
+                        # for spl_name, spl_data in record.samples.items():
+                        # end removed
                             # david removed as we already have them
                             # spl_data["AD"] = [support_by_spl[spl_name]["AD"]]
                             # spl_data["DP"] = support_by_spl[spl_name]["DP"]
                             # end removed
-                            spl_data["ADSRC"] = [support_by_spl[spl_name]["AD"]]
-                            spl_data["DPSRC"] = [support_by_spl[spl_name]["DP"]]
+                            # david removed as it is placed before GT and gatk combinevariant complains
+                            # spl_data["ADSRC"] = [support_by_spl[spl_name]["AD"]]
+                            # spl_data["DPSRC"] = [support_by_spl[spl_name]["DP"]]
+                            # end removed
                 else:
                     if record.samples[spl_name]['GT'] != '0/0':
                         prev_variant = variant_by_name[variant_name]
@@ -221,8 +239,10 @@ def getMergedRecords(inputs_variants, calling_sources, annotations_field, shared
                         prev_variant.info.update(record.info)
                         for spl_name, spl_data in prev_variant.samples.items():
                             spl_data.update(record.samples[spl_name])
-                            spl_data["ADSRC"].append(support_by_spl[spl_name]["AD"])
-                            spl_data["DPSRC"].append(support_by_spl[spl_name]["DP"])
+                            # david removed as it is placed before GT and gatk combinevariant complains
+                            # spl_data["ADSRC"].append(support_by_spl[spl_name]["AD"])
+                            # spl_data["DPSRC"].append(support_by_spl[spl_name]["DP"])
+                            # end removed
     return variant_by_name.values()
 
 
@@ -303,8 +323,10 @@ if __name__ == "__main__":
     # Get merged records
     variants = getMergedRecords(args.inputs_variants, args.calling_sources, args.annotations_field, args.shared_filters)
 
+    # david removed as it is requires ADSRC and removed
     # Log differences in AF and AD
-    logACVariance(variants, log)
+    # logACVariance(variants, log)
+    # end removed
 
     # Write
     with VCFIO(args.output_variants, "w") as FH_out:
