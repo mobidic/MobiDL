@@ -1,6 +1,7 @@
 task samtoolsSort {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	String SamtoolsExe
@@ -8,15 +9,16 @@ task samtoolsSort {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${SamtoolsExe} sort -@ ${Cpu} -l 6 \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
+		-o "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
 		"${BamFile}"
-		mv "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
-		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+		mv "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
+		"${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
 	}
 	output {
-		File sortedBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+		File sortedBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
 	}
 	runtime {
 		cpu: "${Cpu}"

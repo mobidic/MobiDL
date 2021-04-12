@@ -1,6 +1,7 @@
 task gatkApplyBQSR {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	String GatkExe
@@ -16,16 +17,17 @@ task gatkApplyBQSR {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} ApplyBQSR \
 		-R ${RefFasta} \
 		-I ${BamFile} \
 		--bqsr-recal-file ${GatheredRecaltable} \
 		-L ${GatkInterval} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.bam" 
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.bam"
 	}
 	output {
-		File recalBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.bam"
+		File recalBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.bam"
 	}
 	runtime {
 		cpu: "${Cpu}"

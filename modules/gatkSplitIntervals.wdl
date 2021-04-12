@@ -2,6 +2,7 @@ task gatkSplitIntervals {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/org_broadinstitute_hellbender_tools_walkers_SplitIntervals.php#--intervals
 	##global variables
 	String SampleID
+	String OutDirSampleID = ""
 	String OutDir
 	String WorkflowType
 	String GatkExe
@@ -15,16 +16,17 @@ task gatkSplitIntervals {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} SplitIntervals \
 		-R ${RefFasta} \
 		-L ${GatkInterval} \
 		--scatter-count ${ScatterCount} \
 		--subdivision-mode ${SubdivisionMode} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/splitted_intervals/"
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/splitted_intervals/"
 	}
 	output {
-		Array[File] splittedIntervals = glob("${OutDir}${SampleID}/${WorkflowType}/splitted_intervals/*-scattered.interval*")
+		Array[File] splittedIntervals = glob("${OutDir}${OutputDirSampleID}/${WorkflowType}/splitted_intervals/*-scattered.interval*")
 	}
 	runtime {
 		cpu: "${Cpu}"

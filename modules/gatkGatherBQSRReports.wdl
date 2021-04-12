@@ -1,19 +1,21 @@
 task gatkGatherBQSRReports {
 	String SampleID
 	String OutDir
+	String OutDirSampleID = ""
 	String WorkflowType
 	String GatkExe
 	Array[File] RecalTables
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} GatherBQSRReports \
 		-I ${sep=' -I ' RecalTables} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.recal_table"
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.recal_table"
 	}
 	output {
-		File gatheredRecalTable = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.recal_table"
+		File gatheredRecalTable = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.recal_table"
 	}
 	runtime {
 		cpu: "${Cpu}"

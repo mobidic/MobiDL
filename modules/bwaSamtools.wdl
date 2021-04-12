@@ -1,7 +1,7 @@
 task bwaSamtools {
 	#global variables
 	String SampleID
-	String OutputDirSampleID = SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	File FastqR1
@@ -22,6 +22,7 @@ task bwaSamtools {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${BwaExe} mem -M -t ${Cpu} \
 		-R "@RG\tID:${SampleID}\tSM:${SampleID}\tPL:${Platform}" \
