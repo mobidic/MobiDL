@@ -1,6 +1,7 @@
 task bwaSamtools {
 	#global variables
 	String SampleID
+	String OutputDirSampleID = SampleID
  	String OutDir
 	String WorkflowType
 	File FastqR1
@@ -28,10 +29,10 @@ task bwaSamtools {
 		${FastqR1} \
 		${FastqR2} \
 		| ${SamtoolsExe} sort -@ ${Cpu} -l 1 \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+		-o "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
 	}
 	output {
-		File sortedBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+		File sortedBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
 	}
 	runtime {
 		cpu: "${Cpu}"
