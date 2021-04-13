@@ -2,8 +2,9 @@ task crumble {
 	#global variables
 	String SampleID
 	String OutDir
+	String OutDirSampleID = ""
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	String WorkflowType
-	
 	#task specific variables
 	File InputFile
 	File InputFileIndex
@@ -16,10 +17,10 @@ task crumble {
 	command {
 		export LD_LIBRARY_PATH="${LdLibraryPath}"
 		${CrumbleExe} \
-		-O ${FileType},nthreads=${Cpu} ${InputFile} "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.crumble.${FileType}"       
+		-O ${FileType},nthreads=${Cpu} ${InputFile} "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.crumble.${FileType}"
 	}
 	output {
-		File crumbled = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.crumble.${FileType}"
+		File crumbled = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.crumble.${FileType}"
 	}
 	runtime {
 		cpu: "${Cpu}"

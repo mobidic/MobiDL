@@ -2,6 +2,8 @@ task gatkCollectInsertSizeMetrics {
 	#https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_CollectMultipleMetrics.php
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	String OutDir
 	String WorkflowType
 	String GatkExe
@@ -14,13 +16,13 @@ task gatkCollectInsertSizeMetrics {
 	command {
 		${GatkExe} CollectInsertSizeMetrics \
 		-I ${BamFile} \
-		-H "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf" \
-		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt" \
+		-H "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf" \
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt" \
 		-M 0.5
 	}
 	output {
-		File insertSizeMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt"
-		File insertSizeMetricsPdf = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf"
+		File insertSizeMetricsTxt = "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.txt"
+		File insertSizeMetricsPdf = "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_insertsize_metrics.pdf"
 	}
 	runtime {
 		cpu: "${Cpu}"
