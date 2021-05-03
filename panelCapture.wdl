@@ -418,17 +418,17 @@ workflow panelCapture {
 		RefFasta = refFasta,
 		BamFile = samtoolsSort.sortedBam
 	}
-	call runQualimapBamQc.qualimapBamQc {
-		input:
-		Cpu = cpuHigh,
-		Memory = memoryLow,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		QualimapExe = qualimapExe,
-		BamFile = samtoolsSort.sortedBam,
-		IntervalBedFile = intervalBedFile,
-	}
+#	call runQualimapBamQc.qualimapBamQc {
+#		input:
+#		Cpu = cpuHigh,
+#		Memory = memoryLow,
+#		SampleID = sampleID,
+#		OutDir = outDir,
+#		WorkflowType = workflowType,
+#		QualimapExe = qualimapExe,
+#		BamFile = samtoolsSort.sortedBam,
+#		IntervalBedFile = intervalBedFile,
+#	}
 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
 		input:
 		Cpu = cpuLow,

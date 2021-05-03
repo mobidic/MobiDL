@@ -216,19 +216,6 @@ modifyJsonAndLaunch() {
 	sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 	if [ $? -eq 0 ];then
 		workflowPostTreatment "${WDL}"
-		#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
-		#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
-		#elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
-		#	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
-		#fi
-		#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-		#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
-		#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
-		#if [ $? -eq 0 ];then
-		#	rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
-		#else
-		#	error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-		#fi
 	else
 		# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
 		# david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
@@ -240,19 +227,6 @@ modifyJsonAndLaunch() {
 			if [ $? -eq 0 ];then
 				info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 				workflowPostTreatment "${WDL}_noGatkLai"
-				#if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
-				#	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
-				#elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
-				#	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
-				#fi
-				#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-				#info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
-				#${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
-				#if [ $? -eq 0 ];then
-				#	rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
-				#else
-				#	error "Error while syncing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-				#fi
 			else
 				error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 			fi
@@ -268,6 +242,7 @@ workflowPostTreatment() {
 	elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 		RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	fi
+	# copy to final destination
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
@@ -276,6 +251,9 @@ workflowPostTreatment() {
 	else
 		error "Error while syncing ${1} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 	fi
+	# remove cromwell data
+	WORKFLOW_ID=$(grep 'Workflow submitted' ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log | rev | cut -d ' ' -f 1 | rev)
+	rm -rf "./cromwell-executions/panelCapture/${WORKFLOW_ID}"
 }
 
 
@@ -284,22 +262,9 @@ setvariables() {
 	ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
 	GENE_FILE_SED=${GENE_FILE////\\/}
 	RUN_PATH_SED=${RUN_PATH////\\/}
-	# useless?? TO BE REMOVED AND TESTED
-	#if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}" ];then
-	#	mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${ACHAB_DIR}"
-	#fi
 }
 
 
-# setjsonvariables() {
-# 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\.${1}\",/" \
-# 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\.${1}\",/" \
-# 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/${SAMPLE}\.${1}\.vcf\",/" \
-# 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\.${1}\/disease.txt\",/" \
-# 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
-# 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
-# 		"${2}"
-# }
 setjsonvariables() {
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
@@ -346,7 +311,7 @@ prepareAchab() {
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
 
-	#treat VCF for CF screening => restrain to given regions
+	# treat VCF for CF screening => restrain to given regions
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
@@ -367,7 +332,7 @@ prepareAchab() {
 		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 		setvariables
 		modifyAchabJson
-		#If CF than recopy original VCF from CF_panel bed file to Achab ready dir for future analysis
+		# If CF than copy original VCF from CF_panel bed file to Achab ready dir for future analysis
 		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
@@ -522,6 +487,7 @@ do
 							info "RUN ${RUN} treated"
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL panelCapture complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
+							rm -r "${TMP_OUTPUT_DIR2}"
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
