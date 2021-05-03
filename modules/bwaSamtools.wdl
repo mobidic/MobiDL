@@ -1,6 +1,7 @@
 task bwaSamtools {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	File FastqR1
@@ -21,6 +22,7 @@ task bwaSamtools {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${BwaExe} mem -M -t ${Cpu} \
 		-R "@RG\tID:${SampleID}\tSM:${SampleID}\tPL:${Platform}" \
@@ -28,10 +30,10 @@ task bwaSamtools {
 		${FastqR1} \
 		${FastqR2} \
 		| ${SamtoolsExe} sort -@ ${Cpu} -l 1 \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+		-o "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
 	}
 	output {
-		File sortedBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam"
+		File sortedBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
 	}
 	runtime {
 		cpu: "${Cpu}"

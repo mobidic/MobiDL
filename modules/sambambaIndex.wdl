@@ -1,6 +1,7 @@
 task sambambaIndex {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	String SambambaExe
@@ -10,13 +11,14 @@ task sambambaIndex {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${SambambaExe} index -t ${Cpu} \
 		${BamFile} \
-		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam.bai"
+		"${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam.bai"
 	}
 	output {
-		File bamIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.bam.bai"
+		File bamIndex = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam.bai"
 	}
 	runtime {
 		cpu: "${Cpu}"

@@ -1,5 +1,6 @@
 task gatkGatherBamFiles {
 	String SampleID
+	String OutDirSampleID = ""
 	String OutDir
 	String WorkflowType
 	String GatkExe
@@ -7,13 +8,14 @@ task gatkGatherBamFiles {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} GatherBamFiles \
 		-I ${sep=' -I ' LAlignedBams} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.gathered.bam"
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.gathered.bam"
 	}
 	output {
-		File gatheredBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.gathered.bam"
+		File gatheredBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.gathered.bam"
 	}
 	runtime {
 		cpu: "${Cpu}"

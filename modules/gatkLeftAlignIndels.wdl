@@ -1,6 +1,7 @@
 task gatkLeftAlignIndels {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	String GatkExe
@@ -13,16 +14,17 @@ task gatkLeftAlignIndels {
 	String IntervalName = basename("${GatkInterval}", ".intervals")
 	#runtime attributes
 	Int Cpu
-	Int Memory	
+	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} LeftAlignIndels \
 		-R ${RefFasta} \
 		-I ${BamFile} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam" 
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam"
 	}
 	output {
-		File lAlignedBam = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam"
-		File lAlignedBamIndex = "${OutDir}${SampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bai"
+		File lAlignedBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bam"
+		File lAlignedBamIndex = "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_bams/${SampleID}.${IntervalName}.dupmarked.recal.laligned.bai"
 	}
 	runtime {
 		cpu: "${Cpu}"

@@ -2,6 +2,7 @@ task gatkBaseRecalibrator {
 	#global variables
 	String SampleID
 	String OutDir
+	String OutDirSampleID = ""
 	String WorkflowType
 	String GatkExe
 	File RefFasta
@@ -18,6 +19,7 @@ task gatkBaseRecalibrator {
 	File KnownSites3
 	File KnownSites3Index
 	String IntervalName = basename("${GatkInterval}", ".intervals")
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	#runtime attributes
 	Int Cpu
 	Int Memory
@@ -29,10 +31,10 @@ task gatkBaseRecalibrator {
 		--known-sites ${KnownSites1} \
 		--known-sites ${KnownSites2} \
 		--known-sites ${KnownSites3} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/recal_tables/${SampleID}.recal_table.${IntervalName}.txt"
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_tables/${SampleID}.recal_table.${IntervalName}.txt"
 	}
 	output {
-		File recalTable = "${OutDir}${SampleID}/${WorkflowType}/recal_tables/${SampleID}.recal_table.${IntervalName}.txt"
+		File recalTable = "${OutDir}${OutputDirSampleID}/${WorkflowType}/recal_tables/${SampleID}.recal_table.${IntervalName}.txt"
 	}
 	runtime {
 		cpu: "${Cpu}"

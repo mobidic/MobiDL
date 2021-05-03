@@ -1,4 +1,4 @@
-#!/home/neuro_admin/anaconda3/bin/python3
+#!/mnt/Bioinfo/Softs/src/conda/Anaconda2-2019.07/envs/mobiDL/bin/python3
 
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2019 IUCT-O'

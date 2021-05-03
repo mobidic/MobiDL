@@ -1,10 +1,12 @@
 task samtoolsCramConvert {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
  	String OutDir
 	String WorkflowType
 	String SamtoolsExe
-	#task specific variables 
+	#task specific variables
 	File BamFile
 	File RefFastaGz
 	File RefFaiGz
@@ -15,11 +17,11 @@ task samtoolsCramConvert {
 	command {
 		${SamtoolsExe} view \
 		-T ${RefFastaGz} -C \
-		-o "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.cram" \
+		-o "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.cram" \
 		"${BamFile}"
 	}
 	output {
-		File cram = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.cram"
+		File cram = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.cram"
 	}
 	runtime {
 		cpu: "${Cpu}"

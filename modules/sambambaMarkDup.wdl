@@ -1,6 +1,7 @@
 task sambambaMarkDup {
 	#global variables
 	String SampleID
+	String OutDirSampleID = ""
  	String OutDir
 	String WorkflowType
 	String SambambaExe
@@ -9,16 +10,17 @@ task sambambaMarkDup {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${SambambaExe} markdup -t ${Cpu} -l 1 \
 		${BamFile} \
-		"${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
-		#mv ${BamFile} "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
-		#samtools index "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam.bai"
+		"${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
+		#mv ${BamFile} "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
+		#samtools index "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.dupmarked.bam" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam.bai"
 	}
 	output {
-		File markedBam = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
-		File markedBamIndex = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dupmarked.bam.bai"
+		File markedBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.dupmarked.bam"
+		File markedBamIndex = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.dupmarked.bam.bai"
 	}
 	runtime {
 		cpu: "${Cpu}"
