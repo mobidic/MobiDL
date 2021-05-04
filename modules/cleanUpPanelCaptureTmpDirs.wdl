@@ -26,7 +26,7 @@ task cleanUpPanelCaptureTmpDirs {
 		fi
 		rm ${sep=" " BamArray}
 		rm ${sep=" " VcfArray}
-		echo "#####MobiDL panelCapture November 2019" > "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
+		echo "#####MobiDL panelCapture April 2021" > "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo "You will Find several vcf files in the directory, MobiDL using two variant callers:" >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo " - SampleID.hc.vcf is the vcf genereated with GATK4 HaplotypeCaller." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		# echo " - SampleID.hc.vcf.gz is the same VCF as above, but bgzip compressed and tabix indexed (the SampleID.hc.vcf.gz.tbi file)." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"

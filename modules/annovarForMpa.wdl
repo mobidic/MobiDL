@@ -40,8 +40,9 @@ task annovarForMpa {
     POPFREQMAX=''
     #REFGENE='refGene'
   fi
-  if [ ${Clinvar} == 'clinvar_latest' ] and [ -f "${HumanDb}/${Genome}_clinvar_latest.ver" ]; then
-     cp "${HumanDb}/${Genome}_clinvar_latest.ver" "${OutDir}${SampleID}/${WorkflowType}/"
+  if [[ "${Clinvar}" == 'clinvar_latest' ]] && [[ -f "${HumanDb}/${Genome}_clinvar_latest.ver" ]]; then
+    mkdir "${OutDir}${SampleID}/${WorkflowType}/admin"
+    cp "${HumanDb}/${Genome}_clinvar_latest.ver" "${OutDir}${SampleID}/${WorkflowType}/admin/"
   fi
   "${PerlPath}" "${TableAnnovarExe}" \
   "${SortedVcf}" \
@@ -58,7 +59,37 @@ task annovarForMpa {
   -otherinfo \
   -arg '-splicing 5','-hgvs','-memtotal ${Memory}000',,,,,,,,"${Dollar}{COMMA}" \
   -xref "${CustomXref}"
->>>
+ >>>
+# command <<<
+#  OPERATION_SUFFIX=',f'
+#  COMMA=','
+#  POPFREQMAX=',${PopFreqMax}'
+#  #REFGENE='refGeneWithVer'
+#  if [ "~{Genome}" == 'hg38' ];then
+#    OPERATION_SUFFIX=''
+#    COMMA=''
+#    POPFREQMAX=''
+#    #REFGENE='refGene'
+#  fi
+#  if [ "~{Clinvar}" == 'clinvar_latest' ] and [ -f "~{HumanDb}/~{Genome}_clinvar_latest.ver" ]; then
+#     cp "~{HumanDb}/~{Genome}_clinvar_latest.ver" "~{OutDir}~{SampleID}/~{WorkflowType}/"
+#  fi
+#  "~{PerlPath}" "~{TableAnnovarExe}" \
+#  "~{SortedVcf}" \
+#  "~{HumanDb}" \
+#  -thread "~{CpuHigh}" \
+#  -buildver "~{Genome}" \
+#  -out "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}" \
+#  -remove \
+#  -intronhgvs "~{IntronHgvs}" \
+#  -protocol #refGeneWithVer,refGeneWithVer,refGeneWithVer,"~{Clinvar}","~{Dbnsfp}","~{Dbscsnv}","~{GnomadExome}","~{GnomadGen#ome}","~{Intervar}",regsnpintron,"~{SpliceAI}""$POPFREQMAX" \
+#  -operation gx,g,g,f,f,f,f,f,f,f,f"$OPERATION_SUFFIX" \
+#  -nastring . \
+#  -vcfinput \
+#  -otherinfo \
+#  -arg '-splicing 5','-hgvs','-memtotal ~{Memory}000',,,,,,,,"$COMMA" \
+#  -xref "~{CustomXref}"
+# >>>
 
  output {
   File outAnnotationVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.${Genome}_multianno.vcf"
