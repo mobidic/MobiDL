@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+
+###########################################################################
+#########																												###########
+#########		AutoDL																							###########
+######### @uthor : D Baux	david.baux<at>inserm.fr								###########
+######### Date : 10/05/2021																			###########
+#########																												###########
+###########################################################################
+
+###########################################################################
+###########
+########### 	Script to automate MobiDL treatment of families
+###########
+###########################################################################
+
+
+### input: a txt file of format:
+
+## RUN_ID=
+## NUM_FAM=
+## TRIO=[0|1]
+## # if yes
+## CI=
+## FATHER=
+## MOTHER=
+## # if no
+## AFFECTED=sample1,sample2...
+## HEALTHY=sample1,sample2...
+
+
+##############		If any option is given, print help message	##################################
+VERSION=1.0
+USAGE="
+Program: merge_multisample
+Version: ${VERSION}
+Contact: Baux David <david.baux@inserm.fr>
+
+Usage: bash merge_multisample.sh -f /path/to/input/file -b /path/to/bcftools
+"
+
+if [ $# -eq 0 ]; then
+	echo "${USAGE}"
+	echo "Error Message : Arguments provided"
+	echo ""
+	exit 1
+fi
+
+usage ()
+{
+	echo 'This script prepares achab for families.'
+	echo 'Usage : bash merge_multisample.sh'
+	echo '	Mandatory arguments :'
+	echo '		* -f|--family-file	<path to input file>'
+	echo '	Optional arguments :'
+	echo '		* -b|--bcftools	<path to bcftools>'
+	echo '		* -t|--threads	<int>'
+}
+
+RED='\033[0;31m'
+LIGHTRED='\033[1;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+# -- Script log
+
+VERBOSITY=3
+# -- Log variables
+
+ERROR=1
+WARNING=2
+INFO=3
+DEBUG=4
+# -- Log functions got from cww.sh -- simplified here
+
+error() { log "${ERROR}" "[${RED}error${NC}]" "$1" ; }
+warning() { log "${WARNING}" "[${YELLOW}warn${NC}]" "$1" ; }
+info() { log "${INFO}" "[${BLUE}info${NC}]" "$1" ; }
+debug() { log "${DEBUG}" "[${LIGHTRED}debug${NC}]" "$1" ; }
+
+# -- Print log
+
+echoerr() { echo -e "$@" 1>&2 ; }
+
+log() {
+	if [ "${VERBOSITY}" -ge "$1" ]; then
+		echoerr "[`date +'%Y-%m-%d %H:%M:%S'`] $2 - MM version : ${VERSION} - $3"
+	fi
+}
+
+# -- Options
+
+BCFTOOLS=$(which bcftools)
+THREADS=1
+
+# -- Parse command line
+while [ "$1" != "" ];do
+	case $1 in
+		-b | --bcftools) shift
+			BCFTOOLS=$1
+			;;
+		-f | --family-file)	shift
+			FAMILY_FILE=$1
+			;;
+		-t | --threads) shift
+			if [[ "$1" =~ ^[0-9]+$ ]]
+			then
+				THREADS=$1
+			fi
+			;;
+		-v | --verbosity) shift
+			# Check if verbosity level argument is an integer before assignment
+			if ! [[ "$1" =~ ^[0-9]+$ ]]
+			then
+				error "\"$1\" must be an integer !"
+				echo " "
+				help
+			else
+				VERBOSITY=$1
+				((VERBOSITYCOUNTER++))
+			fi
+			;;
+		-h | --help)	usage
+			exit
+			;;
+		* )	usage
+			exit 1
+	esac
+	shift
+done
+
+if [[ ! -x "${BCFTOOLS}" ]]; then
+	error "bcftools path ${BCFTOOLS} seems to be wrong."
+	usage
+	exit 1
+fi
+if [[ ! -f "${FAMILY_FILE}" ]]; then
+	error "File ${FAMILY_FILE} does not seem to exist."
+	usage
+	exit 1
+fi
+
+
+# -- get variables from conf file
+source ${FAMILY_FILE}
+
+if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "$RUN_ID}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || ! -f "${GENES_OF_INTEREST}" || ! -d "${ACHAB_TODO}" ]]; then
+	error "There is an error with one of the params of the Family file."
+	usage
+	exit 1
+fi
+if [ ! "${AFFECTED}" ]; then
+	error "There should be at least one sample affected."
+	usage
+	exit 1
+fi
+if [[ "${TRIO}" == 1 ]]; then
+	if [[ ! "${CI}" || ! "${FATHER}" || ! "${MOTHER}" ]]; then
+		error "At least one member of the trio is lacking."
+		usage
+		exit 1
+	fi
+fi
+
+# -- Debug
+debug "BCFTOOLS:${BCFTOOLS}"
+debug "FAMILY_FILE:${FAMILY_FILE}"
+debug "THREADS:${THREADS}"
+debug "RUN_PATH:${RUN_PATH}"
+debug "BASE_JSON:${BASE_JSON}"
+debug "DISEASE_FILE:${DISEASE_FILE}"
+debug "GENES_OF_INTEREST:${GENES_OF_INTEREST}"
+debug "RUN_ID:${RUN_ID}"
+debug "NUM_FAM:${NUM_FAM}"
+debug "TRIO:${TRIO}"
+debug "AFFECTED:${AFFECTED}"
+debug "TRCIIO:${CI}"
+debug "FATHER:${FATHER}"
+debug "MOTHER:${MOTHER}"
+
+# -- build the VCF list
+if [[ "${TRIO}" == 1 ]]; then
+	VCFS="${RUN_PATH}/${RUN_ID}/MobiDL/${CI}/panelCapture/${CI}.vcf.gz,"
+	VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${FATHER}/panelCapture/${FATHER}.vcf.gz,"
+	VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${MOTHER}/panelCapture/${MOTHER}.vcf.gz"
+else
+	# -- build the list from the list of affected and HEALTHY
+	# first split the sample list and rebuild the VCF list (with path)
+	VCF_AFFECTED
+	IFS="," read -a VCF_AFFECTED <<< "${AFFECTED}"
+	IFS="," read -a VCF_HEALTHY <<< "${HEALTHY}"
+	VCFS=""
+	for VCF_AFF in "${VCF_AFFECTED[@]}"; do
+		VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${VCF_AFF}/panelCapture/${VCF_AFF}.vcf.gz,"
+	done
+	for VCF_HEA in "${VCF_HEALTHY[@]}"; do
+		VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${VCF_HEA}/panelCapture/${VCF_HEA}.vcf.gz,"
+	done
+fi
+IFS="," read -a VCF_ARRAY <<< "${VCFS}"
+
+# -- prepare output
+mkdir -p "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}"
+cp "${BASE_JSON}" "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
+cp "${DISEASE_FILE}" "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/disease.txt"
+
+# --merge VCF
+MERGE_CMD="${BCFTOOLS} merge --threads ${THREADS} "
+for VCF in "${VCF_ARRAY[@]}"; do
+	MERGE_CMD+="${VCF} "
+done
+# MERGE_CMD+="> ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+
+info "launching bcftools"
+debug "${MERGE_CMD} > ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+
+${MERGE_CMD} > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+
+if [ $? -eq 0 ]; then
+
+	# -- preapre vars by escaping "/"
+	RUN_SED=${RUN_PATH////\\/}
+	DISEASE_SED=${DISEASE_FILE////\\/}
+	GENES_SED=${GENES_OF_INTEREST////\\/}
+	# -- sed the JSON
+	if [[ ${TRIO} == 0 ]]; then
+		sed -i -e "s/\(  \"captainAchab\.sampleID\": \"\).*/\1${NUM_FAM}\",/" \
+			-e "s/\(  \"captainAchab\.affected\": \"\).*/\1${AFFECTED}\",/" \
+			-e "s/\(  \"captainAchab\.inputVcf\": \"\).*/\1${RUN_SED}\/${RUN_ID}\/MobiDL\/${NUM_FAM}\/${NUM_FAM}\.vcf\",/" \
+			-e "s/\(  \"captainAchab\.diseaseFile\": \"\).*/\1${DISEASE_SED}\",/" \
+			-e "s/\(  \"captainAchab\.genesOfInterest\": \"\).*/\1${GENES_SED}\",/" \
+			-e "s/\(  \"captainAchab\.outDir\": \"\).*/\1${RUN_SED}\/${RUN_ID}\/MobiDL\/${NUM_FAM}\/\",/" \
+			"${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
+	else
+		sed -i -e "s/\(  \"captainAchab\.sampleID\": \"\).*/\1${NUM_FAM}\",/" \
+			-e "s/\(  \"captainAchab\.affected\": \"\).*/\1${AFFECTED}\",/" \
+			-e "s/\(  \"captainAchab\.inputVcf\": \"\).*/\1${RUN_SED}\/${RUN_ID}\/MobiDL\/${NUM_FAM}\/${NUM_FAM}\.vcf\",/" \
+			-e "s/\(  \"captainAchab\.diseaseFile\": \"\).*/\1${DISEASE_SED}\",/" \
+			-e "s/\(  \"captainAchab\.checkTrio\": \"\).*/\1--trio\",/" \
+			-e "s/\(  \"captainAchab\.caseSample\": \"\).*/\1${CI}\",/" \
+			-e "s/\(  \"captainAchab\.fatherSample\": \"\).*/\1${FATHER}\",/" \
+			-e "s/\(  \"captainAchab\.motherSample\": \"\).*/\1${MOTHER}\",/" \
+			-e "s/\(  \"captainAchab\.genesOfInterest\": \"\).*/\1${GENES_SED}\",/" \
+			-e "s/\(  \"captainAchab\.outDir\": \"\).*/\1${RUN_SED}\/${RUN_ID}\/MobiDL\/${NUM_FAM}\/\",/" \
+			"${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
+	fi
+
+	info "JSON ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json seded"
+
+	rsync -az "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}" "${ACHAB_TODO}"
+
+	info "FAM ${NUMFAM} sent to Achab"
+else
+	error "bcftools failed: ${MERGE_CMD}"
+fi
