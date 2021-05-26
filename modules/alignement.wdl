@@ -15,6 +15,11 @@ import "modules/samtoolsCramIndex.wdl" as runSamtoolsCramIndex
 import "modules/sambambaFlagStat.wdl" as runSambambaFlagStat
 import "modules/gatkCollectMultipleMetrics.wdl" as runGatkCollectMultipleMetrics
 import "modules/gatkCollectInsertSizeMetrics.wdl" as runGatkCollectInsertSizeMetrics
+import "modules/computePoorCoverage.wdl" as runComputePoorCoverage
+import "modules/samtoolsBedCov.wdl" as runSamtoolsBedCov
+import "modules/computeCoverage.wdl" as runComputeCoverage
+import "modules/computeCoverageClamms.wdl" as runComputeCoverageClamms
+import "modules/gatkCollectHsMetrics.wdl" as runGatkCollectHsMetrics
 
 workflow alignDNA {
   meta {
@@ -72,6 +77,11 @@ workflow alignDNA {
   ## ConvertCramtoCrumble
 	String crumbleExe
 	String ldLibraryPath
+  ## computeCoverage
+	Int minCovBamQual
+  ## HSmetrix
+  File BaitIntervals
+  File TargetIntervals
   ###############
   # run bwa mem #
   ###############
@@ -331,6 +341,76 @@ workflow alignDNA {
 		GatkExe = gatkExe,
 		RefFasta = refFasta,
 		BamFile = samtoolsSort.sortedBam
+	}
+  call runComputePoorCoverage.computePoorCoverage {
+		input:
+		Cpu = CpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+    OutDirSampleID = CIsampleDIR,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		GenomeVersion = genomeVersion,
+		BedToolsExe = bedToolsExe,
+		AwkExe = awkExe,
+		SortExe = sortExe,
+		IntervalBedFile = intervalBedFile,
+		BedtoolsLowCoverage = bedtoolsLowCoverage,
+		BedToolsSmallInterval = bedToolsSmallInterval,
+		BamFile = samtoolsSort.sortedBam
+	}
+  call runSamtoolsBedCov.samtoolsBedCov {
+		input:
+		Cpu = CpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+    OutDirSampleID = CIsampleDIR,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		SamtoolsExe = samtoolsExe,
+		IntervalBedFile = intervalBedFile,
+		BamFile = samtoolsSort.sortedBam,
+		BamIndex = finalIndexing.bamIndex,
+		MinCovBamQual = minCovBamQual
+	}
+  call runComputeCoverage.computeCoverage {
+		input:
+		Cpu = CpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+    OutDirSampleID = CIsampleDIR,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		AwkExe = awkExe,
+		SortExe = sortExe,
+		BedCovFile = samtoolsBedCov.BedCovFile
+	}
+  call runComputeCoverageClamms.computeCoverageClamms {
+		input:
+		Cpu = CpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+    OutDirSampleID = CIsampleDIR,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		AwkExe = awkExe,
+		SortExe = sortExe,
+		BedCovFile = samtoolsBedCov.BedCovFile
+	}
+  call runGatkCollectHsMetrics.gatkCollectHsMetrics {
+		input:
+		Cpu = CpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+    OutDirSampleID = CIsampleDIR,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		GatkExe = gatkExe,
+		RefFasta = refFasta,
+		RefFai = refFai,
+		BamFile = samtoolsSort.sortedBam,
+		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
 	}
   output {
 		File bam = samtoolsSort.sortedBam
