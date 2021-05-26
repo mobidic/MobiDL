@@ -1,24 +1,6 @@
 import "modules/preparePanelCaptureTmpDirs.wdl" as runPreparePanelCaptureTmpDirs
 import "modules/fastqcTrio.wdl" as runFastqcTrio
-#import "modules/bwaSamtools.wdl" as runBwaSamtools
-#import "modules/sambambaIndex.wdl" as runSambambaIndex
-#import "modules/sambambaMarkDup.wdl" as runSambambaMarkDup
-#import "modules/bedToGatkIntervalList.wdl" as runBedToGatkIntervalList
-#import "modules/gatkSplitIntervals.wdl" as runGatkSplitIntervals
-#import "modules/gatkBaseRecalibrator.wdl" as runGatkBaseRecalibrator
-#import "modules/gatkGatherBQSRReports.wdl" as runGatkGatherBQSRReports
-#import "modules/gatkApplyBQSR.wdl" as runGatkApplyBQSR
-#import "modules/gatkLeftAlignIndels.wdl" as runGatkLeftAlignIndels
-#import "modules/gatkGatherBamFiles.wdl" as runGatkGatherBamFiles
-#import "modules/samtoolsSort.wdl" as runSamtoolsSort
-#import "modules/samtoolsCramConvert.wdl" as runSamtoolsCramConvert
-#import "modules/samtoolsCramIndex.wdl" as runSamtoolsCramIndex
-#import "modules/sambambaFlagStat.wdl" as runSambambaFlagStat
-#import "modules/gatkCollectMultipleMetrics.wdl" as runGatkCollectMultipleMetrics
-#import "modules/gatkCollectInsertSizeMetrics.wdl" as runGatkCollectInsertSizeMetrics
 import "modules/gatkBedToPicardIntervalList.wdl" as runGatkBedToPicardIntervalList
-import "modules/computePoorCoverage.wdl" as runComputePoorCoverage
-import "modules/samtoolsBedCov.wdl" as runSamtoolsBedCov
 import "modules/computeCoverage.wdl" as runComputeCoverage
 import "modules/computeCoverageClamms.wdl" as runComputeCoverageClamms
 import "modules/gatkCollectHsMetrics.wdl" as runGatkCollectHsMetrics
@@ -52,8 +34,8 @@ workflow panelCaptureTrio {
 	meta {
 		author: "Olivier Ardouin"
 		email: "o-ardouin(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2021-04-13"
+		version: "0.0.2"
+		date: "2021-05-26"
 	}
 	# variables declarations
 	## Resources
@@ -94,11 +76,11 @@ workflow panelCaptureTrio {
 	String bgZipExe
 	String tabixExe
 	String multiqcExe
+	String gatkExe
 	## Standard execs
 	String awkExe
 	String sedExe
 	String sortExe
-	String gatkExe
 	String javaExe
 	## bwaSamtools
 	String platform
@@ -184,6 +166,18 @@ workflow panelCaptureTrio {
 		MotherFastqR2 = MotherFastqR2,
 		Suffix1 = suffix1,
 		Suffix2 = suffix2,
+		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+	}
+	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
+		input:
+		Cpu = cpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		IntervalBedFile = intervalBedFile,
+		RefDict = refDict,
+		GatkExe = gatkExe,
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
 	}
 
@@ -358,58 +352,6 @@ workflow panelCaptureTrio {
 
 
 
-	call runQualimapBamQc.qualimapBamQc {
-		input:
-		Cpu = cpuHigh,
-		Memory = memoryLow,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		QualimapExe = qualimapExe,
-		BamFile = samtoolsSort.sortedBam,
-		IntervalBedFile = intervalBedFile,
-	}
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		IntervalBedFile = intervalBedFile,
-		RefDict = refDict,
-		GatkExe = gatkExe,
-		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
-	call runComputePoorCoverage.computePoorCoverage {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		GenomeVersion = genomeVersion,
-		BedToolsExe = bedToolsExe,
-		AwkExe = awkExe,
-		SortExe = sortExe,
-		IntervalBedFile = intervalBedFile,
-		BedtoolsLowCoverage = bedtoolsLowCoverage,
-		BedToolsSmallInterval = bedToolsSmallInterval,
-		BamFile = samtoolsSort.sortedBam
-	}
-	call runSamtoolsBedCov.samtoolsBedCov {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		SamtoolsExe = samtoolsExe,
-		IntervalBedFile = intervalBedFile,
-		BamFile = samtoolsSort.sortedBam,
-		BamIndex = finalIndexing.bamIndex,
-		MinCovBamQual = minCovBamQual
-	}
 	call runComputeCoverage.computeCoverage {
 		input:
 		Cpu = cpuLow,
