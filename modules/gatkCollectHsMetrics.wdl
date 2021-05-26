@@ -3,6 +3,7 @@ task gatkCollectHsMetrics {
 	#global variables
 	String SampleID
 	String OutDir
+	String OutDirSampleID = ""
 	String WorkflowType
 	String GatkExe
 	File RefFasta
@@ -14,19 +15,20 @@ task gatkCollectHsMetrics {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} CollectHsMetrics \
 		-R ${RefFasta} \
 		-I ${BamFile} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt" \
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt" \
 		--BAIT_INTERVALS ${BaitIntervals} \
 		--TARGET_INTERVALS ${TargetIntervals}
 	}
 	output {
-		File hsMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt"
+		File hsMetricsTxt = "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt"
 	}
 	runtime {
 		cpu: "${Cpu}"
 		requested_memory_mb_per_core: "${Memory}"
-	}	
+	}
 }
