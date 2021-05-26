@@ -415,5 +415,7 @@ workflow alignDNA {
   output {
 		File bam = samtoolsSort.sortedBam
 		File idx = finalIndexing.bamIndex
+    File Crumble = crumble.crumbled
+    File CrumbleIndex = crumbleIndexing.cramIndex
 	}
 }
