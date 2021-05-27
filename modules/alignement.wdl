@@ -79,6 +79,9 @@ workflow alignDNA {
 	String ldLibraryPath
   ## computeCoverage
 	Int minCovBamQual
+  ## computePoorCoverage
+	Int bedtoolsLowCoverage
+	Int bedToolsSmallInterval
   ## HSmetrix
   File BaitIntervals
   File TargetIntervals

@@ -232,6 +232,9 @@ workflow panelCaptureTrio {
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared,
 		## compute LowCoverage
 		minCovBamQual = minCovBamQual,
+		## computePoorCoverage
+		bedtoolsLowCoverage = bedtoolsLowCoverage,
+		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
 		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
 		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
@@ -289,6 +292,9 @@ workflow panelCaptureTrio {
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared,
 		## compute LowCoverage
 		minCovBamQual = minCovBamQual,
+		## computePoorCoverage
+		bedtoolsLowCoverage = bedtoolsLowCoverage,
+		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
 		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
 		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
@@ -346,6 +352,9 @@ workflow panelCaptureTrio {
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared,
 		## compute LowCoverage
 		minCovBamQual = minCovBamQual,
+		## computePoorCoverage
+		bedtoolsLowCoverage = bedtoolsLowCoverage,
+		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
 		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
 		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
