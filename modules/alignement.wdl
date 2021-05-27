@@ -39,6 +39,7 @@ workflow alignDNA {
   String CIsampleDIR = if CIsDIR == "" then sampleID else CIsDIR
   File fastqR1
   File fastqR2
+  String genomeVersion
   File refFasta
   File refFai
   File refDict
@@ -50,9 +51,10 @@ workflow alignDNA {
   String bwaExe
   String samtoolsExe
   String sambambaExe
+  String gatkExe
   ## Standard execs
   String awkExe
-  String gatkExe
+  String sortExe
   ## bwaSamtools
   String platform
   File refAmb
@@ -77,6 +79,7 @@ workflow alignDNA {
   ## ConvertCramtoCrumble
 	String crumbleExe
 	String ldLibraryPath
+  String bedToolsExe
   ## computeCoverage
 	Int minCovBamQual
   ## computePoorCoverage

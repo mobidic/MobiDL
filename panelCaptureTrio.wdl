@@ -198,11 +198,14 @@ workflow panelCaptureTrio {
   	intervalBedFile = intervalBedFile,
   	workflowType = workflowType,
   	outDir = outDir,
+		genomeVersion = genomeVersion,
     ## Bioinfo execs,
   	bwaExe = bwaExe,
   	samtoolsExe = samtoolsExe,
   	sambambaExe = sambambaExe,
+		bedToolsExe = bedToolsExe,
     ## Standard execs
+		sortExe = sortExe,
   	awkExe = awkExe,
   	gatkExe = gatkExe,
   	## bwaSamtools
@@ -258,11 +261,14 @@ workflow panelCaptureTrio {
   	intervalBedFile = intervalBedFile,
   	workflowType = workflowType,
   	outDir = outDir,
+		genomeVersion = genomeVersion,
     ## Bioinfo execs,
   	bwaExe = bwaExe,
   	samtoolsExe = samtoolsExe,
   	sambambaExe = sambambaExe,
+		bedToolsExe = bedToolsExe,
     ## Standard execs
+		sortExe = sortExe,
   	awkExe = awkExe,
   	gatkExe = gatkExe,
   	## bwaSamtools
@@ -318,11 +324,14 @@ workflow panelCaptureTrio {
   	intervalBedFile = intervalBedFile,
   	workflowType = workflowType,
   	outDir = outDir,
+		genomeVersion = genomeVersion,
     ## Bioinfo execs,
   	bwaExe = bwaExe,
   	samtoolsExe = samtoolsExe,
   	sambambaExe = sambambaExe,
+		bedToolsExe = bedToolsExe,
     ## Standard execs
+		sortExe = sortExe,
   	awkExe = awkExe,
   	gatkExe = gatkExe,
   	## bwaSamtools
