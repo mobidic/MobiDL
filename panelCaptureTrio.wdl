@@ -384,7 +384,7 @@ workflow panelCaptureTrio {
 		}
 	}
 	output {
-		Array[File] hcVcfs = gatkHaplotypeCaller.hcVcf
+		Array[File] hcVcfs = gatkHaplotypeCallerTrio.hcVcf
 	}
 	call runGatkGatherVcfs.gatkGatherVcfs {
 		input:
