@@ -409,8 +409,8 @@ workflow alignDNA {
 		RefFasta = refFasta,
 		RefFai = refFai,
 		BamFile = samtoolsSort.sortedBam,
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = BaitIntervals,
+		TargetIntervals = BaitIntervals
 	}
   output {
 		File bam = samtoolsSort.sortedBam
