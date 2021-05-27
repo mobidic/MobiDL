@@ -25,8 +25,6 @@ task cleanUpPanelCaptureTrioTmpDirs {
 		if [ -d "${OutDir}${SampleID}/${WorkflowType}/vcfs" ];then \
 			rm -r "${OutDir}${SampleID}/${WorkflowType}/vcfs"; \
 		fi
-		#rm ${sep=" " BamArray}
-		#rm ${sep=" " VcfArray}
 		echo "#####MobiDL panelCaptureTrio Mai 2021" > "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo "You will Find several vcf files in the directory, MobiDL using two variant callers:" >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
 		echo " - SampleID.hc.vcf is the vcf genereated with GATK4 HaplotypeCaller." >> "${OutDir}${SampleID}/${WorkflowType}/README_VCF.txt"
