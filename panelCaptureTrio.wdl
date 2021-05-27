@@ -358,7 +358,7 @@ workflow panelCaptureTrio {
 
 
 ##############################################HaplotypeCaller######################@
-	scatter (interval in gatkSplitIntervals.splittedIntervals) {
+	scatter (interval in alignCI.splittedIntervals) {
 		call runGatkHaplotypeCallerTrio.gatkHaplotypeCallerTrio {
 			input:
 			Cpu = cpuLow,

@@ -417,5 +417,6 @@ workflow alignDNA {
 		File idx = finalIndexing.bamIndex
     File Crumble = crumble.crumbled
     File CrumbleIndex = crumbleIndexing.cramIndex
+    Array[File] splittedIntervals = gatkSplitIntervals.splittedIntervals
 	}
 }
