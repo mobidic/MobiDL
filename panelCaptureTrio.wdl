@@ -539,7 +539,7 @@ workflow panelCaptureTrio {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			MultiqcExe = multiqcExe,
-			Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
+			Vcf = cleanUpPanelCaptureTrioTmpDirs.finalFile1
 		}
 	}
 	call runToolVersions.toolVersions {
