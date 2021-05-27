@@ -373,12 +373,12 @@ workflow panelCaptureTrio {
 			DbSNP = knownSites3,
 			DbSNPIndex = knownSites3Index,
 			GatkInterval = interval,
-			BamFile = alignCI.sortedBam,
-			BamIndex = alignCI.bamIndex,
-			BamFileFather = alignFather.sortedBam,
-			BamIndexFather = alignFather.bamIndex,
-			BamFileMother = alignMother.sortedBam,
-			BamIndexMother = alignMother.bamIndex,
+			BamFile = alignCI.bam,
+			BamIndex = alignCI.idx,
+			BamFileFather = alignFather.bam,
+			BamIndexFather = alignFather.idx,
+			BamFileMother = alignMother.bam,
+			BamIndexMother = alignMother.idx,
 			SwMode = swMode,
 			EmitRefConfidence = emitRefConfidence
 		}
