@@ -564,7 +564,7 @@ workflow panelCaptureTrio {
     GatkExe = gatkExe,
     JavaExe= javaExe,
     VcfPolyXJar = vcfPolyXJar,
-		Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
+		Vcf = cleanUpPanelCaptureTrioTmpDirs.finalFile1
     }
 	output {
 		File? FinalVcf = cleanUpPanelCaptureTrioTmpDirs.finalFile1
