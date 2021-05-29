@@ -1,7 +1,7 @@
 import "modules/preparePanelCaptureTmpDirs.wdl" as runPreparePanelCaptureTmpDirs
-import "modules/fastqcTrio.wdl" as runFastqcTrio
+import "modules/fastqcDuo.wdl" as runFastqcDuo
 import "modules/gatkBedToPicardIntervalList.wdl" as runGatkBedToPicardIntervalList
-import "modules/gatkHaplotypeCallerTrio.wdl" as runGatkHaplotypeCallerTrio
+import "modules/gatkHaplotypeCallerDuo.wdl" as runGatkHaplotypeCallerDuo
 import "modules/gatkGatherVcfs.wdl" as runGatkGatherVcfs
 import "modules/qualimapBamQc.wdl" as runQualimapBamQc
 import "modules/jvarkitVcfPolyX.wdl" as runJvarkitVcfPolyX
@@ -23,11 +23,11 @@ import "modules/bcftoolsStats.wdl" as runBcftoolsStats
 #import "modules/crumble.wdl" as runCrumble
 #import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
-import "modules/cleanUpPanelCaptureTrioTmpDirs.wdl" as runCleanUpPanelCaptureTrioTmpDirs
+import "modules/cleanUpPanelCaptureDuoTmpDirs.wdl" as runCleanUpPanelCaptureDuoTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
 import "modules/toolVersions.wdl" as runToolVersions
 import "modules/alignement.wdl" as alignDNA
-workflow panelCaptureTrio {
+workflow panelCaptureDuo {
 	meta {
 		author: "Olivier Ardouin"
 		email: "o-ardouin(at)chu-montpellier.fr"
@@ -143,7 +143,7 @@ workflow panelCaptureTrio {
 		WorkflowType = workflowType
 	}
 	# RunFastqc on all FASTQs
-	call runFastqcTrio.fastqc {
+	call runFastqcDuo.fastqc {
 		input:
 		Cpu = cpuHigh,
 		Memory = memoryLow,
@@ -302,7 +302,7 @@ workflow panelCaptureTrio {
 
 ##############################################HaplotypeCaller######################@
 	scatter (interval in alignCI.splittedIntervals) {
-		call runGatkHaplotypeCallerTrio.gatkHaplotypeCallerTrio {
+		call runGatkHaplotypeCallerDuo.gatkHaplotypeCallerDuo {
 			input:
 			Cpu = cpuLow,
 			Memory = memoryHigh,
@@ -325,7 +325,7 @@ workflow panelCaptureTrio {
 		}
 	}
 	output {
-		Array[File] hcVcfs = gatkHaplotypeCallerTrio.hcVcf
+		Array[File] hcVcfs = gatkHaplotypeCallerDuo.hcVcf
 	}
 	call runGatkGatherVcfs.gatkGatherVcfs {
 		input:
@@ -459,7 +459,7 @@ workflow panelCaptureTrio {
 
 	if (!debug) {
 		String dataPath = "${outDir}${sampleID}/${workflowType}/"
-		call runCleanUpPanelCaptureTrioTmpDirs.cleanUpPanelCaptureTrioTmpDirs {
+		call runCleanUpPanelCaptureDuoTmpDirs.cleanUpPanelCaptureDuoTmpDirs {
 			input:
 			Cpu = cpuLow,
 			Memory = memoryHigh,
@@ -479,7 +479,7 @@ workflow panelCaptureTrio {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			MultiqcExe = multiqcExe,
-			Vcf = cleanUpPanelCaptureTrioTmpDirs.finalFile1
+			Vcf = cleanUpPanelCaptureDuoTmpDirs.finalFile1
 		}
 	}
 	call runToolVersions.toolVersions {
@@ -504,10 +504,10 @@ workflow panelCaptureTrio {
     GatkExe = gatkExe,
     JavaExe= javaExe,
     VcfPolyXJar = vcfPolyXJar,
-		Vcf = cleanUpPanelCaptureTrioTmpDirs.finalFile1
+		Vcf = cleanUpPanelCaptureDuoTmpDirs.finalFile1
     }
 	output {
-		File? FinalVcf = cleanUpPanelCaptureTrioTmpDirs.finalFile1
+		File? FinalVcf = cleanUpPanelCaptureDuoTmpDirs.finalFile1
 		File FinalCram = alignCI.Crumble
 		File FinalCramIndex = alignCI.CrumbleIndex
 		File FinalCramFather = alignFather.Crumble
