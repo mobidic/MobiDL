@@ -1,4 +1,11 @@
-## 20200625 - Script: autoDL.sh; sometimes, for an undetermined erason, GATK LeftAlignIndels triggers an error:
+
+## 20210615: Fastqc replaced with fastp which also manages fastq trimming
+also added a COVERAGE_CAP option to Picard collectHsMetrics module (default 1000 > picard default which is 200).
+
+## 20210318: HC and DV VCfs are merged
+we now use a custom version of anaconda utils anacoreUtilsMergeVCFCallersMobiDL.py script to merge the VCFs.
+
+## 20200625 - Script: autoDL.sh; sometimes, for an undetermined reason, GATK LeftAlignIndels triggers an error:
 java.lang.IllegalArgumentException: the range cannot contain negative indices
 Then, when this error occurs, as this is not a critical step, the pipeline is launched again in a version *panelCapture_noGatkLai.wdl* that ignores this step.
 

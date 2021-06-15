@@ -11,6 +11,7 @@ task gatkCollectHsMetrics {
  	File BamFile
 	File BaitIntervals
 	File TargetIntervals
+	Int CoverageCap = 1000
 	#runtime attributes
 	Int Cpu
 	Int Memory
@@ -19,8 +20,9 @@ task gatkCollectHsMetrics {
 		-R ${RefFasta} \
 		-I ${BamFile} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt" \
-		--BAIT_INTERVALS ${BaitIntervals} \
-		--TARGET_INTERVALS ${TargetIntervals}
+		--BAIT_INTERVALS "${BaitIntervals}" \
+		--TARGET_INTERVALS "${TargetIntervals}" \
+		--COVERAGE_CAP "${CoverageCap}"
 	}
 	output {
 		File hsMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt"
@@ -28,5 +30,5 @@ task gatkCollectHsMetrics {
 	runtime {
 		cpu: "${Cpu}"
 		requested_memory_mb_per_core: "${Memory}"
-	}	
+	}
 }
