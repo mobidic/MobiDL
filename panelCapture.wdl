@@ -1,5 +1,6 @@
 import "modules/preparePanelCaptureTmpDirs.wdl" as runPreparePanelCaptureTmpDirs
-import "modules/fastqc.wdl" as runFastqc
+# import "modules/fastqc.wdl" as runFastqc
+import "modules/fastp.wdl" as runFastp
 import "modules/bwaSamtools.wdl" as runBwaSamtools
 import "modules/sambambaIndex.wdl" as runSambambaIndex
 import "modules/sambambaMarkDup.wdl" as runSambambaMarkDup
@@ -75,7 +76,8 @@ workflow panelCapture {
 	String outDir
 	Boolean debug = false
 	## Bioinfo execs
-	String fastqcExe
+	# String fastqcExe
+	String fastpExe
 	String bwaExe
 	String samtoolsExe
 	String sambambaExe
@@ -156,22 +158,34 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType
 	}
-	#if (preparePanelCaptureTmpDirs.dirsPrepared) {
-	call runFastqc.fastqc {
+	#call runFastqc.fastqc {
+	#	input:
+	#	Cpu = cpuHigh,
+	#	Memory = memoryLow,
+	#	SampleID = sampleID,
+	#	OutDir = outDir,
+	#	WorkflowType = workflowType,
+	#	FastqcExe = fastqcExe,
+	#	FastqR1 = fastqR1,
+	#	FastqR2 = fastqR2,
+	#	Suffix1 = suffix1,
+	#	Suffix2 = suffix2,
+	#	DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+	#}
+	call runFastp.fastp {
 		input:
 		Cpu = cpuHigh,
 		Memory = memoryLow,
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		FastqcExe = fastqcExe,
+		FastpExe = fastpExe,
 		FastqR1 = fastqR1,
 		FastqR2 = fastqR2,
 		Suffix1 = suffix1,
 		Suffix2 = suffix2,
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
-	#}
+	 }
 	call runBwaSamtools.bwaSamtools {
 		input:
 		Cpu = cpuHigh,
@@ -179,8 +193,8 @@ workflow panelCapture {
 		SampleID = sampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		FastqR1 = fastqR1,
-		FastqR2 = fastqR2,
+		FastqR1 = fastp.fastpR1,
+		FastqR2 = fastp.fastpR2,
 		SamtoolsExe = samtoolsExe,
 		BwaExe = bwaExe,
 		Platform = platform,
@@ -191,6 +205,25 @@ workflow panelCapture {
 		RefPac = refPac,
 		RefSa = refSa
 	}
+	# call runBwaSamtools.bwaSamtools {
+	# 	input:
+	# 	Cpu = cpuHigh,
+	# 	Memory = memoryLow,
+	# 	SampleID = sampleID,
+	# 	OutDir = outDir,
+	# 	WorkflowType = workflowType,
+	# 	FastqR1 = fastqR1,
+	# 	FastqR2 = fastqR2,
+	# 	SamtoolsExe = samtoolsExe,
+	# 	BwaExe = bwaExe,
+	# 	Platform = platform,
+	# 	RefFasta = refFasta,
+	# 	RefAmb = refAmb,
+	# 	RefAnn = refAnn,
+	# 	RefBwt = refBwt,
+	# 	RefPac = refPac,
+	# 	RefSa = refSa
+	# }
 	#call runSambambaIndex.sambambaIndex {
 	#	input:
 	#	Cpu = cpuHigh,
@@ -954,7 +987,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		GenomeVersion = genomeVersion,
-    FastqcExe = fastqcExe,
+    FastpExe = fastpExe,
     BwaExe = bwaExe,
     SamtoolsExe = samtoolsExe,
     SambambaExe = sambambaExe,

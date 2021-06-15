@@ -252,8 +252,12 @@ workflowPostTreatment() {
 		error "Error while syncing ${1} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 	fi
 	# remove cromwell data
-	WORKFLOW_ID=$(grep 'Workflow submitted' ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log | rev | cut -d ' ' -f 1 | rev)
-	rm -rf "./cromwell-executions/panelCapture/${WORKFLOW_ID}"
+	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" | rev | cut -d ' ' -f 1 | rev)
+	if [[ -n "${WORKFLOW_ID}" ]]; then
+		# test récupérer le path courant
+		rm -r "./cromwell-executions/panelCapture/${WORKFLOW_ID}"
+		info "removed cromwell data for ${WORKFLOW_ID}"
+	fi
 }
 
 

@@ -16,9 +16,12 @@ task preparePanelCaptureTmpDirs {
 		if [ ! -d "${OutDir}${SampleID}/${WorkflowType}" ];then \
 			mkdir "${OutDir}${SampleID}/${WorkflowType}"; \
 		fi
-		if [ ! -d "${OutDir}${SampleID}/${WorkflowType}/FastqcDir" ];then \
-			mkdir "${OutDir}${SampleID}/${WorkflowType}/FastqcDir"; \
+		if [ ! -d "${OutDir}${SampleID}/${WorkflowType}/FastpDir" ];then \
+			mkdir "${OutDir}${SampleID}/${WorkflowType}/FastpDir"; \
 		fi
+		# if [ ! -d "${OutDir}${SampleID}/${WorkflowType}/FastqcDir" ];then \
+		# 	mkdir "${OutDir}${SampleID}/${WorkflowType}/FastqcDir"; \
+		# fi
 		if [ ! -d "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir" ];then \
 			mkdir "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir"; \
 		fi
