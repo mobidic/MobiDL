@@ -3,6 +3,7 @@ task gatkCollectHsMetrics {
 	#global variables
 	String SampleID
 	String OutDir
+	String OutDirSampleID = ""
 	String WorkflowType
 	String GatkExe
 	File RefFasta
@@ -15,6 +16,7 @@ task gatkCollectHsMetrics {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${GatkExe} CollectHsMetrics \
 		-R ${RefFasta} \
@@ -25,7 +27,7 @@ task gatkCollectHsMetrics {
 		--COVERAGE_CAP "${CoverageCap}"
 	}
 	output {
-		File hsMetricsTxt = "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt"
+		File hsMetricsTxt = "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt"
 	}
 	runtime {
 		cpu: "${Cpu}"

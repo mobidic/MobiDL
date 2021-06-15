@@ -1,5 +1,6 @@
 task samtoolsBedCov {
 	String SampleID
+	String OutDirSampleID = ""
 	String OutDir
 	String WorkflowType
 	String SamtoolsExe
@@ -11,14 +12,15 @@ task samtoolsBedCov {
 	#runtime attributes
 	Int Cpu
 	Int Memory
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command {
 		${SamtoolsExe} bedcov -Q ${MinCovBamQual} \
 		${IntervalBedFile} \
 		${BamFile} \
-		> "${OutDir}/${SampleID}/${WorkflowType}/coverage/${SampleID}_bedcov.bed"
+		> "${OutDir}/${OutputDirSampleID}/${WorkflowType}/coverage/${SampleID}_bedcov.bed"
 	}
 	output {
-		File BedCovFile = "${OutDir}/${SampleID}/${WorkflowType}/coverage/${SampleID}_bedcov.bed"
+		File BedCovFile = "${OutDir}/${OutputDirSampleID}/${WorkflowType}/coverage/${SampleID}_bedcov.bed"
 	}
 	runtime {
 		cpu: "${Cpu}"
