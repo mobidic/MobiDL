@@ -56,4 +56,4 @@ Indeed, DeepVariant is used in MobiDL as a singularity container, then input (Fa
 The DeepVariant singularity container has been built using this [link](https://gist.github.com/pansapiens/717efcdefb51fa0ce1a6abf092bcb2f4)
 See also the [changelog](changelog.md) file.
 
-![panelCapture workflow description](/img/panelCapture_v1.1.svg)
+![panelCapture workflow description](/img/panelCapture_v1.1.1.svg)
