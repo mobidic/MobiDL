@@ -17,7 +17,11 @@
 
 ### input: a txt file of format:
 
-## RUN_ID=
+## RUN_PATH=
+## BASE_JSON=
+## DISEASE_FILE=
+## GENES_OF_INTEREST=
+## ACHAB_TODO=
 ## NUM_FAM=
 ## TRIO=[0|1]
 ## # if yes
@@ -174,7 +178,7 @@ debug "RUN_ID:${RUN_ID}"
 debug "NUM_FAM:${NUM_FAM}"
 debug "TRIO:${TRIO}"
 debug "AFFECTED:${AFFECTED}"
-debug "TRCIIO:${CI}"
+debug "CI:${CI}"
 debug "FATHER:${FATHER}"
 debug "MOTHER:${MOTHER}"
 

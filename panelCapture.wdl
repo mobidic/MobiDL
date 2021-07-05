@@ -25,7 +25,7 @@ import "modules/computeCoverageClamms.wdl" as runComputeCoverageClamms
 import "modules/gatkCollectHsMetrics.wdl" as runGatkCollectHsMetrics
 import "modules/gatkHaplotypeCaller.wdl" as runGatkHaplotypeCaller
 import "modules/gatkGatherVcfs.wdl" as runGatkGatherVcfs
-import "modules/qualimapBamQc.wdl" as runQualimapBamQc
+# import "modules/qualimapBamQc.wdl" as runQualimapBamQc
 import "modules/jvarkitVcfPolyX.wdl" as runJvarkitVcfPolyX
 import "modules/gatkSplitVcfs.wdl" as runGatkSplitVcfs
 import "modules/gatkVariantFiltrationSnp.wdl" as runGatkVariantFiltrationSnp
