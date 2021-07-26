@@ -1,5 +1,5 @@
 import "modules/preparePanelCaptureTmpDirs.wdl" as runPreparePanelCaptureTmpDirs
-import "modules/fastqcTrio.wdl" as runFastqcTrio
+import "modules/fastp.wdl" as runFastp
 import "modules/gatkBedToPicardIntervalList.wdl" as runGatkBedToPicardIntervalList
 import "modules/gatkHaplotypeCallerTrio.wdl" as runGatkHaplotypeCallerTrio
 import "modules/gatkGatherVcfs.wdl" as runGatkGatherVcfs
@@ -64,7 +64,7 @@ workflow panelCaptureTrio {
 	String outDir
 	Boolean debug = false
 	## Bioinfo execs
-	String fastqcExe
+	String fastpExe
 	String bwaExe
 	String samtoolsExe
 	String sambambaExe
@@ -145,27 +145,55 @@ workflow panelCaptureTrio {
 		OutDir = outDir,
 		WorkflowType = workflowType
 	}
-	# RunFastqc on all FASTQs
-	call runFastqcTrio.fastqc {
+	# RunFastp
+	# Sample
+	call runFastp.fastp as fastpCI {
 		input:
 		Cpu = cpuHigh,
 		Memory = memoryLow,
 		SampleID = sampleID,
-		FatherSampleID = FatherSampleID,
-		MotherSampleID = MotherSampleID,
 		OutDir = outDir,
 		WorkflowType = workflowType,
-		FastqcExe = fastqcExe,
+		FastpExe = fastpExe,
 		FastqR1 = fastqR1,
-		FatherFastqR1 = FatherFastqR1,
-		MotherFastqR1 = MotherFastqR1,
 		FastqR2 = fastqR2,
-		FatherFastqR2 = FatherFastqR2,
-		MotherFastqR2 = MotherFastqR2,
 		Suffix1 = suffix1,
 		Suffix2 = suffix2,
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
+	 }
+	 #Father
+	 call runFastp.fastp as fastpFather {
+ 		input:
+ 		Cpu = cpuHigh,
+ 		Memory = memoryLow,
+ 		SampleID = FatherSampleID,
+		OutDirSampleID = sampleID,
+ 		OutDir = outDir,
+ 		WorkflowType = workflowType,
+ 		FastpExe = fastpExe,
+ 		FastqR1 = FatherFastqR1,
+ 		FastqR2 = FatherFastqR2,
+ 		Suffix1 = suffix1,
+ 		Suffix2 = suffix2,
+ 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+ 	 }
+	 #Mother
+	 call runFastp.fastp as fastpMother {
+ 		input:
+ 		Cpu = cpuHigh,
+ 		Memory = memoryLow,
+ 		SampleID = MotherSampleID,
+		OutDirSampleID = sampleID,
+ 		OutDir = outDir,
+ 		WorkflowType = workflowType,
+ 		FastpExe = fastpExe,
+ 		FastqR1 = MotherFastqR1,
+ 		FastqR2 = MotherFastqR2,
+ 		Suffix1 = suffix1,
+ 		Suffix2 = suffix2,
+ 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+ 	 }
+
 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
 		input:
 		Cpu = cpuLow,
@@ -190,8 +218,8 @@ workflow panelCaptureTrio {
     ## Global
     sampleID = sampleID,
     CIsDIR = sampleID,
-  	fastqR1 = fastqR1,
-  	fastqR2 = fastqR2,
+  	fastqR1 = fastpCI.fastqR1,
+  	fastqR2 = fastpCI.fastqR2,
 		refFasta = refFasta,
   	refFai = refFai,
   	refDict = refDict,
@@ -253,8 +281,8 @@ workflow panelCaptureTrio {
     ## Global
     sampleID = FatherSampleID,
     CIsDIR = sampleID,
-  	fastqR1 = FatherFastqR1,
-  	fastqR2 = FatherFastqR2,
+  	fastqR1 = fastpFather.fastqR1,
+  	fastqR2 = fastpFather.fastqR2,
 		refFasta = refFasta,
   	refFai = refFai,
   	refDict = refDict,
@@ -316,8 +344,8 @@ workflow panelCaptureTrio {
     ## Global
     sampleID = MotherSampleID,
     CIsDIR = sampleID,
-  	fastqR1 = MotherFastqR1,
-  	fastqR2 = MotherFastqR2,
+  	fastqR1 = fastpMother.fastqR1,
+  	fastqR2 = fastpMother.fastqR2,
 		refFasta = refFasta,
   	refFai = refFai,
   	refDict = refDict,
@@ -568,7 +596,7 @@ workflow panelCaptureTrio {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		GenomeVersion = genomeVersion,
-    FastqcExe = fastqcExe,
+    FastpExe = fastpExe,
     BwaExe = bwaExe,
     SamtoolsExe = samtoolsExe,
     SambambaExe = sambambaExe,
