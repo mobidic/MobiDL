@@ -72,6 +72,8 @@ workflow panelCapture {
 	File refFai
 	File refDict
 	File intervalBedFile
+	String intervalBaitBed =""
+	File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
 	String workflowType
 	String outDir
 	Boolean debug = false
@@ -462,7 +464,7 @@ workflow panelCapture {
 #		BamFile = samtoolsSort.sortedBam,
 #		IntervalBedFile = intervalBedFile,
 #	}
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
+	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
 		input:
 		Cpu = cpuLow,
 		Memory = memoryHigh,
@@ -470,6 +472,19 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		IntervalBedFile = intervalBedFile,
+		RefDict = refDict,
+		GatkExe = gatkExe,
+		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+	}
+	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListBait {
+		input:
+		Cpu = cpuLow,
+		Memory = memoryHigh,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		Bait = true,
+		IntervalBedFile = intervalBaitBedFile,
 		RefDict = refDict,
 		GatkExe = gatkExe,
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
@@ -536,8 +551,8 @@ workflow panelCapture {
 		RefFasta = refFasta,
 		RefFai = refFai,
 		BamFile = samtoolsSort.sortedBam,
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = gatkBedToPicardIntervalListBait.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalListTarget.picardIntervals
 	}
 ##################################################Deep#################################
 	call runDeepVariant.deepVariant{

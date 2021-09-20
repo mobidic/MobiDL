@@ -4,6 +4,9 @@ task gatkBedToPicardIntervalList {
 	String SampleID
 	String OutDir
 	String WorkflowType
+	Boolean Bait = false
+	String BedOut = if Bait then "${OutDir}${SampleID}/${WorkflowType}/intervals/Intervals.Bait.bed" else "${OutDir}${SampleID}/${WorkflowType}/intervals/Intervals.bed"
+	String OutFile = if Bait then "${OutDir}${SampleID}/${WorkflowType}/intervals/picard.Bait.interval_list" else "${OutDir}${SampleID}/${WorkflowType}/intervals/picard.interval_list"
 	File IntervalBedFile
 	String GatkExe
 	File RefDict
@@ -13,15 +16,15 @@ task gatkBedToPicardIntervalList {
 	Int Cpu
 	Int Memory
 	command {
-		cp ${IntervalBedFile} "${OutDir}${SampleID}/${WorkflowType}/intervals/Intervals.bed"
+		cp ${IntervalBedFile} ${BedOut}
 		${GatkExe} BedToIntervalList \
 		-I ${IntervalBedFile} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/intervals/picard.interval_list" \
+		-O ${OutFile} \
 		-SD ${RefDict}
 	}
 	output {
-		File picardIntervals = "${OutDir}${SampleID}/${WorkflowType}/intervals/picard.interval_list"
-		File bedIntervals = "${OutDir}${SampleID}/${WorkflowType}/intervals/Intervals.bed"
+		File picardIntervals = "${OutFile}"
+		File bedIntervals = "${BedOut}"
 	}
 	runtime {
 		cpu: "${Cpu}"
