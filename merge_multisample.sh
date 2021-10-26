@@ -2,7 +2,7 @@
 
 ###########################################################################
 #########																												###########
-#########		AutoDL																							###########
+#########		mergemultisample																		###########
 ######### @uthor : D Baux	david.baux<at>inserm.fr								###########
 ######### Date : 10/05/2021																			###########
 #########																												###########
@@ -10,7 +10,7 @@
 
 ###########################################################################
 ###########
-########### 	Script to automate MobiDL treatment of families
+########### 	Script to semi-automate MobiDL treatment of families
 ###########
 ###########################################################################
 
@@ -33,7 +33,6 @@
 ## HEALTHY=sample1,sample2...
 
 
-##############		If any option is given, print help message	##################################
 VERSION=1.0
 USAGE="
 Program: merge_multisample
@@ -45,7 +44,7 @@ Usage: bash merge_multisample.sh -f /path/to/input/file -b /path/to/bcftools
 
 if [ $# -eq 0 ]; then
 	echo "${USAGE}"
-	echo "Error Message : Arguments provided"
+	echo "Error Message : No arguments provided"
 	echo ""
 	exit 1
 fi
@@ -59,6 +58,8 @@ usage ()
 	echo '	Optional arguments :'
 	echo '		* -b|--bcftools	<path to bcftools>'
 	echo '		* -t|--threads	<int>'
+	echo '		* -s|--slurm'
+	echo 'The slurm argument if provided qill launch bcftools in a srun command.'
 }
 
 RED='\033[0;31m'
@@ -112,6 +113,9 @@ while [ "$1" != "" ];do
 				THREADS=$1
 			fi
 			;;
+		-s | --slurm)
+			SLURM=1
+			;;
 		-v | --verbosity) shift
 			# Check if verbosity level argument is an integer before assignment
 			if ! [[ "$1" =~ ^[0-9]+$ ]]
@@ -138,7 +142,7 @@ if [[ ! -x "${BCFTOOLS}" ]]; then
 	usage
 	exit 1
 fi
-if [[ ! -f "${FAMILY_FILE}" ]]; then
+if [[ ! -r "${FAMILY_FILE}" ]]; then
 	error "File ${FAMILY_FILE} does not seem to exist."
 	usage
 	exit 1
@@ -170,6 +174,7 @@ fi
 debug "BCFTOOLS:${BCFTOOLS}"
 debug "FAMILY_FILE:${FAMILY_FILE}"
 debug "THREADS:${THREADS}"
+debug "SLURM:${SLURM}"
 debug "RUN_PATH:${RUN_PATH}"
 debug "BASE_JSON:${BASE_JSON}"
 debug "DISEASE_FILE:${DISEASE_FILE}"
@@ -208,21 +213,24 @@ mkdir -p "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}"
 cp "${BASE_JSON}" "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
 cp "${DISEASE_FILE}" "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/disease.txt"
 
-# --merge VCF
+# -- merge VCF
 MERGE_CMD="${BCFTOOLS} merge --threads ${THREADS} "
 for VCF in "${VCF_ARRAY[@]}"; do
 	MERGE_CMD+="${VCF} "
 done
 # MERGE_CMD+="> ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
-
+SLURM_CMD=' '
+if [ "${SLURM}" eq 1 ];then
+	SLURM_CMD="srun -N1 -c${THREADS} "
+fi
 info "launching bcftools"
-debug "${MERGE_CMD} > ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+debug "${SLURM_CMD}${MERGE_CMD} > ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
 
-${MERGE_CMD} > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+"${SLURM_CMD}${MERGE_CMD}" > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
 
 if [ $? -eq 0 ]; then
 
-	# -- preapre vars by escaping "/"
+	# -- prepare vars by escaping "/"
 	RUN_SED=${RUN_PATH////\\/}
 	DISEASE_SED=${DISEASE_FILE////\\/}
 	GENES_SED=${GENES_OF_INTEREST////\\/}
