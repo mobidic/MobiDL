@@ -232,8 +232,8 @@ workflow panelCaptureTrio {
     ## Global
     sampleID = sampleID,
     CIsDIR = sampleID,
-  	fastqR1 = fastpCI.fastqR1,
-  	fastqR2 = fastpCI.fastqR2,
+  	fastqR1 = fastpCI.fastpR1,
+  	fastqR2 = fastpCI.fastpR2,
 		refFasta = refFasta,
   	refFai = refFai,
   	refDict = refDict,
@@ -295,8 +295,8 @@ workflow panelCaptureTrio {
     ## Global
     sampleID = FatherSampleID,
     CIsDIR = sampleID,
-  	fastqR1 = fastpFather.fastqR1,
-  	fastqR2 = fastpFather.fastqR2,
+  	fastqR1 = fastpFather.fastpR1,
+  	fastqR2 = fastpFather.fastpR2,
 		refFasta = refFasta,
   	refFai = refFai,
   	refDict = refDict,
@@ -358,8 +358,8 @@ workflow panelCaptureTrio {
     ## Global
     sampleID = MotherSampleID,
     CIsDIR = sampleID,
-  	fastqR1 = fastpMother.fastqR1,
-  	fastqR2 = fastpMother.fastqR2,
+  	fastqR1 = fastpMother.fastpR1,
+  	fastqR2 = fastpMother.fastpR2,
 		refFasta = refFasta,
   	refFai = refFai,
   	refDict = refDict,
