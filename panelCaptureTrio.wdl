@@ -59,7 +59,8 @@ workflow panelCaptureTrio {
 	File refFai
 	File refDict
 	File intervalBedFile
-	### Amélioration a venir : add BaitIntervals
+	String intervalBaitBed =""
+	File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
 	String workflowType
 	String outDir
 	Boolean debug = false
@@ -194,18 +195,31 @@ workflow panelCaptureTrio {
  		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
  	 }
 
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		IntervalBedFile = intervalBedFile,
-		RefDict = refDict,
-		GatkExe = gatkExe,
-		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
+	 call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
+ 		input:
+ 		Cpu = cpuLow,
+ 		Memory = memoryHigh,
+ 		SampleID = sampleID,
+ 		OutDir = outDir,
+ 		WorkflowType = workflowType,
+ 		IntervalBedFile = intervalBedFile,
+ 		RefDict = refDict,
+ 		GatkExe = gatkExe,
+ 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+ 	}
+ 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListBait {
+ 		input:
+ 		Cpu = cpuLow,
+ 		Memory = memoryHigh,
+ 		SampleID = sampleID,
+ 		OutDir = outDir,
+ 		WorkflowType = workflowType,
+ 		Bait = true,
+ 		IntervalBedFile = intervalBaitBedFile,
+ 		RefDict = refDict,
+ 		GatkExe = gatkExe,
+ 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+ 	}
 
 	#Call alignement SubWorkflow
 	call alignDNA.alignDNA as alignCI {
@@ -267,8 +281,8 @@ workflow panelCaptureTrio {
 		bedtoolsLowCoverage = bedtoolsLowCoverage,
 		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = gatkBedToPicardIntervalListTarget.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalListBait.picardIntervals
 	}
 
 	call alignDNA.alignDNA as alignFather {
@@ -330,8 +344,8 @@ workflow panelCaptureTrio {
 		bedtoolsLowCoverage = bedtoolsLowCoverage,
 		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = gatkBedToPicardIntervalListTarget.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalListBait.picardIntervals
 	}
 
 	call alignDNA.alignDNA as alignMother {
@@ -393,8 +407,8 @@ workflow panelCaptureTrio {
 		bedtoolsLowCoverage = bedtoolsLowCoverage,
 		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = gatkBedToPicardIntervalListTarget.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalListBait.picardIntervals
 	}
 ####OK#####
 
