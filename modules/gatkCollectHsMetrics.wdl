@@ -21,7 +21,7 @@ task gatkCollectHsMetrics {
 		${GatkExe} CollectHsMetrics \
 		-R ${RefFasta} \
 		-I ${BamFile} \
-		-O "${OutDir}${SampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt" \
+		-O "${OutDir}${OutputDirSampleID}/${WorkflowType}/PicardQualityDir/${SampleID}_hs_metrics.txt" \
 		--BAIT_INTERVALS "${BaitIntervals}" \
 		--TARGET_INTERVALS "${TargetIntervals}" \
 		--COVERAGE_CAP "${CoverageCap}"
