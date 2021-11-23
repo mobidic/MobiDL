@@ -93,6 +93,8 @@ workflow panelCapture {
 	String sortExe
 	String gatkExe
 	String javaExe
+	## fastp
+	String noFiltering = ""
 	## bwaSamtools
 	String platform
 	File refAmb
@@ -180,6 +182,7 @@ workflow panelCapture {
 		OutDir = outDir,
 		WorkflowType = workflowType,
 		FastpExe = fastpExe,
+		NoFiltering = noFiltering,
 		FastqR1 = fastqR1,
 		FastqR2 = fastqR2,
 		Suffix1 = suffix1,
@@ -967,7 +970,6 @@ workflow panelCapture {
 			#"${dataPath}" + basename(deepVariant.DeepVcf), "${dataPath}" + basename(bcftoolsNormHc.normVcf), "${dataPath}" + basename(bcftoolsNormDv.normVcf)
 			#"${dataPath}" + basename(deepVariant.DeepVcf), "${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex), "${dataPath}" + basename(bcftoolsNormEnd.normVcf)
 		}
-
 		call runMultiqc.multiqc {
 			input:
 			Cpu = cpuLow,
@@ -979,34 +981,69 @@ workflow panelCapture {
 			Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		}
 	}
-	call runToolVersions.toolVersions {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		GenomeVersion = genomeVersion,
-    FastpExe = fastpExe,
-    BwaExe = bwaExe,
-    SamtoolsExe = samtoolsExe,
-    SambambaExe = sambambaExe,
-    BedToolsExe = bedToolsExe,
-    QualimapExe = qualimapExe,
-    BcfToolsExe = bcfToolsExe,
-    BgZipExe = bgZipExe,
-    CrumbleExe = crumbleExe,
-    TabixExe = tabixExe,
-    MultiqcExe = multiqcExe,
-    GatkExe = gatkExe,
-    JavaExe= javaExe,
-    VcfPolyXJar = vcfPolyXJar,
-		Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
-    }
+	# File finalWorkFlowVcf
+	# if (debug) {
+	# 	finalWorkFlowVcf = compressIndexVcf.bgZippedVcf
+	# }
+	# if (!debug) {
+	# 	finalWorkFlowVcf = cleanUpPanelCaptureTmpDirs.finalFile1
+	# }
+	if (!debug) {
+		call runToolVersions.toolVersions {
+			input:
+			Cpu = cpuLow,
+			Memory = memoryHigh,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			GenomeVersion = genomeVersion,
+		  FastpExe = fastpExe,
+		  BwaExe = bwaExe,
+		  SamtoolsExe = samtoolsExe,
+		  SambambaExe = sambambaExe,
+		  BedToolsExe = bedToolsExe,
+		  QualimapExe = qualimapExe,
+		  BcfToolsExe = bcfToolsExe,
+		  BgZipExe = bgZipExe,
+		  CrumbleExe = crumbleExe,
+		  TabixExe = tabixExe,
+		  MultiqcExe = multiqcExe,
+		  GatkExe = gatkExe,
+		  JavaExe= javaExe,
+		  VcfPolyXJar = vcfPolyXJar,
+			Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
+		}
+	}
+	if (debug) {
+		call runToolVersions.toolVersions as toolVersionsDebug {
+			input:
+			Cpu = cpuLow,
+			Memory = memoryHigh,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			GenomeVersion = genomeVersion,
+		  FastpExe = fastpExe,
+		  BwaExe = bwaExe,
+		  SamtoolsExe = samtoolsExe,
+		  SambambaExe = sambambaExe,
+		  BedToolsExe = bedToolsExe,
+		  QualimapExe = qualimapExe,
+		  BcfToolsExe = bcfToolsExe,
+		  BgZipExe = bgZipExe,
+		  CrumbleExe = crumbleExe,
+		  TabixExe = tabixExe,
+		  MultiqcExe = multiqcExe,
+		  GatkExe = gatkExe,
+		  JavaExe= javaExe,
+		  VcfPolyXJar = vcfPolyXJar,
+			Vcf = compressIndexVcf.bgZippedVcf
+		}
+	}
 	output {
 		File? FinalVcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		File FinalCram = crumble.crumbled
 		File FinalCramIndex = crumbleIndexing.cramIndex
-		File VersionFile = toolVersions.versionFile
+		File? VersionFile = toolVersions.versionFile
 	}
 }

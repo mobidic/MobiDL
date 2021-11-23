@@ -237,19 +237,19 @@ modifyJsonAndLaunch() {
 }
 
 workflowPostTreatment() {
-	if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
-		RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
-	elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
-		RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
-	fi
+	# if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+	# 	RUN_PATH="${NEXTSEQ_RUNS_DEST_DIR}"
+	# elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
+	# fi
 	# copy to final destination
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
-	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+	info "Moving MobiDL sample ${SAMPLE} to ${OUTPUT_PATH}${RUN}/MobiDL/"
+	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
-		error "Error while syncing ${1} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+		error "Error while syncing ${1} for ${SAMPLE} in run ${OUTPUT_PATH}${RUN}"
 	fi
 	# remove cromwell data
 	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" | rev | cut -d ' ' -f 1 | rev)
@@ -266,6 +266,7 @@ setvariables() {
 	ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
 	GENE_FILE_SED=${GENE_FILE////\\/}
 	RUN_PATH_SED=${RUN_PATH////\\/}
+	OUTPUT_PATH_SED=${OUTPUT_PATH////\\/}
 }
 
 
@@ -275,7 +276,7 @@ setjsonvariables() {
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
-		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${RUN_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
 }
 
@@ -313,6 +314,30 @@ prepareAchab() {
 		DISEASE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 3)
 		GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
+	fi
+	# do it only once
+	# we keep on filling the example conf file for merge_multisample
+	if [ -z "${FAMILY_FILE_CREATED}" ];then
+		if [ -z "${FAMILY_FILE_CONFIG}" ];then
+			# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
+			FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
+		fi
+		debug "Family config file: ${FAMILY_FILE_CONFIG}"
+		echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
+		echo "DISEASE_FILE=${DISEASE_ACHAB_DIR}${DISEASE_FILE}" >> "${FAMILY_FILE_CONFIG}"
+		echo "GENES_OF_INTEREST=${GENE_FILE}" >> "${FAMILY_FILE_CONFIG}"
+		echo "ACHAB_TODO=/RS_IURC/data/MobiDL/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
+		echo "##### FIN ne pas modifier si analyse auto" >> "${FAMILY_FILE_CONFIG}"
+		echo "NUM_FAM=" >> "${FAMILY_FILE_CONFIG}"
+		echo "TRIO=" >> "${FAMILY_FILE_CONFIG}"
+		echo "# si oui" >> "${FAMILY_FILE_CONFIG}"
+		echo "CI=" >> "${FAMILY_FILE_CONFIG}"
+		echo "FATHER=" >> "${FAMILY_FILE_CONFIG}"
+		echo "MOTHER=" >> "${FAMILY_FILE_CONFIG}"
+		echo "AFFECTED=" >> "${FAMILY_FILE_CONFIG}"
+		echo "# si non" >> "${FAMILY_FILE_CONFIG}"
+		echo "HEALTHY=" >> "${FAMILY_FILE_CONFIG}"
+		FAMILY_FILE_CREATED=1
 	fi
 
 	# treat VCF for CF screening => restrain to given regions
@@ -375,7 +400,7 @@ do
 				debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
 				###### if multiple sample sheets found in the run ,if [[ -f ${SAMPLESHEET_PATH} ]] does not work!!!!
 				###### we need to split get the latest - david 20210307
-				if [[ ! -f "${SAMPLESHEET_PATH}" ]];then
+				if [[ ! -f ${SAMPLESHEET_PATH} ]];then
 					debug "FAILED SAMPLESHEET:${SAMPLESHEET_PATH}"
 					SAMPLESHEET_LIST=$(ls ${SAMPLESHEET_PATH})
 					debug "SAMPLESHEET_LIST:${SAMPLESHEET_LIST}"
@@ -386,7 +411,7 @@ do
 					SAMPLESHEET_PATH="${SAMPLESHEET_ARRAY[-1]}"
 					IFS=$'\n'
 				fi
-				if [[ -r "${SAMPLESHEET_PATH}" ]];then
+				if [[ -r ${SAMPLESHEET_PATH} ]];then
 					debug "SAMPLESHEET TESTED:${SAMPLESHEET_PATH}"
 					info "RUN ${RUN} found for analysis"
 					dos2unixIfPossible
@@ -394,13 +419,13 @@ do
 					unset MANIFEST
 					unset BED
 					unset WDL
-					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" "${SAMPLESHEET_PATH}" | cut -d ',' -f 2)
+					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 					# if [[ "${MANIFEST}" != '' ]];then
 					if [ -n "${MANIFEST}" ];then
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						# Multiple library types in one single run
 						# Description,MultiLibraries,,,,,,,,,
-						MULTIPLE=$(grep "MultiLibraries" "${SAMPLESHEET_PATH}" | cut -d ',' -f 2)
+						MULTIPLE=$(grep "MultiLibraries" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 						debug "MANIFEST:${MANIFEST}"
 						debug "BED:${BED}"
 						debug "MULTIPLE:${MULTIPLE}"
@@ -413,17 +438,25 @@ do
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
 						if [ "${BED}" = "FASTQ" ] && [ -z "${MULTIPLE}" ];then
 							# NEXTSEQ
-							BED=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d '#' -f 1)
+							BED=$(grep 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 1)
 							if [ ! -f "${ROI_DIR}${BED}" ];then
 								BED=''
 							fi
-							WDL=$(grep 'Description,' "${SAMPLESHEET_PATH}" | cut -d ',' -f 2 | cut -d '#' -f 2)
+							WDL=$(grep 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
 							debug "BED:${BED} - WDL:${WDL}"
-							# info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
+						# elif [ -n "${MULTIPLE}" ];then
+						# 	WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
+						# 	BED="perSampleRoi"
+						# 	WDL="perSampleWorkflow"
+						# else
+						# 	WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
+						# fi
 						else
 							WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
-							BED="perSampleRoi"
-							WDL="perSampleWorkflow"
+							if  [ -n "${MULTIPLE}" ];then
+								BED="perSampleRoi"
+								WDL="perSampleWorkflow"
+							fi
 						fi
 						if [ -n "${MANIFEST}" ] &&  [ -n "${WDL}" ] && [ -n "${BED}" ];then
 							info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
@@ -438,17 +471,48 @@ do
 							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir "${OUTPUT_PATH}${RUN}"
+									mkdir -p "${OUTPUT_PATH}${RUN}"
 								fi
 							elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 								OUTPUT_PATH=${MISEQ_RUNS_DEST_DIR}
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir "${OUTPUT_PATH}${RUN}"
+									mkdir -p "${OUTPUT_PATH}${RUN}"
 								fi
-								if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
-									# create foldr meant to put family files for afterwards merging
-									mkdir "${BASE_DIR}Families/${RUN}"
+							fi
+							# check custom output PATH
+							if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ];then
+								NEW_OUTPUT_PATH=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 5)
+								if [ -n "${NEW_OUTPUT_PATH}" ];then
+									# rm -rf "${OUTPUT_PATH}${RUN}"
+									OUTPUT_PATH=${NEW_OUTPUT_PATH}
+									mkdir -p "${OUTPUT_PATH}${RUN}"
 								fi
+							fi
+							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
+								# create folder meant to put family files for afterwards merging
+								mkdir -p "${BASE_DIR}Families/${RUN}"
+								# create example config file for merge_multisample.sh
+								# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
+								# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
+								# DISEASE_FILE=/usr/local/share/refData/disease_achab/disease_ND.txt # fichier disease contenant les codes HPO de la famille
+								# GENES_OF_INTEREST=/RS_IURC/data/MobiDL/captainAchab/Example/nd.txt # gènes à mettre en avant dans achab
+								# ACHAB_TODO=/RS_IURC/data/MobiDL/captainAchab/
+								# RUN_ID=210924_NB501631_0419_AH5LHNBGXK
+								# NUM_FAM=
+								# TRIO=
+								# # si oui
+								# CI=
+								# FATHER=
+								# MOTHER=
+								# AFFECTED=
+								# # si non
+								# HEALTHY=
+								FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
+								touch "${FAMILY_FILE_CONFIG}"
+								echo "##### DEBUT ne pas modifier les champs ci-dessous si analyse auto" > "${FAMILY_FILE_CONFIG}"
+								echo "RUN_PATH=${OUTPUT_PATH}" >> "${FAMILY_FILE_CONFIG}"
+								echo "RUN_ID=${RUN}" >> "${FAMILY_FILE_CONFIG}"
+								FAMILY_FILE_CREATED=''
 							fi
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL"
@@ -461,7 +525,7 @@ do
 							fi
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
-							FASTQS=$(find ${RUN_PATH}${RUN} -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
+							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								# debug "SAMPLE FILENAME:${FILENAME}"
@@ -481,10 +545,10 @@ do
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
 									# Multiple library types in one single run
-									# returns ",panelCapture;roi1.bed" => wdl;bed...
-									WDL=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 10 | cut -d ";" -f 1)
-									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 10 | cut -d ";" -f 2)
-									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 10 | cut -d ";" -f 2 | cut -d "." -f 1)
+									# returns ",roi1.bed#panelCapture" => bed#wdl...
+									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1)
+									WDL=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 2)
+									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
@@ -510,11 +574,11 @@ do
 							if [ -n "${MULTIPLE}" ];then
 								# get folders in ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ and loop on it and launch mobicnv
 								# for LIBRARY in "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/*"
-								for LIBRARY in "${!ROI_TYPES[@]}"
+								for LIBRARY in ${!ROI_TYPES[@]}
 								do
 									# check if at least 3 samples  / library => count numebr of tsv file in the folder
-									NUMBER_OF_SAMPLE=$(ls -l *.tsv | wc -l)
-									if [ "${NUMBER_OF_SAMPLE}" gt 2 ];then
+									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
+									if [ ${NUMBER_OF_SAMPLE} gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
 										"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY} -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"

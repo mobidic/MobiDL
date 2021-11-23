@@ -10,11 +10,12 @@ task fastp {
 	String Suffix1
 	String Suffix2
 	Boolean DirsPrepared
+	String NoFiltering
 	#runtime attributes
 	Int Cpu
 	Int Memory
 	command {
-		${FastpExe} -w ${Cpu} \
+		${FastpExe} -w ${Cpu} ${NoFiltering} \
 		-i ${FastqR1} \
 		-I ${FastqR2} \
 		-o "${OutDir}${SampleID}/${WorkflowType}/FastpDir/${SampleID}${Suffix1}.fastp.fq.gz" \

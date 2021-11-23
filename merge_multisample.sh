@@ -59,7 +59,7 @@ usage ()
 	echo '		* -b|--bcftools	<path to bcftools>'
 	echo '		* -t|--threads	<int>'
 	echo '		* -s|--slurm'
-	echo 'The slurm argument if provided qill launch bcftools in a srun command.'
+	echo 'The slurm argument if provided will launch bcftools in a srun command.'
 }
 
 RED='\033[0;31m'
@@ -97,6 +97,7 @@ log() {
 
 BCFTOOLS=$(which bcftools)
 THREADS=1
+SLURM=0
 
 # -- Parse command line
 while [ "$1" != "" ];do
@@ -152,7 +153,7 @@ fi
 # -- get variables from conf file
 source ${FAMILY_FILE}
 
-if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "$RUN_ID}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || ! -f "${GENES_OF_INTEREST}" || ! -d "${ACHAB_TODO}" ]]; then
+if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "${RUN_ID}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || ! -f "${GENES_OF_INTEREST}" || ! -d "${ACHAB_TODO}" ]]; then
 	error "There is an error with one of the params of the Family file."
 	usage
 	exit 1
@@ -169,6 +170,9 @@ if [[ "${TRIO}" == 1 ]]; then
 		exit 1
 	fi
 fi
+
+# RUN_PATH from autoDLML.sh comes with a / in the end - remove it
+RUN_PATH=${RUN_PATH%\/}
 
 # -- Debug
 debug "BCFTOOLS:${BCFTOOLS}"
@@ -195,7 +199,7 @@ if [[ "${TRIO}" == 1 ]]; then
 else
 	# -- build the list from the list of affected and HEALTHY
 	# first split the sample list and rebuild the VCF list (with path)
-	VCF_AFFECTED
+	# VCF_AFFECTED
 	IFS="," read -a VCF_AFFECTED <<< "${AFFECTED}"
 	IFS="," read -a VCF_HEALTHY <<< "${HEALTHY}"
 	VCFS=""
@@ -219,14 +223,14 @@ for VCF in "${VCF_ARRAY[@]}"; do
 	MERGE_CMD+="${VCF} "
 done
 # MERGE_CMD+="> ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
-SLURM_CMD=' '
-if [ "${SLURM}" eq 1 ];then
+SLURM_CMD=" "
+if [ "${SLURM}" -eq 1 ];then
 	SLURM_CMD="srun -N1 -c${THREADS} "
 fi
 info "launching bcftools"
 debug "${SLURM_CMD}${MERGE_CMD} > ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
 
-"${SLURM_CMD}${MERGE_CMD}" > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+${SLURM_CMD}${MERGE_CMD} > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
 
 if [ $? -eq 0 ]; then
 
@@ -261,7 +265,7 @@ if [ $? -eq 0 ]; then
 
 	rsync -az "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}" "${ACHAB_TODO}"
 
-	info "FAM ${NUMFAM} sent to Achab"
+	info "FAM ${NUM_FAM} sent to Achab"
 else
 	error "bcftools failed: ${MERGE_CMD}"
 fi
