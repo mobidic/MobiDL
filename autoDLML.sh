@@ -484,8 +484,11 @@ do
 								NEW_OUTPUT_PATH=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 5)
 								if [ -n "${NEW_OUTPUT_PATH}" ];then
 									# rm -rf "${OUTPUT_PATH}${RUN}"
+									info "Defining new output path for run ${RUN}: ${NEW_OUTPUT_PATH}"
 									OUTPUT_PATH=${NEW_OUTPUT_PATH}
 									mkdir -p "${OUTPUT_PATH}${RUN}"
+								else
+									debug "NEW_OUTPUT_PATH: ${NEW_OUTPUT_PATH} - MANIFEST: ${MANIFEST} - BED: ${BED} - FASTQ_WORKFLOWS_FILE: ${FASTQ_WORKFLOWS_FILE}"
 								fi
 							fi
 							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
@@ -606,6 +609,10 @@ do
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
 								echo ${RUN}=2 >> ${RUNS_FILE}
 								RUN_ARRAY[${RUN}]=2
+							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+								# Change value on array and file to done
+								sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								RUN_ARRAY[${RUN}]=2
 							fi
 						fi
 					else
@@ -614,7 +621,7 @@ do
 							echo ${RUN}=2 >> ${RUNS_FILE}
 							RUN_ARRAY[${RUN}]=2
 						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							# Change value on array and file to running
+							# Change value on array and file to done
 							sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
 						fi
