@@ -480,7 +480,7 @@ do
 								fi
 							fi
 							# check custom output PATH
-							if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ];then
+							if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ];then
 								NEW_OUTPUT_PATH=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 5)
 								if [ -n "${NEW_OUTPUT_PATH}" ];then
 									# rm -rf "${OUTPUT_PATH}${RUN}"
