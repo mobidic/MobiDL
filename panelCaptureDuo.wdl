@@ -56,7 +56,8 @@ workflow panelCaptureDuo {
 	File refFai
 	File refDict
 	File intervalBedFile
-	### Amélioration a venir : add BaitIntervals
+	String intervalBaitBed =""
+	File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
 	String workflowType
 	String outDir
 	Boolean debug = false
@@ -160,7 +161,7 @@ workflow panelCaptureDuo {
 		Suffix2 = suffix2,
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
 	}
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList {
+	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
 		input:
 		Cpu = cpuLow,
 		Memory = memoryHigh,
@@ -172,6 +173,19 @@ workflow panelCaptureDuo {
 		GatkExe = gatkExe,
 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
 	}
+	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListBait {
+ 		input:
+ 		Cpu = cpuLow,
+ 		Memory = memoryHigh,
+ 		SampleID = sampleID,
+ 		OutDir = outDir,
+ 		WorkflowType = workflowType,
+ 		Bait = true,
+ 		IntervalBedFile = intervalBaitBedFile,
+ 		RefDict = refDict,
+ 		GatkExe = gatkExe,
+ 		DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+ 	}
 
 	#Call alignement SubWorkflow
 	call alignDNA.alignDNA as alignCI {
@@ -233,8 +247,8 @@ workflow panelCaptureDuo {
 		bedtoolsLowCoverage = bedtoolsLowCoverage,
 		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = gatkBedToPicardIntervalListBait.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalListTarget.picardIntervals
 	}
 
 	call alignDNA.alignDNA as alignFather {
@@ -296,8 +310,8 @@ workflow panelCaptureDuo {
 		bedtoolsLowCoverage = bedtoolsLowCoverage,
 		bedToolsSmallInterval = bedToolsSmallInterval,
 		## Picard HSmetrix
-		BaitIntervals = gatkBedToPicardIntervalList.picardIntervals,
-		TargetIntervals = gatkBedToPicardIntervalList.picardIntervals
+		BaitIntervals = gatkBedToPicardIntervalListBait.picardIntervals,
+		TargetIntervals = gatkBedToPicardIntervalListTarget.picardIntervals
 	}
 
 ##############################################HaplotypeCaller######################@
