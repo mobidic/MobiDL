@@ -25,7 +25,7 @@ import "modules/computeCoverageClamms.wdl" as runComputeCoverageClamms
 import "modules/gatkCollectHsMetrics.wdl" as runGatkCollectHsMetrics
 import "modules/gatkHaplotypeCaller.wdl" as runGatkHaplotypeCaller
 import "modules/gatkGatherVcfs.wdl" as runGatkGatherVcfs
-# import "modules/qualimapBamQc.wdl" as runQualimapBamQc
+import "modules/qualimapBamQc.wdl" as runQualimapBamQc
 import "modules/jvarkitVcfPolyX.wdl" as runJvarkitVcfPolyX
 import "modules/gatkSplitVcfs.wdl" as runGatkSplitVcfs
 import "modules/gatkVariantFiltrationSnp.wdl" as runGatkVariantFiltrationSnp
@@ -72,7 +72,7 @@ workflow panelCapture {
 	File refFai
 	File refDict
 	File intervalBedFile
-	String intervalBaitBed =""
+	String intervalBaitBed = ""
 	File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
 	String workflowType
 	String outDir
@@ -456,17 +456,17 @@ workflow panelCapture {
 		RefFasta = refFasta,
 		BamFile = samtoolsSort.sortedBam
 	}
-#	call runQualimapBamQc.qualimapBamQc {
-#		input:
-#		Cpu = cpuHigh,
-#		Memory = memoryLow,
-#		SampleID = sampleID,
-#		OutDir = outDir,
-#		WorkflowType = workflowType,
-#		QualimapExe = qualimapExe,
-#		BamFile = samtoolsSort.sortedBam,
-#		IntervalBedFile = intervalBedFile,
-#	}
+	call runQualimapBamQc.qualimapBamQc {
+		input:
+		Cpu = cpuHigh,
+		Memory = memoryLow,
+		SampleID = sampleID,
+		OutDir = outDir,
+		WorkflowType = workflowType,
+		QualimapExe = qualimapExe,
+		BamFile = samtoolsSort.sortedBam,
+		IntervalBedFile = intervalBedFile,
+	}
 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
 		input:
 		Cpu = cpuLow,
