@@ -579,9 +579,9 @@ do
 								# for LIBRARY in "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/*"
 								for LIBRARY in ${!ROI_TYPES[@]}
 								do
-									# check if at least 3 samples  / library => count numebr of tsv file in the folder
+									# check if at least 3 samples  / library => count number of tsv file in the folder
 									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
-									if [ ${NUMBER_OF_SAMPLE} gt 2 ];then
+									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
 										"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY} -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
