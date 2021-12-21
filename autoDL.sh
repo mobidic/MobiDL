@@ -244,11 +244,12 @@ workflowPostTreatment() {
 	# copy to final destination
 	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
-	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
+	# NFS rsync
+	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
-		error "Error while syncing ${1} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+		warning "Error while syncing ${1} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 	fi
 	# remove cromwell data
 	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" | rev | cut -d ' ' -f 1 | rev)
@@ -484,6 +485,7 @@ do
 							info "Launching MultiQC on run ${RUN}"
 							"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
