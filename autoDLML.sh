@@ -243,9 +243,9 @@ workflowPostTreatment() {
 	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	# fi
 	# copy to final destination
-	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${OUTPUT_PATH}${RUN}/MobiDL/"
-	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
+	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
@@ -597,6 +597,7 @@ do
 							info "Launching MultiQC on run ${RUN}"
 							"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2

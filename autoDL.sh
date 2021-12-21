@@ -242,7 +242,7 @@ workflowPostTreatment() {
 		RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	fi
 	# copy to final destination
-	${RSYNC} -avq -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${RUN_PATH}${RUN}/MobiDL/"
 	# NFS rsync
 	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${RUN_PATH}${RUN}/MobiDL/"
