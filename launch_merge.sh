@@ -75,7 +75,7 @@ log() {
 ###############		Get options from conf file			##################################
 # CONFIG_FILE='./autoDL.conf'
 CONFIG_FILE='/RS_IURC/data/MobiDL/panelCapture/conf/launchMerge.conf'
-#we check params against regexp
+# we check params against regexp
 
 UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*]*)$")
 if [ -n "${UNKNOWN}" ]; then

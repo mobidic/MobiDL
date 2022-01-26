@@ -24,7 +24,7 @@
 ##############		If any option is given, print help message	##################################
 VERSION=1.0
 USAGE="
-Program: AutoDL
+Program: AutoDLML
 Version: ${VERSION}
 Contact: Baux David <david.baux@inserm.fr>
 
@@ -68,7 +68,7 @@ echoerr() { echo -e "$@" 1>&2 ; }
 
 log() {
 	if [ "${VERBOSITY}" -ge "$1" ]; then
-		echoerr "[`date +'%Y-%m-%d %H:%M:%S'`] $2 - autoDL version : ${VERSION} - $3"
+		echoerr "[`date +'%Y-%m-%d %H:%M:%S'`] $2 - autoDLML version : ${VERSION} - $3"
 	fi
 }
 
@@ -243,9 +243,10 @@ workflowPostTreatment() {
 	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	# fi
 	# copy to final destination
-	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	${RSYNC} -aq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${OUTPUT_PATH}${RUN}/MobiDL/"
-	${RSYNC} -avq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
+	# ${RSYNC} -avq --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
+	${RSYNC} -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
@@ -479,18 +480,6 @@ do
 									mkdir -p "${OUTPUT_PATH}${RUN}"
 								fi
 							fi
-							# check custom output PATH
-							if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ];then
-								NEW_OUTPUT_PATH=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 5)
-								if [ -n "${NEW_OUTPUT_PATH}" ];then
-									# rm -rf "${OUTPUT_PATH}${RUN}"
-									info "Defining new output path for run ${RUN}: ${NEW_OUTPUT_PATH}"
-									OUTPUT_PATH=${NEW_OUTPUT_PATH}
-									mkdir -p "${OUTPUT_PATH}${RUN}"
-								else
-									debug "NEW_OUTPUT_PATH: ${NEW_OUTPUT_PATH} - MANIFEST: ${MANIFEST} - BED: ${BED} - FASTQ_WORKFLOWS_FILE: ${FASTQ_WORKFLOWS_FILE}"
-								fi
-							fi
 							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
 								# create folder meant to put family files for afterwards merging
 								mkdir -p "${BASE_DIR}Families/${RUN}"
@@ -553,13 +542,26 @@ do
 									WDL=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 2)
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
+									# check custom output PATH
+									# info "MANIFEST: ${MANIFEST}"
+									# if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ];then
+									# 	NEW_OUTPUT_PATH=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 5)
+									# 	if [ -n "${NEW_OUTPUT_PATH}" ];then
+									# 		rm -rf "${OUTPUT_PATH}${RUN}"
+									# 		info "Defining new output path for run ${RUN}: ${NEW_OUTPUT_PATH}"
+									# 		OUTPUT_PATH=${NEW_OUTPUT_PATH}
+									# 		mkdir -p "${OUTPUT_PATH}${RUN}"
+									# 	else
+									# 		info "NEW_OUTPUT_PATH: ${NEW_OUTPUT_PATH} - MANIFEST: ${MANIFEST} - BED: ${BED} - FASTQ_WORKFLOWS_FILE: ${FASTQ_WORKFLOWS_FILE}"
+									# 	fi
+									# fi
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
 									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
-										mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
+										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
 									fi
 									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
-										mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
+										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
 									fi
 								fi
 								modifyJsonAndLaunch
@@ -583,8 +585,8 @@ do
 									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
 									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
-										"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
-										debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY} -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 									else
 										info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 									fi

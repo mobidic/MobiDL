@@ -8,7 +8,7 @@ task preparePanelCaptureTmpDirs {
 	Int Memory
 	command {
 		if [ ! -d "${OutDir}" ];then \
-			mkdir "${OutDir}"; \
+			mkdir -p "${OutDir}"; \
 		fi
 		if [ ! -d "${OutDir}${SampleID}" ];then \
 			mkdir "${OutDir}${SampleID}"; \
