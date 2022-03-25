@@ -483,6 +483,7 @@ do
 							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
 								# create folder meant to put family files for afterwards merging
 								mkdir -p "${BASE_DIR}Families/${RUN}"
+								chmod -R 777 "${BASE_DIR}Families/${RUN}"
 								# create example config file for merge_multisample.sh
 								# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
 								# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
@@ -567,7 +568,57 @@ do
 								modifyJsonAndLaunch
 								prepareAchab
 								TREATED=1
-								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+								# ifcnv specific feature: create a folder with symbolic links to the alignment files
+								# mkdir "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
+								# ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram"
+								# ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram.crai"
+								# LED specific block
+								LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
+								DISEASE=''
+								TEAM=''
+								EXPERIMENT=''
+								if [[ "${SAMPLE}" =~ ^[Aa][0-9]+$ ]];then
+									DISEASE="ATAXIA"
+									TEAM="ATAXIA"
+									EXPERIMENT="trusight_one_exp"
+								elif [[ "${SAMPLE}" =~ ^[Hh][Oo][Rr]-[0-9]+$ ]];then
+									DISEASE="DSD"
+									TEAM="DSD"
+									EXPERIMENT="nimblegen_custom"
+								elif [[ "${SAMPLE}" =~ ^[Cc][SsAa][GgDd][0-9]+$ ]];then
+									DISEASE="CF"
+									TEAM="MUCO"
+									EXPERIMENT="agilent_custom"
+								elif [[ "${SAMPLE}" =~ ^[DdIi][0-9]+-.*$ ]];then
+									DISEASE="MYOPATHY"
+									TEAM="NEUROMUSCULAR"
+									EXPERIMENT="nimblegen_custom"
+								elif [[ "${SAMPLE}" =~ ^[Ss][Uu][0-9]+$ ]];then
+									DISEASE="DFNB"
+									TEAM="SENSORINEURAL"
+									EXPERIMENT="nimblegen_custom"
+								elif [[ "${SAMPLE}" =~ ^[Rr][0-9]+$ ]];then
+									DISEASE="RP"
+									TEAM="SENSORINEURAL"
+									EXPERIMENT="nimblegen_custom"
+								fi
+								touch "${LED_FILE}"
+								echo "#patient_id	less than 10 chars" >> "${LED_FILE}"
+								echo "#family_id	less than 10 chars" >> "${LED_FILE}"
+								echo "#gender		m/f" >> "${LED_FILE}"
+								echo "#disease_name	RP,DFNB,DFNA,USH,ATAXIA,MYOPATHY,HEALTHY,CF,CF-RD,CBAVD,OTHER,AUTISM,DSD" >> "${LED_FILE}"
+								echo "#team_name	SENSORINEURAL,NEUROMUSCULAR,ATAXIA,MUCO,DSD" >> "${LED_FILE}"
+								echo "#visibility	0/1" >> "${LED_FILE}"
+								echo "#experiment	trusight_one,exome_ss_v6,exome_ss_v5,truseq_rapid_exome,cftr_complete,medexome,nimblegen_inherited_disease,trusight_one_exp,nimblegen_custom,agilent_custom", >> "${LED_FILE}"
+								echo "patient_id:${SAMPLE}" >> "${LED_FILE}"
+								echo "family_id:" >> "${LED_FILE}"
+								echo "gender:" >> "${LED_FILE}"
+								echo "disease_name:${DISEASE}" >> "${LED_FILE}"
+								echo "team_name:${TEAM}" >> "${LED_FILE}"
+								echo "visibility:1" >> "${LED_FILE}"
+								echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
+								# end led specific block
+								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
 								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
 								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 							done

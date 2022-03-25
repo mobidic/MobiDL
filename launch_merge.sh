@@ -126,8 +126,8 @@ do
 			debug "panelCaptureComplete path: ${RUN_PATH}/${RUN_ID}/MobiDL/panelCaptureComplete.txt"
 			if [ -f "${RUN_PATH}/${RUN_ID}/MobiDL/panelCaptureComplete.txt" ];then
 				info "Launching merge_multisample script"
-				info "bash merge_multisample.sh -f ${CONF_FILE} -t 4 -s -v 4"
-				MERGE_LOG=$(bash merge_multisample.sh -f ${CONF_FILE} -t 4 -v 4)
+				info "bash merge_multisample.sh -f ${CONF_FILE} -t 4 -s -v 3"
+				MERGE_LOG=$(bash merge_multisample.sh -f ${CONF_FILE} -t 4 -v 3)
 				if [ $? -eq 0 ];then
 					info "File ${CONF_FILE} properly treated"
 				else

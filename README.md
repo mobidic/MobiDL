@@ -44,11 +44,6 @@ The best way to run this workflow is by using the [singularity container](https:
 
 This workflow is dedicated to NGS experiments based on capture libraries, and focusing on gene panels/exomes. It uses  [GATK 4](https://software.broadinstitute.org/gatk/) Haplotype Caller and google [DeepVariant](https://github.com/google/deepvariant) for variant calling. Alignment output is a [crumbled](https://github.com/jkbonfield/crumble) CRAM file.
 
-Due to the addition of a variant caller, the output now contains 2 vcf files:
- 
-- the HaplotypeCaller vcf (.hc.vcf) + compressed and indexed version (.vcf.gz and .vcf.gz.tbi)
-- the DeepVariant vcf (.dv.vcf) + compressed and indexed version (.vcf.gz and .vcf.gz.tbi)
-
 This workflow requires as input 2 fastqs and one ROI bed file.
 
 All software paths and input paths are to be modified in the json file (example: [panelCapture_example_inputs.json](panelCapture_example_inputs.json)). All paths are absolute, except for deepvariant paths.
