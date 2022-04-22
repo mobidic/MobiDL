@@ -22,24 +22,32 @@ RUNS_FILE=${AUTODL_DIR}runs.txt
 ROI_FILE=${AUTODL_DIR}sampleSheets.txt
 ROI_DIR=/path/to/your/BED/files/
 #_inputs.json WDL file
-#https://software.broadinstitute.org/wdl/documentation/inputs.php
+# https://software.broadinstitute.org/wdl/documentation/inputs.php
 MOBIDL_JSON_DIR=/path/to/your/mobidlJson/models/
+# if achab
+ACHAB_TODO_DIR=/path/to/autoachab/dir/
+DISEASE_ACHAB_DIR=${CONF_DIR}disease_achab/
 INPUT_DIR=${AUTODL_DIR}
 TMP_OUTPUT_DIR=/path/to/tmp_output/
+# cromwell wrapper https://github.com/mobidic/Crom-wellWrapped
 CWW=cww.sh
 CROMWELL=/softs/cromwell.jar
 #Cromwell options and conf file see
 #https://cromwell.readthedocs.io/en/develop/
 CROMWELL_OPTIONS=/softs/conf/options_mediummonster.json
 CROMWELL_CONF=/softs/conf/mediummonster.conf
-SERVICE=autoDL.sh
+SERVICE=autoDLML.sh
 RSYNC=/usr/bin/rsync
 DOS2UNIX=/usr/bin/dos2unix
 AWK=/usr/bin/awk
 MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python
+# if MobiCNV https://github.com/mobidic/MobiCNV
 MOBICNV=MobiCNV/MobiCNV.py
 # you need a conda env to run anacore-utils
 # https://github.com/bialimed/AnaCore-utils
 CONDA_CMD=source|conda
 CONDA_ENV=name_of_conda_env_to_run_anacore_utils
+BEDTOOLS=/usr/local/bin/bedtools
+# if ifNCV https://github.com/SimCab-CHU/ifCNV
+IFCNV=/softs/ifCNV/script/ifCNV

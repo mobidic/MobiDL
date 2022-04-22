@@ -78,9 +78,10 @@ log() {
 CONFIG_FILE='/RS_IURC/data/MobiDL/panelCapture/conf/autoDL.conf'
 #we check params against regexp
 
-UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*]*)$")
+
+UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*-]*)$")
 if [ -n "${UNKNOWN}" ]; then
-	error "Error in config file. Not allowed lines:"
+	error "Error in config file. Offending lines:"
 	error ${UNKNOWN}
 	exit 1
 fi
@@ -95,6 +96,8 @@ debug "${SERVICE} pids: $(ps x | grep -v grep |grep -c ${SERVICE})"
 if [ "${RESULT}" -gt 3 ]; then
 	exit 0
 fi
+
+debug "CONFIG FILE: ${CONFIG_FILE}"
 
 ###############		Get run info file				 ##################################
 
@@ -268,6 +271,7 @@ setvariables() {
 	GENE_FILE_SED=${GENE_FILE////\\/}
 	RUN_PATH_SED=${RUN_PATH////\\/}
 	OUTPUT_PATH_SED=${OUTPUT_PATH////\\/}
+	ROI_DIR_SED=${ROI_DIR////\\/}
 }
 
 
@@ -372,6 +376,19 @@ prepareAchab() {
 			ACHAB_DIR="${ACHAB_DIR_OLD}"
 		fi
 	fi
+}
+
+prepareGatkCnv() {
+	cp "${AUTODL_DIR}gatk_cnv.yaml" "${1}"
+	# sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR:${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/gatk_cnv/" \
+	# 	-e "s/SAMPLES_PATH:/SAMPLES_PATH:${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files/" \
+	# 	-e "s/BED_PATH:/BED_PATH:${ROI_DIR_SED}${BED}/" \
+	# 	"${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml"
+	sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/${2}gatk_cnv/" \
+		-e "s/SAMPLES_PATH:/SAMPLES_PATH: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/${2}/" \
+		-e "s/BED_PATH:/BED_PATH: ${ROI_DIR_SED}${BED}/" \
+		-e "s/VCF_path:/VCF_path: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/MobiCNVvcfs/" \
+		"${1}gatk_cnv.yaml"
 }
 
 ###############		Now we'll have a look at the content of the directories ###############################
@@ -534,6 +551,8 @@ do
 									warning "SAMPLE DOES NOT MATCH REGEXP ${REGEXP}: ${FILENAME} ${RUN_PATH}${RUN}"
 								fi
 							done
+							# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
+							mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
 							declare -A ROI_TYPES
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
@@ -568,10 +587,17 @@ do
 								modifyJsonAndLaunch
 								prepareAchab
 								TREATED=1
-								# ifcnv specific feature: create a folder with symbolic links to the alignment files
-								# mkdir "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
-								# ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram"
-								# ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram.crai"
+								# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
+								if [[ ${MULTIPLE} != '' ]];then
+									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/" ];then
+										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/"
+									fi
+									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram"
+									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram.crai"
+								else
+									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram"
+									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram.crai"
+								fi
 								# LED specific block
 								LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
 								DISEASE=''
@@ -636,20 +662,39 @@ do
 									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
 									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
-										"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
-										debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										srun -N1 -c1 "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										debug "srun -N1 -c1 ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										# here prepare and launch gatk_cnv
+										# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
+										# removed 20220420 as does not work as expected
+										# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
+										# ${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
+										# info "${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
 									else
 										info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 									fi
 								done
 							else
 								info "Launching MobiCNV on run ${RUN}"
-								"${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-								debug "${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								srun -N1 -c1 "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								debug "srun -N1 -c1 ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								# here prepare and launch gatk_cnv
+								# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
+								# removed 20220420 as does not work as expected
+								# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" ""
+								# ${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml" --resources cnv_caller=4
+								# debug "${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml --resources cnv_caller=4"
+								# ifCNV
+								BED_FILE_NAME=$(basename ${BED} .bed)
+								BED_IFCNV="${ROI_DIR}${BED_FILE_NAME}_ifcnv.bed"
+								if [ -e ${BED_IFCNV} ];then
+									debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
+									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+								fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
-							"${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
-							debug "${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							srun -N1 -c1  "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
+							debug "srun -N1 -c1 ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
