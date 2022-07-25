@@ -44,10 +44,6 @@ MULTIQC=/usr/bin/multiqc
 PYTHON=/usr/bin/python
 # if MobiCNV https://github.com/mobidic/MobiCNV
 MOBICNV=MobiCNV/MobiCNV.py
-# you need a conda env to run anacore-utils
-# https://github.com/bialimed/AnaCore-utils
-CONDA_CMD=source|conda
-CONDA_ENV=name_of_conda_env_to_run_anacore_utils
 BEDTOOLS=/usr/local/bin/bedtools
 # if ifNCV https://github.com/SimCab-CHU/ifCNV
-IFCNV=/softs/ifCNV/script/ifCNV
+IFCNV=/path/to/ifCNV
