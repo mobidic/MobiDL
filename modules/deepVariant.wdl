@@ -14,18 +14,18 @@ task deepVariant {
 	String DvOut
 	String Output
 	String VcSuffix
-	String DeepExe
+	String DvExe
 	String GatkExe
 	Int Cpu
 	Int Memory
-	String Singularity
-	String SingularityImg
+	String SingularityExe
+	String DvSimg
 	command{
-		${Singularity} run \
+		${SingularityExe} run \
 		--bind ${Output} \
 		--bind ${RefData} \
 		--bind ${Data} \
-		${SingularityImg}	${DeepExe} \
+		${DvSimg}	${DvExe} \
 		--model_type=${ModelType} \
 		--ref=${ReferenceFasta} \
 		--reads="${DvOut}/${SampleID}/${WorkflowType}/${SampleID}.bam" \

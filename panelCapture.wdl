@@ -141,9 +141,9 @@ workflow panelCapture {
 	String refData
 	String dvOut
 	String outputMnt
-	String deepExe
-	String singularity
-	String singularityImg
+	String dvExe
+	String singularityExe
+	String dvSimg
 	## RefCallFiltration
 	String vcftoolsExe
 	## VcSuffix
@@ -575,10 +575,10 @@ workflow panelCapture {
 		DvOut = dvOut,
 		Output = outputMnt,
 		VcSuffix = dvSuffix,
-		DeepExe = deepExe,
+		DvExe = dvExe,
 		GatkExe = gatkExe,
-		Singularity = singularity,
-		SingularityImg = singularityImg
+		SingularityExe = singularityExe,
+		DvSimg = dvSimg
 	}
 	call runRefCallFiltration.refCallFiltration{
 		input:
@@ -1012,20 +1012,23 @@ workflow panelCapture {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			GenomeVersion = genomeVersion,
-		  FastpExe = fastpExe,
-		  BwaExe = bwaExe,
-		  SamtoolsExe = samtoolsExe,
-		  SambambaExe = sambambaExe,
-		  BedToolsExe = bedToolsExe,
-		  QualimapExe = qualimapExe,
-		  BcfToolsExe = bcfToolsExe,
-		  BgZipExe = bgZipExe,
-		  CrumbleExe = crumbleExe,
-		  TabixExe = tabixExe,
-		  MultiqcExe = multiqcExe,
-		  GatkExe = gatkExe,
-		  JavaExe= javaExe,
-		  VcfPolyXJar = vcfPolyXJar,
+			FastpExe = fastpExe,
+			BwaExe = bwaExe,
+			SamtoolsExe = samtoolsExe,
+			SambambaExe = sambambaExe,
+			BedToolsExe = bedToolsExe,
+			QualimapExe = qualimapExe,
+			BcfToolsExe = bcfToolsExe,
+			BgZipExe = bgZipExe,
+			CrumbleExe = crumbleExe,
+			TabixExe = tabixExe,
+			MultiqcExe = multiqcExe,
+			GatkExe = gatkExe,
+			SingularityExe = singularityExe,
+			DvSimg = dvSimg,
+			DvExe = dvExe,
+			JavaExe= javaExe,
+			VcfPolyXJar = vcfPolyXJar,
 			Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		}
 	}
@@ -1038,20 +1041,23 @@ workflow panelCapture {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			GenomeVersion = genomeVersion,
-		  FastpExe = fastpExe,
-		  BwaExe = bwaExe,
-		  SamtoolsExe = samtoolsExe,
-		  SambambaExe = sambambaExe,
-		  BedToolsExe = bedToolsExe,
-		  QualimapExe = qualimapExe,
-		  BcfToolsExe = bcfToolsExe,
-		  BgZipExe = bgZipExe,
-		  CrumbleExe = crumbleExe,
-		  TabixExe = tabixExe,
-		  MultiqcExe = multiqcExe,
-		  GatkExe = gatkExe,
-		  JavaExe= javaExe,
-		  VcfPolyXJar = vcfPolyXJar,
+			FastpExe = fastpExe,
+			BwaExe = bwaExe,
+			SamtoolsExe = samtoolsExe,
+			SambambaExe = sambambaExe,
+			BedToolsExe = bedToolsExe,
+			QualimapExe = qualimapExe,
+			BcfToolsExe = bcfToolsExe,
+			BgZipExe = bgZipExe,
+			CrumbleExe = crumbleExe,
+			TabixExe = tabixExe,
+			MultiqcExe = multiqcExe,
+			GatkExe = gatkExe,
+			SingularityExe = singularityExe,
+			DvSimg = dvSimg,
+			DvExe = dvExe,
+			JavaExe= javaExe,
+			VcfPolyXJar = vcfPolyXJar,
 			Vcf = compressIndexVcf.bgZippedVcf
 		}
 	}
