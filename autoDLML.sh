@@ -444,9 +444,9 @@ do
 						# Multiple library types in one single run
 						# Description,MultiLibraries,,,,,,,,,
 						MULTIPLE=$(grep "MultiLibraries" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
-						debug "MANIFEST:${MANIFEST}"
-						debug "BED:${BED}"
-						debug "MULTIPLE:${MULTIPLE}"
+						debug "MANIFEST: ${MANIFEST}"
+						debug "BED: ${BED}"
+						debug "MULTIPLE: ${MULTIPLE}"
 						if [[ ${BED} =~ '(hg[0-9]{2})\.bed' ]];then
 							GENOME=${BASH_REMATCH[1]}
 						else
@@ -456,12 +456,14 @@ do
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
 						if [ "${BED}" = "FASTQ" ] && [ -z "${MULTIPLE}" ];then
 							# NEXTSEQ
-							BED=$(grep 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 1)
+							BED=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 1)
+							debug "BED: ${BED} - WDL: ${WDL}"
+							debug "ROI_DIR: ${ROI_DIR}${BED}"
 							if [ ! -f "${ROI_DIR}${BED}" ];then
 								BED=''
 							fi
-							WDL=$(grep 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
-							debug "BED:${BED} - WDL:${WDL}"
+							WDL=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
+							debug "BED: ${BED} - WDL: ${WDL}"
 						# elif [ -n "${MULTIPLE}" ];then
 						# 	WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
 						# 	BED="perSampleRoi"
