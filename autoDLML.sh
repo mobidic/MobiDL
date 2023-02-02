@@ -152,8 +152,11 @@ assignVariables() {
 }
 dos2unixIfPossible() {
 	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
-	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
-		 "${DOS2UNIX}" "${RUN_PATH}${RUN}/${SAMPLESHEET}" >/dev/null 2>&1
+	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then  >/dev/null 2>&1
+	 	debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
+		"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
+		debug "dos2unix for ${SAMPLESHEET_PATH}"
+		"${DOS2UNIX}" -q "${SAMPLESHEET_PATH}"
 	 fi
 }
 #moveRunIfNecessary() {
@@ -174,7 +177,7 @@ modifyJsonAndLaunch() {
 		mkdir "${AUTODL_DIR}/${RUN}"
 	fi
 	if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
-		error "No json file for ${WDL}"
+		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	else
 		cp "${MOBIDL_JSON_DIR}${WDL}_inputs.json" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		JSON="${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
@@ -322,7 +325,8 @@ prepareAchab() {
 	fi
 	# do it only once
 	# we keep on filling the example conf file for merge_multisample
-	if [ -z "${FAMILY_FILE_CREATED}" ];then
+	# if [ -z "${FAMILY_FILE_CREATED}" ];then
+	if [ "${FAMILY_FILE_CREATED}" -eq 0 ];then
 		if [ -z "${FAMILY_FILE_CONFIG}" ];then
 			# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
 			FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
@@ -438,7 +442,6 @@ do
 					unset BED
 					unset WDL
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
-					# if [[ "${MANIFEST}" != '' ]];then
 					if [ -n "${MANIFEST}" ];then
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						# Multiple library types in one single run
@@ -447,6 +450,10 @@ do
 						debug "MANIFEST: ${MANIFEST}"
 						debug "BED: ${BED}"
 						debug "MULTIPLE: ${MULTIPLE}"
+						if [ ${BED} == "FASTQ" ];then
+							MANIFEST="GenerateFASTQ"
+						fi
+						debug "MANIFEST: ${MANIFEST}"
 						if [[ ${BED} =~ '(hg[0-9]{2})\.bed' ]];then
 							GENOME=${BASH_REMATCH[1]}
 						else
@@ -455,14 +462,16 @@ do
 						debug "${MANIFEST%?}:${BED}"
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
 						if [ "${BED}" = "FASTQ" ] && [ -z "${MULTIPLE}" ];then
-							# NEXTSEQ
+							# GenerateFASTQ modes
 							BED=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 1)
 							debug "BED: ${BED} - WDL: ${WDL}"
 							debug "ROI_DIR: ${ROI_DIR}${BED}"
 							if [ ! -f "${ROI_DIR}${BED}" ];then
 								BED=''
 							fi
-							WDL=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
+							# WDL=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
+							# dos2unix fails on 140 for weird permission issue
+							WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep -m1 'Description,' | cut -d ',' -f 2 | cut -d '#' -f 2)
 							debug "BED: ${BED} - WDL: ${WDL}"
 						# elif [ -n "${MULTIPLE}" ];then
 						# 	WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
@@ -521,10 +530,11 @@ do
 								# HEALTHY=
 								FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
 								touch "${FAMILY_FILE_CONFIG}"
+								chmod -R 777 "${BASE_DIR}Families/${RUN}"
 								echo "##### DEBUT ne pas modifier les champs ci-dessous si analyse auto" > "${FAMILY_FILE_CONFIG}"
 								echo "RUN_PATH=${OUTPUT_PATH}" >> "${FAMILY_FILE_CONFIG}"
 								echo "RUN_ID=${RUN}" >> "${FAMILY_FILE_CONFIG}"
-								FAMILY_FILE_CREATED=''
+								FAMILY_FILE_CREATED=0
 							fi
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL"
@@ -560,10 +570,29 @@ do
 								if [[ ${MULTIPLE} != '' ]];then
 									# Multiple library types in one single run
 									# returns ",roi1.bed#panelCapture" => bed#wdl...
-									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1)
-									WDL=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 2)
+									# NEXTSEQ
+									DESCRIPTION_FIELD=11
+									if [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+										DESCRIPTION_FIELD=10
+									elif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
+										DESCRIPTION_FIELD=3
+									fi
+									# if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1)
+									# 	WDL=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 2)
+									# elsif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 10 | cut -d "#" -f 1)
+									# 	WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f 103 | cut -d "#" -f 2)
+									# fi
+									# elsif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
+									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 3 | cut -d "#" -f 1)
+									# 	WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f 3 | cut -d "#" -f 2)
+									# fi
+									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
+									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
+									# exit 0
 									# check custom output PATH
 									# info "MANIFEST: ${MANIFEST}"
 									# if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ];then
@@ -690,8 +719,17 @@ do
 								BED_FILE_NAME=$(basename ${BED} .bed)
 								BED_IFCNV="${ROI_DIR}${BED_FILE_NAME}_ifcnv.bed"
 								if [ -e ${BED_IFCNV} ];then
+									info "Activating env ${IFCNV_ENV} and launching ifCNV on run ${RUN}"
+									# activates conda									
+									# eval "$(${CONDA} 'shell.bash' 'hook')"
+									# https://unix.stackexchange.com/questions/454957/cron-job-to-run-under-conda-virtual-environment/572951#572951
+									# activates ifcnv env
+									source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
+									# "${CONDA}" activate "${IFCNV_ENV}" 
 									debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01 && "${CONDA} deactivate"
+									# deactivates conda env
+									# "${CONDA_DEACTIVATE}"
 								fi
 							fi
 							info "Launching MultiQC on run ${RUN}"

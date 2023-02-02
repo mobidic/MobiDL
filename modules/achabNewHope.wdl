@@ -5,7 +5,8 @@ task achabNewHope {
  String? OutPhenolyzer
  String CustomVCF
  String CnvGeneList
- String FilterList  String GenesOfInterest
+ String FilterList
+ String GenesOfInterest
  String FatherSample
  String CaseSample
  String MotherSample

@@ -32,8 +32,8 @@ TMP_OUTPUT_DIR=/path/to/tmp_output/
 # cromwell wrapper https://github.com/mobidic/Crom-wellWrapped
 CWW=cww.sh
 CROMWELL=/softs/cromwell.jar
-#Cromwell options and conf file see
-#https://cromwell.readthedocs.io/en/develop/
+# Cromwell options and conf file see
+# https://cromwell.readthedocs.io/en/develop/
 CROMWELL_OPTIONS=/softs/conf/options_mediummonster.json
 CROMWELL_CONF=/softs/conf/mediummonster.conf
 SERVICE=autoDLML.sh
@@ -47,3 +47,6 @@ MOBICNV=MobiCNV/MobiCNV.py
 BEDTOOLS=/usr/local/bin/bedtools
 # if ifNCV https://github.com/SimCab-CHU/ifCNV
 IFCNV=/path/to/ifCNV
+# if ifcnv in conda env
+CONDA=/path/to/condabin/conda
+IFCNV_ENV=ifcnv_conda_env_name
