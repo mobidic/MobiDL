@@ -176,6 +176,10 @@ modifyJsonAndLaunch() {
 	if [ ! -d "${AUTODL_DIR}/${RUN}" ];then
 		mkdir "${AUTODL_DIR}/${RUN}"
 	fi
+	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs.json"
+	if [ "${GENOME}" != "hg19" ];then
+		MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
+	fi
 	if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
 		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	else
@@ -203,21 +207,20 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
 			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
-		if [ "${GENOME}" != "hg19" ];then
-			sed "s/hg19/${GENOME}/g" "${JSON}"
-		fi
+		# if [ "${GENOME}" != "hg19" ];then # need more than just that - changed template see above
+		# 	sed "s/hg19/${GENOME}/g" "${JSON}"
+		# fi
 		rm "${JSON}.bak"
 		debug "$(cat ${JSON})"
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
 		info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
-		#actual launch and copy in the end
 		if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
 			mkdir "${TMP_OUTPUT_DIR2}Logs"
 		fi
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
-		#actual launch and copy in the end
+		# actual launch and copy in the end
 		sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
 			workflowPostTreatment "${WDL}"
@@ -225,7 +228,7 @@ modifyJsonAndLaunch() {
 			# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
 			# david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
 			GATK_LEFT_ALIGN_INDEL_ERROR=$(egrep 'Job panelCapture.gatkLeftAlignIndels:....? exited with return code 3' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
-			#search for an error with gatk LAI - if found relaunch without this step
+			# search for an error with gatk LAI - if found relaunch without this step
 			# cannot explain this error - maybe a gatk bug?
 			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
 				sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
