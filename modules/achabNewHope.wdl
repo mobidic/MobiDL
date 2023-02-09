@@ -23,10 +23,11 @@ task achabNewHope {
  String FavouriteGeneRef
  String FilterCustomVCF
  String FilterCustomVCFRegex
+ String GnomadExomeFields
+ String GnomadGenomeFields
  #runtime attributes
  Int Cpu
  Int Memory
-
 
  command <<<
   "${PerlPath}" "${AchabExe}" \
@@ -50,7 +51,10 @@ task achabNewHope {
   --affected "${Affected}" \
   --favouriteGeneRef "${FavouriteGeneRef}" \
   --filterCustomVCF "${FilterCustomVCF}" \
-  --filterCustomVCFRegex "${FilterCustomVCFRegex}"
+  --filterCustomVCFRegex "${FilterCustomVCFRegex}" \
+  --gnomadExome  "${GnomadExomeFields}" \
+  --gnomadGenome "${GnomadGenomeFields}" \
+  --addCustomVCFRegex
  >>>
  
  output {
