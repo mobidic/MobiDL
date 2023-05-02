@@ -172,18 +172,28 @@ dos2unixIfPossible() {
 #}
 
 modifyJsonAndLaunch() {
-	debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
+	# debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
 	if [ ! -d "${AUTODL_DIR}/${RUN}" ];then
 		mkdir "${AUTODL_DIR}/${RUN}"
 	fi
+	if [[ ${BED} =~ (hg[0-9]{2}).+\.bed$ ]];then
+		GENOME=${BASH_REMATCH[1]}
+	else
+		GENOME=hg19
+	fi
+	debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN} - GENOME:${GENOME}"
 	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	if [ "${GENOME}" != "hg19" ];then
 		MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
 	fi
-	if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
+	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
+	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
 		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
+	# if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
+	# 	error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	else
-		cp "${MOBIDL_JSON_DIR}${WDL}_inputs.json" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
+		cp "${MOBIDL_JSON_TEMPLATE}" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
+		# cp "${MOBIDL_JSON_DIR}${WDL}_inputs.json" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		JSON="${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		SUFFIX1=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 1)
 		SUFFIX2=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 2)
@@ -457,12 +467,13 @@ do
 							MANIFEST="GenerateFASTQ"
 						fi
 						debug "MANIFEST: ${MANIFEST}"
-						if [[ ${BED} =~ '(hg[0-9]{2})\.bed' ]];then
+						if [[ ${BED} =~ (hg[0-9]{2}).+\.bed$ ]];then
 							GENOME=${BASH_REMATCH[1]}
 						else
 							GENOME=hg19
 						fi
 						debug "${MANIFEST%?}:${BED}"
+						debug "GENOME:${GENOME}"
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
 						if [ "${BED}" = "FASTQ" ] && [ -z "${MULTIPLE}" ];then
 							# GenerateFASTQ modes
