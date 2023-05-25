@@ -37,12 +37,6 @@ task deepVariant {
 		-O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv.vcf"
 		rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.dv.vcf.idx"
 		mv "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.visual_report.html" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.unsorted.dv.html"
-		# ${GatkExe} RenameSampleInVcf \
-		# -I "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" \
-		# -O "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.raw.vcf" \
-		# --NEW_SAMPLE_NAME "${SampleID}.dv" \
-		# --OLD_SAMPLE_NAME "${SampleID}"
-		# rm "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf" "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.sampletorename2.vcf.idx"
 	}
 	output{
 		 File DeepVcf = "${OutDir}${SampleID}/${WorkflowType}/${SampleID}${VcSuffix}.vcf"
