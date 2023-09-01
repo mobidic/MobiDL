@@ -54,6 +54,8 @@ workflow panelCapture {
 		email: "david.baux(at)inserm.fr"
 	}
 	# variables declarations
+	# conda
+	String condaBin
 	## Resources
 	Int cpuHigh
 	Int cpuLow
