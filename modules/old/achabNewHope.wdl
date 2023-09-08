@@ -1,6 +1,6 @@
 version 1.0
 
-task achab {
+task achabNewHope {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
@@ -17,7 +17,6 @@ task achab {
 		String WorkflowType
 		Boolean Version = false
 		# task specific variables
-		String NewHope = ""
 		File AchabExe
 		File OutMpa
 		String? OutPhenolyzer
@@ -45,7 +44,6 @@ task achab {
 		Int Cpu
 		Int Memory
 	}
-	String newHopeSuffix = if NewHope == "" then "" else "_newHope"
 	command <<<
 		source ~{CondaBin}activate ~{AchabEnv}
 		~{PerlPath} "~{AchabExe}" \
@@ -59,7 +57,7 @@ task achab {
 		--candidates "~{GenesOfInterest}" \
 		--phenolyzerFile "~{OutPhenolyzer}" \
 		--popFreqThr "~{AllelicFrequency}" \
-		~{NewHope} \
+		--newHope \
 		--filterList "~{FilterList}" \
 		--cnvGeneList "~{CnvGeneList}" \
 		--customVCF "~{CustomVCF}" \
@@ -85,7 +83,6 @@ task achab {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File outAchab = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab_catch~{newHopeSuffix}.xlsx"
-		File outAchabHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab~{newHopeSuffix}.html"
+		File outAchabNewHope = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab_catch_newHope.xlsx"
 	}
 }

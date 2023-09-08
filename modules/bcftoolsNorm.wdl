@@ -15,7 +15,7 @@ task bcftoolsNorm {
 		String SampleID
 		String OutDir
 		String WorkflowType
-		String BcfToolsExe
+		String BcftoolsExe
 		Boolean Version = false
 		# task specific variables
 		File SortedVcf
@@ -28,12 +28,12 @@ task bcftoolsNorm {
 	}
 	command <<<
 		source ~{CondaBin}activate ~{BcftoolsEnv}
-		~{BcfToolsExe} norm -O v -m -both \
+		~{BcftoolsExe} norm -O v -m -both \
 		-o "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}" \
 		~{SortedVcf}
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
-			echo "Bcftools: v$(~{BcfToolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
+			echo "Bcftools: v$(~{BcftoolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
 		source ~{CondaBin}deactivate
 	>>>

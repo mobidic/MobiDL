@@ -103,7 +103,7 @@ workflow panelCapture {
 		String samtoolsExe = "samtools"
 		String sambambaExe = "sambamba"
 		String bedToolsExe = "bedtools"
-		String bcfToolsExe = "bcftools"
+		String bcftoolsExe = "bcftools"
 		String bgZipExe = "bgzip"
 		String tabixExe = "tabix"
 		String multiqcExe = "multiqc"
@@ -680,7 +680,7 @@ workflow panelCapture {
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
-			BcfToolsExe = bcfToolsExe,
+			BcftoolsExe = bcftoolsExe,
 			VcSuffix = dvSuffix,
 			Version = true,
 			SortedVcf = gatkVariantFiltrationDv.filteredVcf
@@ -710,7 +710,7 @@ workflow panelCapture {
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
-			BcfToolsExe = bcfToolsExe,
+			BcftoolsExe = bcftoolsExe,
 			VcSuffix = dvSuffix,
 			VcfFile = compressIndexVcfDv.bgZippedVcf,
 			VcfFileIndex = compressIndexVcfDv.bgZippedVcfIndex
@@ -871,7 +871,7 @@ workflow panelCapture {
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
-			BcfToolsExe = bcfToolsExe,
+			BcftoolsExe = bcftoolsExe,
 			VcSuffix = hcSuffix,
 			SortedVcf = gatkSortVcfHc.sortedVcf
 	}
@@ -920,7 +920,7 @@ workflow panelCapture {
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
-			BcfToolsExe = bcfToolsExe,
+			BcftoolsExe = bcftoolsExe,
 			VcSuffix = hcSuffix,
 			VcfFile = compressIndexVcfHc.bgZippedVcf,
 			VcfFileIndex = compressIndexVcfHc.bgZippedVcfIndex
@@ -1016,7 +1016,7 @@ workflow panelCapture {
 	# 			SambambaExe = sambambaExe,
 	# 			BedToolsExe = bedToolsExe,
 	# 			QualimapExe = qualimapExe,
-	# 			BcfToolsExe = bcfToolsExe,
+	# 			BcftoolsExe = bcftoolsExe,
 	# 			BgZipExe = bgZipExe,
 	# 			CrumbleExe = crumbleExe,
 	# 			TabixExe = tabixExe,
@@ -1045,7 +1045,7 @@ workflow panelCapture {
 	# 			SambambaExe = sambambaExe,
 	# 			BedToolsExe = bedToolsExe,
 	# 			QualimapExe = qualimapExe,
-	# 			BcfToolsExe = bcfToolsExe,
+	# 			BcftoolsExe = bcftoolsExe,
 	# 			BgZipExe = bgZipExe,
 	# 			CrumbleExe = crumbleExe,
 	# 			TabixExe = tabixExe,

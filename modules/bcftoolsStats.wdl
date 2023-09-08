@@ -15,7 +15,7 @@ task bcftoolsStats {
 		String SampleID
 		String OutDir
 		String WorkflowType
-		String BcfToolsExe
+		String BcftoolsExe
 		Boolean Version = false
 		# task specific variables
 		File VcfFile
@@ -28,12 +28,12 @@ task bcftoolsStats {
 	}
 	command <<<
 		source ~{CondaBin}activate ~{BcftoolsEnv}
-		~{BcfToolsExe} stats \
+		~{BcftoolsExe} stats \
 		~{VcfFile} \
 		> "~{OutDir}~{SampleID}/~{WorkflowType}/PicardQualityDir/~{SampleID}~{VcSuffix}.stats.txt"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
-			echo "Bcftools: v$(~{BcfToolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
+			echo "Bcftools: v$(~{BcftoolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
 		source ~{CondaBin}deactivate
 	>>>
