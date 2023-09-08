@@ -86,6 +86,6 @@ task achab {
 	}
 	output {
 		File outAchab = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab_catch~{newHopeSuffix}.xlsx"
-		File outAchabHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab~{newHopeSuffix}.html"
+		File outAchabHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}~{newHopeSuffix}_achab.html"
 	}
 }
