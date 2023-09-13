@@ -78,7 +78,7 @@ task annovarForMpa {
 			# fill-in tools version file
 			echo "ANNOVAR: v$(~{PerlPath} ~{TableAnnovarExe} -h | grep Version | cut -f3 -d ':' | cut -f2 -d ' ')" >>  "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
  	>>>
 	runtime {
 		queue: "~{Queue}"

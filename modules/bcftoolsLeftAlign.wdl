@@ -33,7 +33,7 @@ task bcftoolsLeftAlign {
 			# fill-in tools version file
 			echo "Bcftools: v$(~{BcftoolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

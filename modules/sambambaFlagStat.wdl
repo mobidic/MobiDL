@@ -34,7 +34,7 @@ task sambambaFlagStat {
 			# fill-in tools version file
 			echo "Sambamba: v$(~{SambambaExe} --version 2>&1 | grep 'sambamba' | cut -f2 -d ' ' | uniq)" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

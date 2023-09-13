@@ -39,7 +39,7 @@ task crumble {
 			echo "----- Compression -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 			echo "Crumble: v$(~{CrumbleExe} -h 2>&1 | grep 'Crumble' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

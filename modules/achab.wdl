@@ -77,7 +77,7 @@ task achab {
 			# fill-in tools version file
 			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>  "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

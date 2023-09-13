@@ -34,7 +34,7 @@ task phenolyzer {
 		"~{DiseaseFile}" -f -p -ph -logistic \
 		-d "~{PhenolyzerExe}/lib/compiled_database" \
 		-out "~{OutDir}~{SampleID}/~{WorkflowType}/disease/~{SampleID}"
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

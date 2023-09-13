@@ -51,7 +51,7 @@ task bwaSamtools {
 			echo "BWA: v$(~{BwaExe} 2>&1 | grep 'Version' | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 			echo "Samtools: v$(~{SamtoolsExe} --version | grep 'samtools' | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	output {
 		File sortedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"

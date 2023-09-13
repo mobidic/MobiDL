@@ -34,7 +34,7 @@ task refCallFiltration {
 			# fill-in tools version file
 			echo "VCFTools: $(~{VcftoolsExe} --version | cut -f2 -d ' ' | cut -f2 -d '(' | cut -f1 -d ')')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

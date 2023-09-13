@@ -34,7 +34,7 @@ task mpa {
 			# fill-in tools version file
 			echo "MPA: v$(~{MpaExe} -v)" >>  "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

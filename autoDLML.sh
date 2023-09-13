@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ###########################################################################
-#########																												###########
-#########		AutoDL																							###########
-######### @uthor : D Baux	david.baux<at>inserm.fr								###########
-######### Date : 28/10/2021																			###########
-#########																												###########
+#########														###########
+#########		AutoDLML											###########
+######### @uthor : D Baux	david.baux<at>chu-montpellier.fr	###########
+######### Date : 28/10/2021										###########
+#########														###########
 ###########################################################################
 
 ###########################################################################
@@ -26,7 +26,7 @@ VERSION=1.0
 USAGE="
 Program: AutoDLML
 Version: ${VERSION}
-Contact: Baux David <david.baux@inserm.fr>
+Contact: Baux David <david.baux@chu-montpellier.fr>
 
 Usage: This script is meant to be croned
 	Should be executed once per 10 minutes
@@ -75,10 +75,9 @@ log() {
 
 ###############		Get options from conf file			##################################
 # CONFIG_FILE='./autoDL.conf'
-CONFIG_FILE='/RS_IURC/data/MobiDL/panelCapture/conf/autoDL.conf'
-#we check params against regexp
+CONFIG_FILE='/mnt/Bioinfo/Softs/src/IURC/MobiDL_conf/autoDL.conf'
 
-
+# we check the params against a regexp
 UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*-]*)$")
 if [ -n "${UNKNOWN}" ]; then
 	error "Error in config file. Offending lines:"
@@ -224,14 +223,14 @@ modifyJsonAndLaunch() {
 		debug "$(cat ${JSON})"
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
-		info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
+		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
 		if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
 			mkdir "${TMP_OUTPUT_DIR2}Logs"
 		fi
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
-		sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
 			workflowPostTreatment "${WDL}"
 		else
@@ -241,7 +240,7 @@ modifyJsonAndLaunch() {
 			# search for an error with gatk LAI - if found relaunch without this step
 			# cannot explain this error - maybe a gatk bug?
 			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
-				sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
 				if [ $? -eq 0 ];then
 					info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 					workflowPostTreatment "${WDL}_noGatkLai"
@@ -366,7 +365,9 @@ prepareAchab() {
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
+		source ${CONDA_ACTIVATE} bedtoolsEnv
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		source ${CONDA_DEACTIVATE}
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF

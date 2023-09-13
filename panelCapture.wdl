@@ -1001,64 +1001,6 @@ workflow panelCapture {
 				Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		}
 	}
-# 	if (!debug) {
-# 		call runToolVersions.toolVersions {
-# 			input:
-	# 			Cpu = cpuLow,
-	# 			Memory = memoryHigh,
-	# 			SampleID = sampleID,
-	# 			OutDir = outDir,
-	# 			WorkflowType = workflowType,
-	# 			GenomeVersion = genomeVersion,
-	# 			FastpExe = fastpExe,
-	# 			BwaExe = bwaExe,
-	# 			SamtoolsExe = samtoolsExe,
-	# 			SambambaExe = sambambaExe,
-	# 			BedToolsExe = bedToolsExe,
-	# 			QualimapExe = qualimapExe,
-	# 			BcftoolsExe = bcftoolsExe,
-	# 			BgZipExe = bgZipExe,
-	# 			CrumbleExe = crumbleExe,
-	# 			TabixExe = tabixExe,
-	# 			MultiqcExe = multiqcExe,
-	# 			GatkExe = gatkExe,
-	# 			SingularityExe = singularityExe,
-	# 			DvSimg = dvSimg,
-	# 			DvExe = dvExe,
-	# 			JavaExe= javaExe,
-	# 			VcfPolyXJar = vcfPolyXJar,
-	# 			Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
-# 		}
-# 	}
-# 	if (debug) {
-# 		call runToolVersions.toolVersions as toolVersionsDebug {
-# 			input:
-	# 			Cpu = cpuLow,
-	# 			Memory = memoryHigh,
-	# 			SampleID = sampleID,
-	# 			OutDir = outDir,
-	# 			WorkflowType = workflowType,
-	# 			GenomeVersion = genomeVersion,
-	# 			FastpExe = fastpExe,
-	# 			BwaExe = bwaExe,
-	# 			SamtoolsExe = samtoolsExe,
-	# 			SambambaExe = sambambaExe,
-	# 			BedToolsExe = bedToolsExe,
-	# 			QualimapExe = qualimapExe,
-	# 			BcftoolsExe = bcftoolsExe,
-	# 			BgZipExe = bgZipExe,
-	# 			CrumbleExe = crumbleExe,
-	# 			TabixExe = tabixExe,
-	# 			MultiqcExe = multiqcExe,
-	# 			GatkExe = gatkExe,
-	# 			SingularityExe = singularityExe,
-	# 			DvSimg = dvSimg,
-	# 			DvExe = dvExe,
-	# 			JavaExe= javaExe,
-	# 			VcfPolyXJar = vcfPolyXJar,
-	# 			Vcf = compressIndexVcf.bgZippedVcf
-# 		}
-# 	}
 	output {
 		File? FinalVcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		File FinalCram = crumble.crumbled

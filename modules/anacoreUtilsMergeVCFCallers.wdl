@@ -33,7 +33,7 @@ task anacoreUtilsMergeVCFCallers {
 		-c ~{sep=' ' Callers} \
 		-i ~{sep=' ' Vcfs} \
 		-o "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.merged.vcf"
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

@@ -53,7 +53,7 @@ task deepVariant {
 			# fill-in tools version file			
 			echo "DeepVariant: v$(~{SingularityExe} run ~{DvSimg} ~{DvExe} --version 2>/dev/null | grep 'DeepVariant' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 		~{GatkExe} SortVcf \
 		-I "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.unsorted.vcf" \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.dv.vcf"

@@ -260,7 +260,7 @@ workflow captainAchab {
 			FilterCustomVCFRegex = filterCustomVCFRegex,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields
-	 }
+	}
 	call runAchab.achab as achab {
 		input:
 			CondaBin = condaBin,
@@ -293,5 +293,9 @@ workflow captainAchab {
 			FilterCustomVCFRegex = filterCustomVCFRegex,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields
+	}
+	output {
+		File achabHtml = achab.outAchabHtml
+		File achabNewHopeHtml = achabNewHope.outAchabHtml
 	}
 }

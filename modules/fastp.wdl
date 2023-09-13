@@ -45,7 +45,7 @@ task fastp {
 			# fill-in tools version file
 			echo "fastp: v$(~{FastpExe} --version 2>&1 | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"

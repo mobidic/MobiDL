@@ -36,7 +36,7 @@ task multiqc {
 		if [ ~{Version} = true ];then
 			echo "MultiQC: v$(~{MultiqcExe} --version | grep 'multiqc' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		source ~{CondaBin}deactivate
+		conda deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"
