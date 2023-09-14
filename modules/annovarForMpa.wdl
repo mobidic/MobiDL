@@ -54,8 +54,8 @@ task annovarForMpa {
 			#REFGENE='refGene'
 		fi
 		if [[ "~{Clinvar}" == 'clinvar_latest' ]] && [[ -f "~{HumanDb}/~{Genome}_clinvar_latest.ver" ]]; then
-			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/admin"
-			cp "~{HumanDb}/~{Genome}_clinvar_latest.ver" "~{OutDir}~{SampleID}/~{WorkflowType}/admin/"
+			# mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/admin"
+			# cp "~{HumanDb}/~{Genome}_clinvar_latest.ver" "~{OutDir}~{SampleID}/~{WorkflowType}/admin/"
 			cat "~{HumanDb}/~{Genome}_clinvar_latest.ver" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
 		source ~{CondaBin}activate ~{AchabEnv}
