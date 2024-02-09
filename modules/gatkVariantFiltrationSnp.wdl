@@ -1,7 +1,7 @@
 task gatkVariantFiltrationSnp {
-	#https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set
-	#https://software.broadinstitute.org/gatk/documentation/article?id=11069
-	#global variables
+	# https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set
+	# https://software.broadinstitute.org/gatk/documentation/article?id=11069
+	# global variables
 	String SampleID
  	String OutDir
 	String WorkflowType
@@ -9,11 +9,11 @@ task gatkVariantFiltrationSnp {
 	File RefFasta
 	File RefFai
 	File RefDict
-	#task specific variables
+	# task specific variables
 	File Vcf
 	File VcfIndex
 	Int LowCoverage
-	#runtime attributes
+	# runtime attributes
 	Int Cpu
 	Int Memory
 	#	--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
