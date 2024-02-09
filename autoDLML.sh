@@ -576,11 +576,11 @@ do
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
 							fi
 							# get Illumina InterOp
-							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/InterOp/" ];then
-								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/InterOp/"
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/interop/" ];then
+								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/interop/"
 							fi
-							srun -N1 -c1 "${ILLUMINAINTEROP}summary" "${OUTPUT_PATH}${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/InterOp/summary.csv"
-							srun -N1 -c1 "${ILLUMINAINTEROP}index-summary" "${OUTPUT_PATH}${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/InterOp/index-summary.csv"
+							srun -N1 -c1 "${ILLUMINAINTEROP}summary" "${OUTPUT_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
+							srun -N1 -c1 "${ILLUMINAINTEROP}index-summary" "${OUTPUT_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
