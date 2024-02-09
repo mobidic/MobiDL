@@ -153,7 +153,7 @@ fi
 # -- get variables from conf file
 source ${FAMILY_FILE}
 
-if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "${RUN_ID}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || ! -f "${GENES_OF_INTEREST}" || ! -d "${ACHAB_TODO}" ]]; then
+if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "${RUN_ID}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || "${GENES_OF_INTEREST}" == '' || ! -d "${ACHAB_TODO}" ]]; then
 	error "There is an error with one of the params of the Family file."
 	usage
 	exit 1
@@ -233,10 +233,16 @@ debug "${SLURM_CMD}${MERGE_CMD} > ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_
 ${SLURM_CMD}${MERGE_CMD} > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
 
 if [ $? -eq 0 ]; then
-
+	# -- temp modif between monster and cluster
+	MONSTER_PREFIX="/RS_IURC/data"
+	CLUSTER_PREFIX="/mnt/data140"
+	JSON_RUN_PATH="${CLUSTER_PREFIX}${RUN_PATH#$MONSTER_PREFIX}"
+	JSON_DISEASE_FILE="${CLUSTER_PREFIX}${DISEASE_FILE#$MONSTER_PREFIX}"
+	info "${JSON_RUN_PATH}"
+	info "${JSON_DISEASE_FILE}"
 	# -- prepare vars by escaping "/"
-	RUN_SED=${RUN_PATH////\\/}
-	DISEASE_SED=${DISEASE_FILE////\\/}
+	RUN_SED=${JSON_RUN_PATH////\\/}
+	DISEASE_SED=${JSON_DISEASE_FILE////\\/}
 	GENES_SED=${GENES_OF_INTEREST////\\/}
 	# -- sed the JSON
 	if [[ ${TRIO} == 0 ]]; then

@@ -153,9 +153,9 @@ assignVariables() {
 dos2unixIfPossible() {
 	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
 	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then  >/dev/null 2>&1
-	 	debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
+	 	# debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
-		debug "dos2unix for ${SAMPLESHEET_PATH}"
+		# debug "dos2unix for ${SAMPLESHEET_PATH}"
 		"${DOS2UNIX}" -q "${SAMPLESHEET_PATH}"
 	 fi
 }
@@ -198,9 +198,11 @@ modifyJsonAndLaunch() {
 		SUFFIX1=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 1)
 		SUFFIX2=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 2)
 		FASTQ_DIR=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 3)
+		debug "FASTQ_DIR: ${FASTQ_DIR}"
 		#https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
 		#bash native character replacement
 		FASTQ_SED=${FASTQ_DIR////\\/}
+		debug "FASTQ_SED: ${FASTQ_SED}"
 		ROI_SED=${ROI_DIR////\\/}
 		#RUN_SED=${RUN_PATH////\\/}
 		if [ ! -d "${TMP_OUTPUT_DIR2}" ];then
@@ -222,6 +224,7 @@ modifyJsonAndLaunch() {
 		# fi
 		rm "${JSON}.bak"
 		debug "$(cat ${JSON})"
+		# exit
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
 		info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
@@ -286,16 +289,20 @@ setvariables() {
 	ACHAB_TODO_DIR_SED=${ACHAB_TODO_DIR////\\/}
 	GENE_FILE_SED=${GENE_FILE////\\/}
 	RUN_PATH_SED=${RUN_PATH////\\/}
-	OUTPUT_PATH_SED=${OUTPUT_PATH////\\/}
+	# OUTPUT_PATH_SED_TMP=${OUTPUT_PATH/\/RS_IURC\/data/\/mnt\/140}
+	OUTPUT_PATH_SED_TMP1=${OUTPUT_PATH/RS_IURC/mnt}
+	OUTPUT_PATH_SED_TMP=${OUTPUT_PATH_SED_TMP1/data/data140}
+	OUTPUT_PATH_SED=${OUTPUT_PATH_SED_TMP////\\/}
 	ROI_DIR_SED=${ROI_DIR////\\/}
+	BASE_DIR_CLUSTER_SED=${BASE_DIR_CLUSTER////\\/}
 }
 
 
 setjsonvariables() {
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
-		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
-		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
+		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
+		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
@@ -309,7 +316,7 @@ modifyAchabJson() {
 	fi
 	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 	# move achab input folder in todo folder for autoachab
-	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" "${ACHAB_TODO_DIR}"
+	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
 	ACHAB_DIR=CaptainAchab
 }
 
@@ -328,12 +335,14 @@ prepareAchab() {
 	unset JSON_SUFFIX
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
 		DISEASE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 4)
-		GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
+		# GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
+		GENE_FILE="${BASE_DIR_CLUSTER}$(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3)"
 		JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
 	else
 		debug "FASTQ workflows file: ${FASTQ_WORKFLOWS_FILE}"
 		DISEASE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 3)
-		GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
+		# GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
+		GENE_FILE="${BASE_DIR_CLUSTER}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
 	# do it only once
@@ -344,8 +353,8 @@ prepareAchab() {
 			# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
 			FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
 		fi
-		debug "Family config file: ${FAMILY_FILE_CONFIG}"
-		echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
+		# debug "Family config file: ${FAMILY_FILE_CONFIG}"
+		echo "BASE_JSON=${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
 		echo "DISEASE_FILE=${DISEASE_ACHAB_DIR}${DISEASE_FILE}" >> "${FAMILY_FILE_CONFIG}"
 		echo "GENES_OF_INTEREST=${GENE_FILE}" >> "${FAMILY_FILE_CONFIG}"
 		echo "ACHAB_TODO=/RS_IURC/data/MobiDL/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
@@ -380,13 +389,13 @@ prepareAchab() {
 		# cp disease file in achab input dir
 		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/disease.txt"
 		# cp json file in achab input dir and modify it
-		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+		cp "${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
 		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
-			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			cp "${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
 			ACHAB_DIR=CaptainAchabCFPanel
 			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
@@ -425,19 +434,26 @@ do
 		###### do not look at runs set to 2 in the runs.txt file
 		if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
 			assignVariables "${RUN_PATH}"
-			debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
+			# debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
 			# now we must look for the AnalysisLog.txt file
 			# get finished run
-			if [[ -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}" -exec egrep "${TRIGGER_EXPR}" "{}" \; -quit) ]]; then
+			# if TRIGGER_EXPR is sthg OR (TRIGGER_EXPR is "" AND TRIGGER_FILE exists)
+			# if TRIGGER_EXPR is "" typically TRIGGER_FILE is CopyComplete.txt which is empty
+			if [[ -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}" -exec egrep "${TRIGGER_EXPR}" "{}" \; -quit) || (${TRIGGER_EXPR} == "" && -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}"))]]; then
 				# need to determine BED ROI from samplesheet
 				SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${SAMPLESHEET}"
 				# if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
-				debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
+				# debug "SAMPLESHEET PATH TESTED:${SAMPLESHEET_PATH}"
 				###### if multiple sample sheets found in the run ,if [[ -f ${SAMPLESHEET_PATH} ]] does not work!!!!
 				###### we need to split get the latest - david 20210307
 				if [[ ! -f ${SAMPLESHEET_PATH} ]];then
 					debug "FAILED SAMPLESHEET:${SAMPLESHEET_PATH}"
 					SAMPLESHEET_LIST=$(ls ${SAMPLESHEET_PATH})
+					if [ $? -ne 0 ];then
+						# alternative LRM path
+						SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${RUN}/${SAMPLESHEET}"
+						SAMPLESHEET_LIST=$(ls ${SAMPLESHEET_PATH})
+					fi
 					debug "SAMPLESHEET_LIST:${SAMPLESHEET_LIST}"
 					# https://linuxhint.com/bash_split_examples/
 					IFS=' '
@@ -561,17 +577,18 @@ do
 							fi
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
-							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 4 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
+							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
-								# debug "SAMPLE FILENAME:${FILENAME}"
+								debug "SAMPLE FILENAME:${FILENAME}"
 								REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
-									if [ ${SAMPLES["${BASH_REMATCH[1]}"]} ];then
-										SAMPLES["${BASH_REMATCH[1]}"]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
-										# debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
+									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then
+										SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+										debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 									else
-										SAMPLES["${BASH_REMATCH[1]}"]=${BASH_REMATCH[2]}
+										SAMPLES[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
 									fi
 								else
 									warning "SAMPLE DOES NOT MATCH REGEXP ${REGEXP}: ${FILENAME} ${RUN_PATH}${RUN}"
@@ -674,10 +691,10 @@ do
 									EXPERIMENT="nimblegen_custom"
 								fi
 								touch "${LED_FILE}"
-								echo "#patient_id	less than 10 chars" >> "${LED_FILE}"
+								echo "#patient_id	less than 15 chars" >> "${LED_FILE}"
 								echo "#family_id	less than 10 chars" >> "${LED_FILE}"
 								echo "#gender		m/f" >> "${LED_FILE}"
-								echo "#disease_name	RP,DFNB,DFNA,USH,ATAXIA,MYOPATHY,HEALTHY,CF,CF-RD,CBAVD,OTHER,AUTISM,DSD" >> "${LED_FILE}"
+								echo "#disease_name	RP,DFNB,DFNA,USH,ATAXIA,MYOPATHY,HEALTHY,CF,CF-RD,CBAVD,OTHER,AUTISM,DSD,HYPOSP" >> "${LED_FILE}"
 								echo "#team_name	SENSORINEURAL,NEUROMUSCULAR,ATAXIA,MUCO,DSD" >> "${LED_FILE}"
 								echo "#visibility	0/1" >> "${LED_FILE}"
 								echo "#experiment	trusight_one,exome_ss_v6,exome_ss_v5,truseq_rapid_exome,cftr_complete,medexome,nimblegen_inherited_disease,trusight_one_exp,nimblegen_custom,agilent_custom", >> "${LED_FILE}"
@@ -741,9 +758,10 @@ do
 									source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
 									# "${CONDA}" activate "${IFCNV_ENV}" 
 									debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01 && "${CONDA} deactivate"
+									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
 									# deactivates conda env
-									# "${CONDA_DEACTIVATE}"
+									# source "${CONDA_DEACTIVATE}"
+									conda deactivate
 								fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
