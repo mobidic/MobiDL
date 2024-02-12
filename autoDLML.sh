@@ -472,10 +472,6 @@ do
 					unset WDL
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 					if [ -n "${MANIFEST}" ];then
-						# sleep to wait for MiniSeq fastqs
-						if [[ "${RUN_PATH}" =~ "MiniSeq" ]];then
-							sleep 1200
-						fi
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						# Multiple library types in one single run
 						# Description,MultiLibraries,,,,,,,,,
@@ -530,6 +526,11 @@ do
 								#Change value on array and file to running
 								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 								RUN_ARRAY[${RUN}]=1
+							fi
+							# sleep to wait for MiniSeq fastqs (DNA Enrichment only)
+							if [[ "${RUN_PATH}" =~ "MiniSeq" ]] && [[ "${MANIFEST}" != "GenerateFASTQ" ]];then
+								debug "Going to sleep for 1200 s"
+								sleep 1200
 							fi
 							# modify outputpath if necessary
 							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
