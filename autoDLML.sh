@@ -472,6 +472,10 @@ do
 					unset WDL
 					MANIFEST=$(grep -F -e "`cat ${ROI_FILE} | cut -d '=' -f 1`" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 					if [ -n "${MANIFEST}" ];then
+						# sleep to wait for MiniSeq fastqs
+						if [[ "${RUN_PATH}" =~ "MiniSeq" ]];then
+							sleep 1200
+						fi
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						# Multiple library types in one single run
 						# Description,MultiLibraries,,,,,,,,,
@@ -527,6 +531,7 @@ do
 								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 								RUN_ARRAY[${RUN}]=1
 							fi
+							# modify outputpath if necessary
 							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
@@ -579,8 +584,8 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/interop/" ];then
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/interop/"
 							fi
-							srun -N1 -c1 "${ILLUMINAINTEROP}summary" "${OUTPUT_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
-							srun -N1 -c1 "${ILLUMINAINTEROP}index-summary" "${OUTPUT_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
+							srun -N1 -c1 "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
+							srun -N1 -c1 "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
