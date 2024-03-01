@@ -370,13 +370,12 @@ prepareAchab() {
 		echo "HEALTHY=" >> "${FAMILY_FILE_CONFIG}"
 		FAMILY_FILE_CREATED=1
 	fi
-
+	debug "Manifest: ${MANIFEST}"
+	debug "JSON Suffix: ${JSON_SUFFIX}"
 	# treat VCF for CF screening => restrain to given regions
-	if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
-		debug "IN!!!!!"
-		exit 0
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
