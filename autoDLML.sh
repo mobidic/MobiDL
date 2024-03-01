@@ -311,7 +311,7 @@ setjsonvariables() {
 
 modifyAchabJson() {
 	ACHAB_DIR=CaptainAchab
-	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+	if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
 	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
@@ -372,9 +372,11 @@ prepareAchab() {
 	fi
 
 	# treat VCF for CF screening => restrain to given regions
-	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+	if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
+		debug "IN!!!!!"
+		exit 0
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
@@ -393,7 +395,7 @@ prepareAchab() {
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
-		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+		if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 			cp "${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
