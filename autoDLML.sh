@@ -311,7 +311,7 @@ setjsonvariables() {
 
 modifyAchabJson() {
 	ACHAB_DIR=CaptainAchab
-	if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
 	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
@@ -394,7 +394,7 @@ prepareAchab() {
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
-		if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] && [ "${MANIFEST}" = "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
+		if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 			cp "${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
