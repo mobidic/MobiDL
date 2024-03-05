@@ -29,7 +29,7 @@ task toolVersions {
 	command {
     date > "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
     echo "Sample ID: ${SampleID}" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
-    echo "Workflow: MobiDL ${WorkflowType} executed on ${dollar}(hostname)" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+    echo "Workflow: MobiDL ${WorkflowType} v1.1 executed on ${dollar}(hostname)" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
     echo "Genome Version: ${GenomeVersion}" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
 		echo "----- FastQ pre-processing -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
 		echo "fastp: v${dollar}(${FastpExe} --version 2>&1 | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
