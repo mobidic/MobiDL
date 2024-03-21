@@ -785,7 +785,7 @@ do
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
-							info "RUN ${RUN} treated" 's/NaN/null/g' 
+							info "RUN ${RUN} treated" 
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL panelCapture complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
 							rm -r "${TMP_OUTPUT_DIR2}"
