@@ -780,11 +780,12 @@ do
 							info "Launching MultiQC on run ${RUN}"
 							srun -N1 -c1  "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "srun -N1 -c1 ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							srun -N1 -c1 "${PERL}" -pi.bak -e "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
-							info "RUN ${RUN} treated"
+							info "RUN ${RUN} treated" 's/NaN/null/g' 
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL panelCapture complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/panelCaptureComplete.txt"
 							rm -r "${TMP_OUTPUT_DIR2}"
