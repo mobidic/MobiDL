@@ -780,7 +780,7 @@ do
 							info "Launching MultiQC on run ${RUN}"
 							srun -N1 -c1  "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "srun -N1 -c1 ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
-							srun -N1 -c1 "${PERL}" -pi.bak -e "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
+							srun -N1 -c1 "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
