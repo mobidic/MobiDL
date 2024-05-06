@@ -316,6 +316,7 @@ modifyAchabJson() {
 	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
+	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 	# move achab input folder in todo folder for autoachab
 	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
