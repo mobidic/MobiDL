@@ -176,7 +176,7 @@ modifyJsonAndLaunch() {
 	if [ ! -d "${AUTODL_DIR}/${RUN}" ];then
 		mkdir "${AUTODL_DIR}/${RUN}"
 	fi
-	if [[ ${BED} =~ (hg[0-9]{2}).+\.bed$ ]];then
+	if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
 		GENOME=${BASH_REMATCH[1]}
 	else
 		GENOME=hg19
@@ -193,6 +193,7 @@ modifyJsonAndLaunch() {
 	# 	error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	else
 		cp "${MOBIDL_JSON_TEMPLATE}" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
+		chmod 755 "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		# cp "${MOBIDL_JSON_DIR}${WDL}_inputs.json" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		JSON="${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		SUFFIX1=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 1)
@@ -299,6 +300,7 @@ setvariables() {
 
 
 setjsonvariables() {
+	chmod 777 "${1}"
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
