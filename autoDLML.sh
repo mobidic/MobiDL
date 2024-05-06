@@ -486,7 +486,7 @@ do
 							MANIFEST="GenerateFASTQ"
 						fi
 						debug "MANIFEST: ${MANIFEST}"
-						if [[ ${BED} =~ (hg[0-9]{2}).+\.bed$ ]];then
+						if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
 							GENOME=${BASH_REMATCH[1]}
 						else
 							GENOME=hg19
