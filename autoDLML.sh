@@ -486,13 +486,7 @@ do
 							MANIFEST="GenerateFASTQ"
 						fi
 						debug "MANIFEST: ${MANIFEST}"
-						if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
-							GENOME=${BASH_REMATCH[1]}
-						else
-							GENOME=hg19
-						fi
 						debug "${MANIFEST%?}:${BED}"
-						debug "GENOME:${GENOME}"
 						info "BED file to be used for analysis of run ${RUN}:${BED}"
 						if [ "${BED}" = "FASTQ" ] && [ -z "${MULTIPLE}" ];then
 							# GenerateFASTQ modes
@@ -520,6 +514,12 @@ do
 								WDL="perSampleWorkflow"
 							fi
 						fi
+						if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
+							GENOME=${BASH_REMATCH[1]}
+						else
+							GENOME=hg19
+						fi
+						debug "GENOME:${GENOME}"
 						if [ -n "${MANIFEST}" ] &&  [ -n "${WDL}" ] && [ -n "${BED}" ];then
 							info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
