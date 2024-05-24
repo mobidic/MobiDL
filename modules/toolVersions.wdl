@@ -11,6 +11,7 @@ task toolVersions {
   String QualimapExe
   String BcfToolsExe
   String BgZipExe
+  Boolean DoCrumble = false
   String CrumbleExe
   String TabixExe
   String MultiqcExe
@@ -45,7 +46,7 @@ task toolVersions {
     echo "VcfPolyX: ${dollar}(${JavaExe} -jar ${VcfPolyXJar} --version)" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
     echo "Bcftools: v${dollar}(${BcfToolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
     echo "----- Compression -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
-    echo "Crumble: v${dollar}(${CrumbleExe} -h 2>&1 | grep 'Crumble' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+    if [ ${DoCrumble} ]; then do echo "Crumble: v${dollar}(${CrumbleExe} -h 2>&1 | grep 'Crumble' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt";done; fi
     echo "Bgzip: v${dollar}(${BgZipExe} --version 2>&1 | grep 'bgzip' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
     echo "Tabix: v${dollar}(${TabixExe} --version 2>&1 | grep 'tabix' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
     echo "----- Quality -----" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"

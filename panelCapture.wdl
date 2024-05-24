@@ -131,6 +131,7 @@ workflow panelCapture {
 	## jvarkit
 	String vcfPolyXJar
 	## ConvertCramtoCrumble
+	Boolean doCrumble = false 
 	String crumbleExe
 	String ldLibraryPath
 	## DeepVariant
@@ -400,29 +401,31 @@ workflow panelCapture {
 		CramFile = samtoolsCramConvert.cram,
 		CramSuffix = ""
 	}
-	call runCrumble.crumble {
-		input:
-		Cpu = cpuHigh,
-		Memory = memoryLow,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		CrumbleExe = crumbleExe,
-		LdLibraryPath = ldLibraryPath,
-		InputFile = samtoolsCramConvert.cram,
-		InputFileIndex =  samtoolsCramIndex.cramIndex,
-		FileType = "cram"
-	}
-	call runSamtoolsCramIndex.samtoolsCramIndex as crumbleIndexing {
-		input:
-		Cpu = cpuLow,
-		Memory = memoryHigh,
-		SampleID = sampleID,
-		OutDir = outDir,
-		WorkflowType = workflowType,
-		SamtoolsExe = samtoolsExe,
-		CramFile = crumble.crumbled,
-		CramSuffix = ".crumble"
+	if (doCrumble) {
+		call runCrumble.crumble {
+			input:
+			Cpu = cpuHigh,
+			Memory = memoryLow,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			CrumbleExe = crumbleExe,
+			LdLibraryPath = ldLibraryPath,
+			InputFile = samtoolsCramConvert.cram,
+			InputFileIndex =  samtoolsCramIndex.cramIndex,
+			FileType = "cram"
+		}
+		call runSamtoolsCramIndex.samtoolsCramIndex as crumbleIndexing {
+			input:
+			Cpu = cpuLow,
+			Memory = memoryHigh,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			SamtoolsExe = samtoolsExe,
+			CramFile = crumble.crumbled,
+			CramSuffix = ".crumble"
+		}
 	}
 	call runSambambaFlagStat.sambambaFlagStat {
 		input:
@@ -971,19 +974,33 @@ workflow panelCapture {
 	}
 	if (!debug) {
 		String dataPath = "${outDir}${sampleID}/${workflowType}/"
-		call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs {
-			input:
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			FinalFile1 = compressIndexVcf.bgZippedVcf,
-			FinalFile2 = crumbleIndexing.cramIndex,
-			BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex), "${dataPath}" + basename(samtoolsCramConvert.cram),"${dataPath}" + basename(samtoolsCramIndex.cramIndex)],
-			VcfArray = ["${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "${dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
-			#"${dataPath}" + basename(deepVariant.DeepVcf), "${dataPath}" + basename(bcftoolsNormHc.normVcf), "${dataPath}" + basename(bcftoolsNormDv.normVcf)
-			#"${dataPath}" + basename(deepVariant.DeepVcf), "${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex), "${dataPath}" + basename(bcftoolsNormEnd.normVcf)
+		if (doCrumble) {
+			call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs as cleanUpPanelCaptureTmpDirsDoCrumble {
+				input:
+				Cpu = cpuLow,
+				Memory = memoryHigh,
+				SampleID = sampleID,
+				OutDir = outDir,
+				WorkflowType = workflowType,
+				FinalFile1 = compressIndexVcf.bgZippedVcf,
+				FinalFile2 = samtoolsCramIndex.cramIndex,
+				BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex), "${dataPath}" + basename(samtoolsCramConvert.cram),"${dataPath}" + basename(samtoolsCramIndex.cramIndex)],
+				VcfArray = ["${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "${dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
+			}
+		}
+		if (!doCrumble) {
+			call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs {
+				input:
+				Cpu = cpuLow,
+				Memory = memoryHigh,
+				SampleID = sampleID,
+				OutDir = outDir,
+				WorkflowType = workflowType,
+				FinalFile1 = compressIndexVcf.bgZippedVcf,
+				FinalFile2 = samtoolsCramIndex.cramIndex,
+				BamArray = ["${dataPath}" + basename(sambambaMarkDup.markedBam), "${dataPath}" + basename(sambambaMarkDup.markedBamIndex), "${dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
+				VcfArray = ["${dataPath}" + basename(refCallFiltration.noRefCalledVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcf),"${dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"${dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcf),"${dataPath}" + basename(gatkHardFiltering.HardFilteredVcfIndex), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "${dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "${dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.snpVcf), "${dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "${dataPath}" + basename(gatkSplitVcfs.indelVcf), "${dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "${dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "${dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "${dataPath}" + basename(gatkMergeVcfs.mergedVcf), "${dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "${dataPath}" + basename(gatkSortVcfHc.sortedVcf), "${dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "${dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "${dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "${dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "${dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
+			}
 		}
 		call runMultiqc.multiqc {
 			input:
@@ -1020,6 +1037,7 @@ workflow panelCapture {
 			QualimapExe = qualimapExe,
 			BcfToolsExe = bcfToolsExe,
 			BgZipExe = bgZipExe,
+			DoCrumble = doCrumble,
 			CrumbleExe = crumbleExe,
 			TabixExe = tabixExe,
 			MultiqcExe = multiqcExe,
@@ -1049,6 +1067,7 @@ workflow panelCapture {
 			QualimapExe = qualimapExe,
 			BcfToolsExe = bcfToolsExe,
 			BgZipExe = bgZipExe,
+			DoCrumble = doCrumble,
 			CrumbleExe = crumbleExe,
 			TabixExe = tabixExe,
 			MultiqcExe = multiqcExe,
@@ -1063,8 +1082,8 @@ workflow panelCapture {
 	}
 	output {
 		File? FinalVcf = cleanUpPanelCaptureTmpDirs.finalFile1
-		File FinalCram = crumble.crumbled
-		File FinalCramIndex = crumbleIndexing.cramIndex
+		File FinalCram = samtoolsCramConvert.cram
+		File FinalCramIndex = samtoolsCramIndex.cramIndex
 		File? VersionFile = toolVersions.versionFile
 	}
 }
