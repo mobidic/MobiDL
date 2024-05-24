@@ -131,7 +131,7 @@ workflow panelCapture {
 	## jvarkit
 	String vcfPolyXJar
 	## ConvertCramtoCrumble
-	Boolean doCrumble = false 
+	Boolean doCrumble = true 
 	String crumbleExe
 	String ldLibraryPath
 	## DeepVariant
