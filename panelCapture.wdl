@@ -1084,8 +1084,8 @@ workflow panelCapture {
 		File? FinalVcf = cleanUpPanelCaptureTmpDirs.finalFile1
 		File? FinalCram = samtoolsCramConvert.cram
 		File? FinalCramIndex = samtoolsCramIndex.cramIndex
-		File? FinalCram = crumble.crumbled
-        File? FinalCramIndex = crumbleIndexing.cramIndex
+		File? FinalCramCrumbled = crumble.crumbled
+        File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
 		File? VersionFile = toolVersions.versionFile
 	}
 }
