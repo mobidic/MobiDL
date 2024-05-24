@@ -1022,7 +1022,7 @@ workflow panelCapture {
 	# }
 	if (!debug) {
 		if (doCrumble) {
-			call runToolVersions.toolVersions {
+			call runToolVersions.toolVersions as toolVersionsCrumble {
 				input:
 				Cpu = cpuLow,
 				Memory = memoryHigh,
@@ -1119,5 +1119,6 @@ workflow panelCapture {
 		File? FinalCramCrumbled = crumble.crumbled
         File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
 		File? VersionFile = toolVersions.versionFile
+		File? VersionFile = toolVersionsCrumble.versionFile
 	}
 }
