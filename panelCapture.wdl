@@ -1119,6 +1119,6 @@ workflow panelCapture {
 		File? FinalCramCrumbled = crumble.crumbled
         File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
 		File? VersionFile = toolVersions.versionFile
-		File? VersionFile = toolVersionsCrumble.versionFile
+		File? VersionFileCrumble = toolVersionsCrumble.versionFile
 	}
 }
