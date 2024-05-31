@@ -197,11 +197,11 @@ modifyJsonAndLaunch() {
 		SUFFIX1=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 1)
 		SUFFIX2=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 2)
 		FASTQ_DIR=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 3)
-		#https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
-		#bash native character replacement
+		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
+		# bash native character replacement
 		FASTQ_SED=${FASTQ_DIR////\\/}
 		ROI_SED=${ROI_DIR////\\/}
-		#RUN_SED=${RUN_PATH////\\/}
+		# RUN_SED=${RUN_PATH////\\/}
 		if [ ! -d "${TMP_OUTPUT_DIR2}" ];then
 			mkdir "${TMP_OUTPUT_DIR2}"
 		fi
@@ -215,7 +215,7 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
 			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
+			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/mnt\/chu-ngs2\/MobiDL\/tmp_output\/${RUN}\",/" "${JSON}"
 		# if [ "${GENOME}" != "hg19" ];then # need more than just that - changed template see above
 		# 	sed "s/hg19/${GENOME}/g" "${JSON}"
 		# fi
@@ -223,14 +223,14 @@ modifyJsonAndLaunch() {
 		debug "$(cat ${JSON})"
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
-		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
+		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${WDL}.wdl -i ${JSON}"
 		if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
 			mkdir "${TMP_OUTPUT_DIR2}Logs"
 		fi
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
-		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
 			workflowPostTreatment "${WDL}"
 		else
@@ -240,7 +240,7 @@ modifyJsonAndLaunch() {
 			# search for an error with gatk LAI - if found relaunch without this step
 			# cannot explain this error - maybe a gatk bug?
 			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
-				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
 				if [ $? -eq 0 ];then
 					info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 					workflowPostTreatment "${WDL}_noGatkLai"
@@ -291,6 +291,7 @@ setvariables() {
 
 
 setjsonvariables() {
+	chmod 777 "${1}"
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
@@ -327,12 +328,14 @@ prepareAchab() {
 	unset JSON_SUFFIX
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
 		DISEASE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 4)
-		GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
+		# GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
+		GENE_FILE="${BASE_DIR}$(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3)"
 		JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
 	else
 		debug "FASTQ workflows file: ${FASTQ_WORKFLOWS_FILE}"
 		DISEASE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 3)
-		GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
+		# GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
+		GENE_FILE="${BASE_DIR}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
 	# do it only once
@@ -367,7 +370,8 @@ prepareAchab() {
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		source ${CONDA_ACTIVATE} bedtoolsEnv
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
-		source ${CONDA_DEACTIVATE}
+		conda deactivate
+		# source ${CONDA_DEACTIVATE}
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF
@@ -675,10 +679,10 @@ do
 									EXPERIMENT="nimblegen_custom"
 								fi
 								touch "${LED_FILE}"
-								echo "#patient_id	less than 10 chars" >> "${LED_FILE}"
+								echo "#patient_id	less than 15 chars" >> "${LED_FILE}"
 								echo "#family_id	less than 10 chars" >> "${LED_FILE}"
 								echo "#gender		m/f" >> "${LED_FILE}"
-								echo "#disease_name	RP,DFNB,DFNA,USH,ATAXIA,MYOPATHY,HEALTHY,CF,CF-RD,CBAVD,OTHER,AUTISM,DSD" >> "${LED_FILE}"
+								echo "#disease_name	RP,DFNB,DFNA,USH,ATAXIA,MYOPATHY,HEALTHY,CF,CF-RD,CBAVD,OTHER,AUTISM,DSD,HYPOSP" >> "${LED_FILE}"
 								echo "#team_name	SENSORINEURAL,NEUROMUSCULAR,ATAXIA,MUCO,DSD" >> "${LED_FILE}"
 								echo "#visibility	0/1" >> "${LED_FILE}"
 								echo "#experiment	trusight_one,exome_ss_v6,exome_ss_v5,truseq_rapid_exome,cftr_complete,medexome,nimblegen_inherited_disease,trusight_one_exp,nimblegen_custom,agilent_custom", >> "${LED_FILE}"
@@ -722,8 +726,10 @@ do
 								done
 							else
 								info "Launching MobiCNV on run ${RUN}"
+								source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
 								srun -N1 -c1 "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 								debug "srun -N1 -c1 ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								conda deactivate
 								# here prepare and launch gatk_cnv
 								# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
 								# removed 20220420 as does not work as expected
@@ -745,11 +751,14 @@ do
 									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01 && "${CONDA} deactivate"
 									# deactivates conda env
 									# "${CONDA_DEACTIVATE}"
+									conda deactivate
 								fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
+							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
 							srun -N1 -c1  "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "srun -N1 -c1 ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							conda deactivate
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"

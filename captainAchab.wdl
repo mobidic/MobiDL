@@ -48,7 +48,7 @@ workflow captainAchab {
 		String sampleID
 		String outDir
 		Boolean keepFiles
-		## From annovarForMpa
+		## For annovarForMpa
 		File customXref
 		File refAnnotateVariation
 		File refCodingChange
@@ -59,10 +59,11 @@ workflow captainAchab {
 		String genome
 		#String operationSuffix
 		#String comma
-		## From phenolyzer
+		## For phenolyzer
 		Boolean withPhenolyzer
 		String diseaseFile
-		## From Achab
+		## For Achab
+		# File mdApiKeyFile
 		String genesOfInterest
 		String customVCF
 		String fatherSample
@@ -76,14 +77,16 @@ workflow captainAchab {
 		String cnvGeneList
 		String filterList
 		String affected
+		String mdApiKey = ''
 		String favouriteGeneRef
 		String filterCustomVCF
 		String filterCustomVCFRegex
+		String idSnp = ''
 		String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
 		String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
-		## From BcftoolsSplit 
+		## For BcftoolsSplit 
 		File inputVcf
-		## From BcftoolsLeftAlign 
+		## For BcftoolsLeftAlign 
 		File fastaGenome
 		String vcSuffix = ""
 	}
@@ -255,9 +258,11 @@ workflow captainAchab {
 			MozaicRate = mozaicRate,
 			MozaicDP = mozaicDP,
 			Affected = affected,
+			MdApiKey = mdApiKey,
 			FavouriteGeneRef = favouriteGeneRef,
 			FilterCustomVCF = filterCustomVCF,
 			FilterCustomVCFRegex = filterCustomVCFRegex,
+			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields
 	}
@@ -288,9 +293,11 @@ workflow captainAchab {
 			MozaicRate = mozaicRate,
 			MozaicDP = mozaicDP,
 			Affected = affected,
+			MdApiKey = mdApiKey,
 			FavouriteGeneRef = favouriteGeneRef,
 			FilterCustomVCF = filterCustomVCF,
 			FilterCustomVCFRegex = filterCustomVCFRegex,
+			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields
 	}

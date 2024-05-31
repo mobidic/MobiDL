@@ -33,8 +33,10 @@ task achab {
 		Float MozaicDP		
 		String CheckTrio
 		String CustomInfo
+		String IdSnp
 		String PerlPath
 		String Affected
+		String MdApiKey
 		String FavouriteGeneRef
 		String FilterCustomVCF
 		String FilterCustomVCFRegex
@@ -67,9 +69,11 @@ task achab {
 		--mozaicDP "~{MozaicDP}" \
 		--customInfoList "~{CustomInfo}" \
 		--affected "~{Affected}" \
+		--MDAPIkey "~{MdApiKey}" \
 		--favouriteGeneRef "~{FavouriteGeneRef}" \
 		--filterCustomVCF "~{FilterCustomVCF}" \
 		--filterCustomVCFRegex "~{FilterCustomVCFRegex}" \
+		--IDSNP "~{IdSnp}" \
 		--gnomadExome  "~{GnomadExomeFields}" \
 		--gnomadGenome "~{GnomadGenomeFields}" \
 		--addCustomVCFRegex

@@ -47,12 +47,6 @@ task gatkHaplotypeCaller {
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
-		# ~{GatkExe} RenameSampleInVcf \
-		# -I "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs/~{SampleID}.~{IntervalName}.sampletorename.vcf" \
-		# -O "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs/~{SampleID}.~{IntervalName}.vcf" \
-		# --NEW_SAMPLE_NAME "~{SampleID}.hc" \
-		# --OLD_SAMPLE_NAME "~{SampleID}"
-		# rm "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs/~{SampleID}.~{IntervalName}.sampletorename.vcf"
 	>>>
 	runtime {
 		queue: "~{Queue}"

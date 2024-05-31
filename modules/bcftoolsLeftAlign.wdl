@@ -19,6 +19,7 @@ task bcftoolsLeftAlign {
 		Boolean Version = false
 		# task specific variables
 		File FastaGenome
+		File FastaGenomeFai = "~{FastaGenome}.fai"
 		File SplittedVcf
 		# runtime attributes
 		String Queue
