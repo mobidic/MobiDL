@@ -14,6 +14,7 @@ task gatkHaplotypeCaller {
 	String IntervalName = basename("${GatkInterval}", ".intervals")
 	File BamFile
 	File BamIndex
+	Int MaxMNPDist = 2
 	# when callcaching on, seem to keep Bam and index in the same directory for HC execution
 	# does not work in fine...
 	# Pair[File, File] Bam = (BamFile, BamIndex)
@@ -30,6 +31,7 @@ task gatkHaplotypeCaller {
 		--dbsnp ${DbSNP} \
 		--smith-waterman ${SwMode} \
 		--emit-ref-confidence ${EmitRefConfidence} \
+		--max-mnp-distance ${MaxMNPDist} \
 		-O "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.hc.vcf"
 		# ${GatkExe} RenameSampleInVcf \
 		# -I "${OutDir}${SampleID}/${WorkflowType}/vcfs/${SampleID}.${IntervalName}.sampletorename.vcf" \
