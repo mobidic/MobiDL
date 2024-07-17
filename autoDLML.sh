@@ -131,7 +131,8 @@ SAMPLESHEET=''
 
 assignVariables() {
 	#${RUN_PATH}
-	if [[ "${1}" =~ "MiniSeq" ]];then
+	if [[ "${1}" =~ "MINISEQ" ]];then
+	# if [[ "${1}" =~ "MiniSeq" ]];then
 		MAX_DEPTH="${MINISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MINISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MINISEQ_TRIGGER_EXPR}"
@@ -151,13 +152,14 @@ assignVariables() {
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
 dos2unixIfPossible() {
-	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
-	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then  >/dev/null 2>&1
-	 	# debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
+	if [[ "${RUN_PATH}" =~ "MINISEQ" ||  "${RUN_PATH}" =~ "MISEQ" ]];then
+	# if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
+	#if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then  >/dev/null 2>&1
+		# debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		# debug "dos2unix for ${SAMPLESHEET_PATH}"
 		"${DOS2UNIX}" -q "${SAMPLESHEET_PATH}"
-	 fi
+	fi
 }
 #moveRunIfNecessary() {
 #	if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
@@ -532,12 +534,18 @@ do
 								RUN_ARRAY[${RUN}]=1
 							fi
 							# sleep to wait for MiniSeq fastqs (DNA Enrichment only)
-							if [[ "${RUN_PATH}" =~ "MiniSeq" ]] && [[ "${MANIFEST}" != "GenerateFASTQ" ]];then
+							# if [[ "${RUN_PATH}" =~ "MiniSeq" ]] && [[ "${MANIFEST}" != "GenerateFASTQ" ]];then
+							if [[ "${RUN_PATH}" =~ "MINISEQ" ]] && [[ "${MANIFEST}" != "GenerateFASTQ" ]];then
 								debug "Going to sleep for 1200 s"
 								sleep 1200
 							fi
-							# modify outputpath if necessary
-							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+							# modify outputpath
+							if [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
+								OUTPUT_PATH=${MINISEQ_RUNS_DEST_DIR}
+								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
+									mkdir -p "${OUTPUT_PATH}${RUN}"
+								fi
+							elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
 								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}"
