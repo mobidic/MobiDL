@@ -75,7 +75,7 @@ log() {
 
 ###############		Get options from conf file			##################################
 # CONFIG_FILE='./autoDL.conf'
-CONFIG_FILE='/mnt/Bioinfo/Softs/src/IURC/MobiDL_conf/autoDL.conf'
+CONFIG_FILE='/bioinfo/softs/MobiDL_conf/autoDL.conf'
 
 # we check the params against a regexp
 UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*-]*)$")
@@ -130,7 +130,8 @@ SAMPLESHEET=''
 
 assignVariables() {
 	#${RUN_PATH}
-	if [[ "${1}" =~ "MiniSeq" ]];then
+	# if [[ "${1}" =~ "MiniSeq" ]];then
+	if [[ "${1}" =~ "MINISEQ" ]];then
 		MAX_DEPTH="${MINISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MINISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MINISEQ_TRIGGER_EXPR}"
@@ -150,8 +151,8 @@ assignVariables() {
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
 dos2unixIfPossible() {
-	 if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
-	 #if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then  >/dev/null 2>&1
+	#  if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
+	 if [[ "${RUN_PATH}" =~ "MINISEQ" ||  "${RUN_PATH}" =~ "MISEQ" ]];then
 	 	debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		debug "dos2unix for ${SAMPLESHEET_PATH}"
@@ -516,16 +517,15 @@ do
 								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 								RUN_ARRAY[${RUN}]=1
 							fi
-							if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
+							if [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
+								OUTPUT_PATH=${MINISEQ_RUNS_DEST_DIR}
+							elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
-								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}"
-								fi
 							elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 								OUTPUT_PATH=${MISEQ_RUNS_DEST_DIR}
-								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}"
-								fi
+							fi
+							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
+								mkdir -p "${OUTPUT_PATH}${RUN}"
 							fi
 							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
 								# create folder meant to put family files for afterwards merging
@@ -572,7 +572,7 @@ do
 								# debug "SAMPLE FILENAME:${FILENAME}"
 								REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
-									if [ ${SAMPLES["${BASH_REMATCH[1]}"]} ];then
+									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then
 										SAMPLES["${BASH_REMATCH[1]}"]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 										# debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 									else
