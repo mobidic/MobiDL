@@ -33,6 +33,7 @@ task deepVariant {
 		String VcSuffix
 		# runtime attributes
 		String Queue
+		String Node
 		Int Cpu
 		Int Memory
 	}
@@ -64,6 +65,7 @@ task deepVariant {
 		queue: "~{Queue}"
 		cpu: "~{Cpu}"
 		requested_memory_mb_per_core: "~{Memory}"
+		node: "~{Node}"
 	}
 	output{
 		 File DeepVcf = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.vcf"
