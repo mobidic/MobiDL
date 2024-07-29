@@ -33,7 +33,7 @@ task deepVariant {
 		String VcSuffix
 		# runtime attributes
 		String Queue
-		String Node
+		String? Node
 		Int Cpu
 		Int Memory
 	}
