@@ -216,7 +216,7 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
 			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/mnt\/chu-ngs2\/MobiDL\/tmp_output\/${RUN}\",/" "${JSON}"
+			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
 		# if [ "${GENOME}" != "hg19" ];then # need more than just that - changed template see above
 		# 	sed "s/hg19/${GENOME}/g" "${JSON}"
 		# fi
@@ -330,13 +330,13 @@ prepareAchab() {
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
 		DISEASE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 4)
 		# GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
-		GENE_FILE="${BASE_DIR}$(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3)"
+		GENE_FILE="${CONF_DIR}$(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3)"
 		JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
 	else
 		debug "FASTQ workflows file: ${FASTQ_WORKFLOWS_FILE}"
 		DISEASE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 3)
 		# GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
-		GENE_FILE="${BASE_DIR}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
+		GENE_FILE="${CONF_DIR}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
 	# do it only once
@@ -345,7 +345,7 @@ prepareAchab() {
 	if [ "${FAMILY_FILE_CREATED}" -eq 0 ];then
 		if [ -z "${FAMILY_FILE_CONFIG}" ];then
 			# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
-			FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
+			FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
 		fi
 		debug "Family config file: ${FAMILY_FILE_CONFIG}"
 		echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
@@ -527,10 +527,10 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 								mkdir -p "${OUTPUT_PATH}${RUN}"
 							fi
-							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
+							if [ ! -d "${RS_IURC_DIR}Families/${RUN}" ];then
 								# create folder meant to put family files for afterwards merging
-								mkdir -p "${BASE_DIR}Families/${RUN}"
-								chmod -R 777 "${BASE_DIR}Families/${RUN}"
+								mkdir -p "${NAS_CHU}WDL/Families/${RUN}"
+								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
 								# create example config file for merge_multisample.sh
 								# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
 								# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
@@ -547,9 +547,9 @@ do
 								# AFFECTED=
 								# # si non
 								# HEALTHY=
-								FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
+								FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
 								touch "${FAMILY_FILE_CONFIG}"
-								chmod -R 777 "${BASE_DIR}Families/${RUN}"
+								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
 								echo "##### DEBUT ne pas modifier les champs ci-dessous si analyse auto" > "${FAMILY_FILE_CONFIG}"
 								echo "RUN_PATH=${OUTPUT_PATH}" >> "${FAMILY_FILE_CONFIG}"
 								echo "RUN_ID=${RUN}" >> "${FAMILY_FILE_CONFIG}"
