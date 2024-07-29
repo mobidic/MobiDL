@@ -36,8 +36,8 @@ task compressIndexVcf {
 		"~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}.gz"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
-			echo "Bgzip: v${dollar}(${BgZipExe} --version 2>&1 | grep 'bgzip' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
-			echo "Tabix: v${dollar}(${TabixExe} --version 2>&1 | grep 'tabix' | cut -f3 -d ' ')" >> "${OutDir}${SampleID}/${WorkflowType}/${SampleID}.versions.txt"
+			echo "Bgzip: v$(~{BgZipExe} --version 2>&1 | grep 'bgzip' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
+			echo "Tabix: v$(~{TabixExe} --version 2>&1 | grep 'tabix' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
 		conda deactivate
 	>>>

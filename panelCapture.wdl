@@ -698,6 +698,7 @@ workflow panelCapture {
 			BgZipExe = bgZipExe,
 			TabixExe = tabixExe,
 			VcSuffix = dvSuffix,
+			Version = true,
 			VcfFile = bcftoolsNormDv.normVcf
 	}
 	call runBcftoolsStats.bcftoolsStats as bcftoolsStatsDv {
