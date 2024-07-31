@@ -76,7 +76,7 @@ workflow panelCapture {
 		## resources
 		Int cpuHigh
 		Int cpuLow
-		Int avxCpu
+		# Int avxCpu
 		Int memoryLow
 		Int memoryHigh
 		# memoryLow = scattered tasks =~ mem_per_cpu in HPC or not
@@ -587,7 +587,7 @@ workflow panelCapture {
 			Queue = avxQueue,
 			CondaBin = condaBin,
 			SingularityEnv = singularityEnv,
-			Cpu = avxCpu,
+			Cpu = cpuHigh,
 			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
@@ -599,7 +599,7 @@ workflow panelCapture {
 			DvSimg = dvSimg,
 			BamFile = samtoolsSort.sortedBam,
 			BamIndex = finalIndexing.bamIndex,
-			ReferenceFasta = referenceFasta,
+			RefFastaGz = refFastaGz,
 			IntervalBedFile = intervalBedFile,
 			ModelType = modelType,
 			Data = data,

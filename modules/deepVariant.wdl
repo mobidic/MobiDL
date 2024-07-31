@@ -15,7 +15,7 @@ task deepVariant {
 		String SampleID
 		String OutDir
 		String WorkflowType
-		String ReferenceFasta
+		String RefFastaGz
 		String SingularityExe
 		String DvSimg
 		String DvExe
@@ -45,7 +45,7 @@ task deepVariant {
 		--bind ~{Data} \
 		~{DvSimg} ~{DvExe} \
 		--model_type=~{ModelType} \
-		--ref=~{ReferenceFasta} \
+		--ref=~{RefFastaGz} \
 		--reads="~{OutDir}/~{SampleID}/~{WorkflowType}/~{SampleID}.bam" \
 		--regions=~{IntervalBedFile} \
 		--num_shards=~{Cpu} \
