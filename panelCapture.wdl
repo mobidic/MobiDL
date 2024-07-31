@@ -156,10 +156,10 @@ workflow panelCapture {
 		## DeepVariant
 		String referenceFasta
 		String modelType
-		String bedFile
+		# String bedFile
 		String data
 		String refData
-		String dvOut
+		# String dvOut
 		String outputMnt
 		String dvExe
 		String singularityExe = "singularity"
@@ -600,11 +600,11 @@ workflow panelCapture {
 			BamFile = samtoolsSort.sortedBam,
 			BamIndex = finalIndexing.bamIndex,
 			ReferenceFasta = referenceFasta,
-			BedFile = bedFile,
+			IntervalBedFile = intervalBedFile,
 			ModelType = modelType,
 			Data = data,
 			RefData = refData,
-			DvOut = dvOut,
+			OutDir = outDir,
 			Output = outputMnt,
 			VcSuffix = dvSuffix
 	}

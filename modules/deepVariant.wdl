@@ -24,11 +24,11 @@ task deepVariant {
 		# task specific variables
 		File BamFile
 		File BamIndex
-		String BedFile
+		String IntervalBedFile
 		String ModelType
 		String Data
 		String RefData
-		String DvOut
+		String OutDir
 		String Output
 		String VcSuffix
 		# runtime attributes
@@ -46,10 +46,10 @@ task deepVariant {
 		~{DvSimg} ~{DvExe} \
 		--model_type=~{ModelType} \
 		--ref=~{ReferenceFasta} \
-		--reads="~{DvOut}/~{SampleID}/~{WorkflowType}/~{SampleID}.bam" \
-		--regions=~{BedFile} \
+		--reads="~{OutDir}/~{SampleID}/~{WorkflowType}/~{SampleID}.bam" \
+		--regions=~{IntervalBedFile} \
 		--num_shards=~{Cpu} \
-		--output_vcf="~{DvOut}/~{SampleID}/~{WorkflowType}/~{SampleID}.unsorted.vcf"
+		--output_vcf="~{OutDir}/~{SampleID}/~{WorkflowType}/~{SampleID}.unsorted.vcf"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file			
 			echo "DeepVariant: v$(~{SingularityExe} run ~{DvSimg} ~{DvExe} --version 2>/dev/null | grep 'DeepVariant' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
