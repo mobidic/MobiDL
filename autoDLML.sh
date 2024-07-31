@@ -189,8 +189,6 @@ modifyJsonAndLaunch() {
 	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
 	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
 		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
-	# if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
-	# 	error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	else
 		cp "${MOBIDL_JSON_TEMPLATE}" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		# cp "${MOBIDL_JSON_DIR}${WDL}_inputs.json" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
@@ -214,12 +212,9 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}\.fastq\.gz\",/" \
 			-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
+			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
 			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
-		# if [ "${GENOME}" != "hg19" ];then # need more than just that - changed template see above
-		# 	sed "s/hg19/${GENOME}/g" "${JSON}"
-		# fi
 		rm "${JSON}.bak"
 		debug "$(cat ${JSON})"
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
