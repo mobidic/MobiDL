@@ -212,7 +212,7 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}\.fastq\.gz\",/" \
 			-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${BED}\",/" \
+			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
 			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
 		rm "${JSON}.bak"
