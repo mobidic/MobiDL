@@ -154,7 +154,7 @@ workflow panelCapture {
 		String swMode
 		String emitRefConfidence = "NONE"
 		## DeepVariant
-		String referenceFasta
+		# String referenceFasta
 		String modelType
 		# String bedFile
 		String data
