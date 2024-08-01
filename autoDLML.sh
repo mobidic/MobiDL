@@ -178,6 +178,7 @@ modifyJsonAndLaunch() {
 		mkdir "${AUTODL_DIR}/${RUN}"
 	fi
 	if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
+		debug "BED: ${BED} - BASH_REMATCH: ${BASH_REMATCH[1]}"
 		GENOME=${BASH_REMATCH[1]}
 	else
 		GENOME=hg19
@@ -526,7 +527,7 @@ do
 						else
 							GENOME=hg19
 						fi
-						debug "GENOME:${GENOME}"
+						debug "BED: ${BED} - GENOME:${GENOME}"
 						if [ -n "${MANIFEST}" ] &&  [ -n "${WDL}" ] && [ -n "${BED}" ];then
 							info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
