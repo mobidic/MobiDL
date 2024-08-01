@@ -85,7 +85,7 @@ if [ -n "${UNKNOWN}" ]; then
 	exit 1
 fi
 
-source ${CONFIG_FILE}
+source "${CONFIG_FILE}"
 
 ###############		1st check whether another instance of the script is running	##################
 
@@ -226,9 +226,13 @@ modifyJsonAndLaunch() {
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
-		source ${CONDA_ACTIVATE} ${GATK_ENV}
+		source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
+		info "$(which gatk)"
+		info "gatkEnv loaded"
+		exit 0;
 		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
+			conda deactivate
 			workflowPostTreatment "${WDL}"
 		else
 			# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
@@ -237,9 +241,10 @@ modifyJsonAndLaunch() {
 			# search for an error with gatk LAI - if found relaunch without this step
 			# cannot explain this error - maybe a gatk bug?
 			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
+				info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+				conda deactivate
 				if [ $? -eq 0 ];then
-					info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 					workflowPostTreatment "${WDL}_noGatkLai"
 				else
 					error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
@@ -248,7 +253,6 @@ modifyJsonAndLaunch() {
 				error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 			fi
 		fi
-		conda deactivate
 	fi
 }
 
@@ -366,7 +370,7 @@ prepareAchab() {
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ] && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
-		source ${CONDA_ACTIVATE} ${BEDTOOLS_ENV}
+		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
