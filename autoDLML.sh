@@ -226,6 +226,7 @@ modifyJsonAndLaunch() {
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
+		source ${CONDA_ACTIVATE} ${GATK_ENV}
 		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
 			workflowPostTreatment "${WDL}"
@@ -247,6 +248,7 @@ modifyJsonAndLaunch() {
 				error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 			fi
 		fi
+		conda deactivate
 	fi
 }
 
@@ -743,7 +745,8 @@ do
 									source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
 									# "${CONDA}" activate "${IFCNV_ENV}" 
 									debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01 && "${CONDA} deactivate"
+									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+									# && "${CONDA} deactivate"
 									# deactivates conda env
 									# "${CONDA_DEACTIVATE}"
 									conda deactivate
