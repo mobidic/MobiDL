@@ -14,7 +14,7 @@ task gatkHaplotypeCaller {
 	String IntervalName = basename("${GatkInterval}", ".intervals")
 	File BamFile
 	File BamIndex
-	Int MaxMNPDist = 2
+	Int MaxMNPDist = 0
 	# when callcaching on, seem to keep Bam and index in the same directory for HC execution
 	# does not work in fine...
 	# Pair[File, File] Bam = (BamFile, BamIndex)

@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=1.0
+VERSION=20240718
 USAGE="
 Program: AutoDLML
 Version: ${VERSION}
@@ -99,6 +99,7 @@ fi
 
 debug "CONFIG FILE: ${CONFIG_FILE}"
 
+
 ###############		Get run info file				 ##################################
 
 # the file contains the run id and a code
@@ -130,7 +131,7 @@ TRIGGER_EXPR=''
 SAMPLESHEET=''
 
 assignVariables() {
-	#${RUN_PATH}
+	debug "RUN_PATH:${1}"
 	if [[ "${1}" =~ "MINISEQ" ]];then
 	# if [[ "${1}" =~ "MiniSeq" ]];then
 		MAX_DEPTH="${MINISEQ_MAX_DEPTH}"
