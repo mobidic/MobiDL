@@ -1,11 +1,11 @@
 version 1.0
 
-task gatkVariantFiltrationIndel {
+task gatkVariantFiltrationDv {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
 		version: "0.0.1"
-		date: "2023-09-05"
+		date: "2023-09-04"
 	}
 	input {
 		# https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set
@@ -20,8 +20,9 @@ task gatkVariantFiltrationIndel {
 		File RefDict
 		Boolean Version = false
 		# task specific variables
-		File Vcf
+		File Vcf  #takes as input the compressed and indexed file because Wdl need index
 		File VcfIndex
+		String VcSuffix
 		Int LowCoverage
 		# runtime attributes
 		String Queue
@@ -33,12 +34,8 @@ task gatkVariantFiltrationIndel {
 		~{GatkExe} VariantFiltration \
 		-R ~{RefFasta} \
 		-V ~{Vcf} \
-		--filter-expression "QD < 2.0" --filter-name "LowQualByDepth" \
-		--filter-expression "FS > 200.0" --filter-name "FSStrandBias" \
-		--filter-expression "ReadPosRankSum < -5.0" --filter-name "LowreadPosRankSum" \
-		--filter-expression "SOR > 10.0" --filter-name "SORStrandBias" \
 		--filter-expression "DP < ~{LowCoverage}" --filter-name "LowCoverage" \
-		-O "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.indel.filtered.vcf"
+		-O "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.filtered.vcf"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
@@ -50,7 +47,7 @@ task gatkVariantFiltrationIndel {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File filteredIndelVcf = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.indel.filtered.vcf"
-		File filteredIndelVcfIndex = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.indel.filtered.vcf.idx"
+		File filteredVcf = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.filtered.vcf"
+		File filteredVcfIndex = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.filtered.vcf.idx"
 	}
 }

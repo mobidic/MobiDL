@@ -1,6 +1,6 @@
 version 1.0
 
-task achab {
+task achabNewHope {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
@@ -17,7 +17,6 @@ task achab {
 		String WorkflowType
 		Boolean Version = false
 		# task specific variables
-		String NewHope = ""
 		File AchabExe
 		File OutMpa
 		String? OutPhenolyzer
@@ -33,10 +32,8 @@ task achab {
 		Float MozaicDP		
 		String CheckTrio
 		String CustomInfo
-		String IdSnp
 		String PerlPath
 		String Affected
-		String MdApiKey
 		String FavouriteGeneRef
 		String FilterCustomVCF
 		String FilterCustomVCFRegex
@@ -47,7 +44,6 @@ task achab {
 		Int Cpu
 		Int Memory
 	}
-	String newHopeSuffix = if NewHope == "" then "" else "_newHope"
 	command <<<
 		source ~{CondaBin}activate ~{AchabEnv}
 		~{PerlPath} "~{AchabExe}" \
@@ -61,7 +57,7 @@ task achab {
 		--candidates "~{GenesOfInterest}" \
 		--phenolyzerFile "~{OutPhenolyzer}" \
 		--popFreqThr "~{AllelicFrequency}" \
-		~{NewHope} \
+		--newHope \
 		--filterList "~{FilterList}" \
 		--cnvGeneList "~{CnvGeneList}" \
 		--customVCF "~{CustomVCF}" \
@@ -69,11 +65,9 @@ task achab {
 		--mozaicDP "~{MozaicDP}" \
 		--customInfoList "~{CustomInfo}" \
 		--affected "~{Affected}" \
-		--MDAPIkey "~{MdApiKey}" \
 		--favouriteGeneRef "~{FavouriteGeneRef}" \
 		--filterCustomVCF "~{FilterCustomVCF}" \
 		--filterCustomVCFRegex "~{FilterCustomVCFRegex}" \
-		--IDSNP "~{IdSnp}" \
 		--gnomadExome  "~{GnomadExomeFields}" \
 		--gnomadGenome "~{GnomadGenomeFields}" \
 		--addCustomVCFRegex
@@ -81,7 +75,7 @@ task achab {
 			# fill-in tools version file
 			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>  "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
-		conda deactivate
+		source ~{CondaBin}deactivate
 	>>>
 	runtime {
 		queue: "~{Queue}"
@@ -89,7 +83,6 @@ task achab {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File outAchab = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab_catch~{newHopeSuffix}.xlsx"
-		File outAchabHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}~{newHopeSuffix}_achab.html"
+		File outAchabNewHope = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab_catch_newHope.xlsx"
 	}
 }

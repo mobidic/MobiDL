@@ -53,7 +53,7 @@
   "panelCapture.gatkExe": "/Path/to/gatkexe",
   "panelCapture.gatk3Jar": "/Path/to/gatk3.jar",
   "panelCapture.qualimapExe": "/Path/to/qualimap",
-  "panelCapture.vcfPolyXJar": "/Path/to//jvarkit/dist/vcfpolyx.jar",
+  "panelCapture.vcfPolyXJar": "/Path/to/jvarkit/dist/vcfpolyx.jar",
   "panelCapture.bcfToolsExe": "/Path/to/bcftools",
   "panelCapture.multiqcExe": "/Path/to/multiqc",
   "panelCapture.subdivisionMode": "BALANCING_WITHOUT_INTERVAL_SUBDIVISION",

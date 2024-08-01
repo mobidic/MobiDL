@@ -1,11 +1,11 @@
 #!/bin/bash
 
 ###########################################################################
-#########																												###########
-#########		AutoDL																							###########
-######### @uthor : D Baux	david.baux<at>inserm.fr								###########
-######### Date : 28/10/2021																			###########
-#########																												###########
+#########														###########
+#########		AutoDLML											###########
+######### @uthor : D Baux	david.baux<at>chu-montpellier.fr	###########
+######### Date : 28/10/2021										###########
+#########														###########
 ###########################################################################
 
 ###########################################################################
@@ -22,11 +22,11 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20240718
+VERSION=20240801
 USAGE="
 Program: AutoDLML
 Version: ${VERSION}
-Contact: Baux David <david.baux@inserm.fr>
+Contact: Baux David <david.baux@chu-montpellier.fr>
 
 Usage: This script is meant to be croned
 	Should be executed once per 10 minutes
@@ -75,10 +75,9 @@ log() {
 
 ###############		Get options from conf file			##################################
 # CONFIG_FILE='./autoDL.conf'
-CONFIG_FILE='/RS_IURC/data/MobiDL/panelCapture/conf/autoDL.conf'
-#we check params against regexp
+CONFIG_FILE='/bioinfo/softs/MobiDL_conf/autoDL.conf'
 
-
+# we check the params against a regexp
 UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*-]*)$")
 if [ -n "${UNKNOWN}" ]; then
 	error "Error in config file. Offending lines:"
@@ -86,7 +85,7 @@ if [ -n "${UNKNOWN}" ]; then
 	exit 1
 fi
 
-source ${CONFIG_FILE}
+source "${CONFIG_FILE}"
 
 ###############		1st check whether another instance of the script is running	##################
 
@@ -131,9 +130,9 @@ TRIGGER_EXPR=''
 SAMPLESHEET=''
 
 assignVariables() {
-	debug "RUN_PATH:${1}"
-	if [[ "${1}" =~ "MINISEQ" ]];then
+	#${RUN_PATH}
 	# if [[ "${1}" =~ "MiniSeq" ]];then
+	if [[ "${1}" =~ "MINISEQ" ]];then
 		MAX_DEPTH="${MINISEQ_MAX_DEPTH}"
 		TRIGGER_FILE="${MINISEQ_TRIGGER_FILE}"
 		TRIGGER_EXPR="${MINISEQ_TRIGGER_EXPR}"
@@ -153,10 +152,9 @@ assignVariables() {
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
 dos2unixIfPossible() {
-	if [[ "${RUN_PATH}" =~ "MINISEQ" ||  "${RUN_PATH}" =~ "MISEQ" ]];then
-	# if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
-	#if [ -w ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then  >/dev/null 2>&1
-		# debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
+	#  if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
+	 if [[ "${RUN_PATH}" =~ "MINISEQ" ||  "${RUN_PATH}" =~ "MISEQ" ]];then
+	 	debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
 		# debug "dos2unix for ${SAMPLESHEET_PATH}"
 		"${DOS2UNIX}" -q "${SAMPLESHEET_PATH}"
@@ -192,8 +190,6 @@ modifyJsonAndLaunch() {
 	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
 	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
 		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
-	# if [ ! -e "${MOBIDL_JSON_DIR}${WDL}_inputs.json" ];then
-	# 	error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
 	else
 		cp "${MOBIDL_JSON_TEMPLATE}" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		chmod 755 "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
@@ -208,7 +204,7 @@ modifyJsonAndLaunch() {
 		FASTQ_SED=${FASTQ_DIR////\\/}
 		debug "FASTQ_SED: ${FASTQ_SED}"
 		ROI_SED=${ROI_DIR////\\/}
-		#RUN_SED=${RUN_PATH////\\/}
+		# RUN_SED=${RUN_PATH////\\/}
 		if [ ! -d "${TMP_OUTPUT_DIR2}" ];then
 			mkdir "${TMP_OUTPUT_DIR2}"
 		fi
@@ -220,26 +216,29 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}\.fastq\.gz\",/" \
 			-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1\/dv2\/refData\/intervals\/${BED}\",/" \
+			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/dv2\/tmp_output\/${RUN}\"/" "${JSON}"
-		# if [ "${GENOME}" != "hg19" ];then # need more than just that - changed template see above
-		# 	sed "s/hg19/${GENOME}/g" "${JSON}"
-		# fi
+			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
 		rm "${JSON}.bak"
 		debug "$(cat ${JSON})"
 		# exit
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
-		info "sh ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL}.wdl -i ${JSON}"
+		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${WDL}.wdl -i ${JSON}"
 		if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
 			mkdir "${TMP_OUTPUT_DIR2}Logs"
 		fi
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
-		sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+		source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
+		# conda env is loaded but cromwell acts as if it were not?
+		# info "$(which gatk)"
+		# info "gatkEnv loaded"
+		# exit 0;
+		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
+			conda deactivate
 			workflowPostTreatment "${WDL}"
 		else
 			# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
@@ -248,9 +247,10 @@ modifyJsonAndLaunch() {
 			# search for an error with gatk LAI - if found relaunch without this step
 			# cannot explain this error - maybe a gatk bug?
 			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
-				sh "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+				info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
+				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+				conda deactivate
 				if [ $? -eq 0 ];then
-					info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 					workflowPostTreatment "${WDL}_noGatkLai"
 				else
 					error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
@@ -342,13 +342,13 @@ prepareAchab() {
 	if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
 		DISEASE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 4)
 		# GENE_FILE=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 3)
-		GENE_FILE="${BASE_DIR_CLUSTER}$(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3)"
+		GENE_FILE="${CONF_DIR}$(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3)"
 		JSON_SUFFIX=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 5)
 	else
 		debug "FASTQ workflows file: ${FASTQ_WORKFLOWS_FILE}"
 		DISEASE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 3)
 		# GENE_FILE=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 2)
-		GENE_FILE="${BASE_DIR_CLUSTER}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
+		GENE_FILE="${CONF_DIR}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
 	# do it only once
@@ -357,7 +357,7 @@ prepareAchab() {
 	if [ "${FAMILY_FILE_CREATED}" -eq 0 ];then
 		if [ -z "${FAMILY_FILE_CONFIG}" ];then
 			# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
-			FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
+			FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
 		fi
 		# debug "Family config file: ${FAMILY_FILE_CONFIG}"
 		echo "BASE_JSON=${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
@@ -382,7 +382,10 @@ prepareAchab() {
 	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
+		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
 		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		conda deactivate
+		# source ${CONDA_DEACTIVATE}
 	fi
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF
@@ -534,33 +537,20 @@ do
 								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 								RUN_ARRAY[${RUN}]=1
 							fi
-							# sleep to wait for MiniSeq fastqs (DNA Enrichment only)
-							# if [[ "${RUN_PATH}" =~ "MiniSeq" ]] && [[ "${MANIFEST}" != "GenerateFASTQ" ]];then
-							if [[ "${RUN_PATH}" =~ "MINISEQ" ]] && [[ "${MANIFEST}" != "GenerateFASTQ" ]];then
-								debug "Going to sleep for 1200 s"
-								sleep 1200
-							fi
-							# modify outputpath
 							if [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 								OUTPUT_PATH=${MINISEQ_RUNS_DEST_DIR}
-								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}"
-								fi
 							elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 								OUTPUT_PATH=${NEXTSEQ_RUNS_DEST_DIR}
-								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}"
-								fi
 							elif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
 								OUTPUT_PATH=${MISEQ_RUNS_DEST_DIR}
-								if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}"
-								fi
 							fi
-							if [ ! -d "${BASE_DIR}Families/${RUN}" ];then
+							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
+								mkdir -p "${OUTPUT_PATH}${RUN}"
+							fi
+							if [ ! -d "${RS_IURC_DIR}Families/${RUN}" ];then
 								# create folder meant to put family files for afterwards merging
-								mkdir -p "${BASE_DIR}Families/${RUN}"
-								chmod -R 777 "${BASE_DIR}Families/${RUN}"
+								mkdir -p "${NAS_CHU}WDL/Families/${RUN}"
+								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
 								# create example config file for merge_multisample.sh
 								# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
 								# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
@@ -577,9 +567,9 @@ do
 								# AFFECTED=
 								# # si non
 								# HEALTHY=
-								FAMILY_FILE_CONFIG="${BASE_DIR}Families/${RUN}/Example_file_config.txt"
+								FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
 								touch "${FAMILY_FILE_CONFIG}"
-								chmod -R 777 "${BASE_DIR}Families/${RUN}"
+								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
 								echo "##### DEBUT ne pas modifier les champs ci-dessous si analyse auto" > "${FAMILY_FILE_CONFIG}"
 								echo "RUN_PATH=${OUTPUT_PATH}" >> "${FAMILY_FILE_CONFIG}"
 								echo "RUN_ID=${RUN}" >> "${FAMILY_FILE_CONFIG}"
@@ -763,8 +753,10 @@ do
 								done
 							else
 								info "Launching MobiCNV on run ${RUN}"
+								source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
 								srun -N1 -c1 "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 								debug "srun -N1 -c1 ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								conda deactivate
 								# here prepare and launch gatk_cnv
 								# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
 								# removed 20220420 as does not work as expected
@@ -785,14 +777,15 @@ do
 									debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
 									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
 									# deactivates conda env
-									# source "${CONDA_DEACTIVATE}"
 									conda deactivate
 								fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
+							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
 							srun -N1 -c1  "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "srun -N1 -c1 ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
 							srun -N1 -c1 "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
+							conda deactivate
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
