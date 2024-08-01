@@ -227,6 +227,7 @@ modifyJsonAndLaunch() {
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
 		# source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
+		# conda env is loaded but cromwell acts as if it were not?
 		# info "$(which gatk)"
 		# info "gatkEnv loaded"
 		# exit 0;
