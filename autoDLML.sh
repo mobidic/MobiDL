@@ -226,13 +226,13 @@ modifyJsonAndLaunch() {
 		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
-		source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
+		# source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
 		# info "$(which gatk)"
 		# info "gatkEnv loaded"
 		# exit 0;
 		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
-			conda deactivate
+			# conda deactivate
 			workflowPostTreatment "${WDL}"
 		else
 			# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
@@ -243,7 +243,7 @@ modifyJsonAndLaunch() {
 			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
 				info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
 				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
-				conda deactivate
+				# conda deactivate
 				if [ $? -eq 0 ];then
 					workflowPostTreatment "${WDL}_noGatkLai"
 				else
