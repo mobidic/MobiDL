@@ -227,9 +227,9 @@ modifyJsonAndLaunch() {
 		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		# actual launch and copy in the end
 		source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
-		info "$(which gatk)"
-		info "gatkEnv loaded"
-		exit 0;
+		# info "$(which gatk)"
+		# info "gatkEnv loaded"
+		# exit 0;
 		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
 		if [ $? -eq 0 ];then
 			conda deactivate
