@@ -40,7 +40,7 @@ task gatkHaplotypeCaller {
 		--dbsnp ~{DbSNP} \
 		--smith-waterman ~{SwMode} \
 		--emit-ref-confidence ~{EmitRefConfidence} \
-		--max-mnp-distance ${MaxMNPDist} \
+		--max-mnp-distance ~{MaxMNPDist} \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs/~{SampleID}.~{IntervalName}.hc.vcf"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
