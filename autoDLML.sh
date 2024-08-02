@@ -361,7 +361,7 @@ prepareAchab() {
 			FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
 		fi
 		# debug "Family config file: ${FAMILY_FILE_CONFIG}"
-		echo "BASE_JSON=${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
+		echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
 		echo "DISEASE_FILE=${DISEASE_ACHAB_DIR}${DISEASE_FILE}" >> "${FAMILY_FILE_CONFIG}"
 		echo "GENES_OF_INTEREST=${GENE_FILE}" >> "${FAMILY_FILE_CONFIG}"
 		echo "ACHAB_TODO=/RS_IURC/data/MobiDL/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
@@ -400,13 +400,13 @@ prepareAchab() {
 		# cp disease file in achab input dir
 		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/disease.txt"
 		# cp json file in achab input dir and modify it
-		cp "${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
 		if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening" ]; then
 			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
-			cp "${MOBIDL_ACHAB_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
 			ACHAB_DIR=CaptainAchabCFPanel
 			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
@@ -611,7 +611,7 @@ do
 								fi
 							done
 							# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
-							mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
+							# mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
 							declare -A ROI_TYPES
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
@@ -666,16 +666,16 @@ do
 								prepareAchab
 								TREATED=1
 								# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
-								if [[ ${MULTIPLE} != '' ]];then
-									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/" ];then
-										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/"
-									fi
-									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram"
-									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram.crai"
-								else
-									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram"
-									ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram.crai"
-								fi
+								# if [[ ${MULTIPLE} != '' ]];then
+								# 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/" ];then
+								# 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/"
+								# 	fi
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram"
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram.crai"
+								# else
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram"
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram.crai"
+								# fi
 								# LED specific block
 								LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
 								DISEASE=''
@@ -765,21 +765,22 @@ do
 								# ${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml" --resources cnv_caller=4
 								# debug "${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml --resources cnv_caller=4"
 								# ifCNV
-								BED_FILE_NAME=$(basename ${BED} .bed)
-								BED_IFCNV="${ROI_DIR}${BED_FILE_NAME}_ifcnv.bed"
-								if [ -e ${BED_IFCNV} ];then
-									info "Activating env ${IFCNV_ENV} and launching ifCNV on run ${RUN}"
-									# activates conda									
-									# eval "$(${CONDA} 'shell.bash' 'hook')"
-									# https://unix.stackexchange.com/questions/454957/cron-job-to-run-under-conda-virtual-environment/572951#572951
-									# activates ifcnv env
-									source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
-									# "${CONDA}" activate "${IFCNV_ENV}" 
-									debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-									srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
-									# deactivates conda env
-									conda deactivate
-								fi
+								# remove (temporarily? david 20240802)
+								# BED_FILE_NAME=$(basename ${BED} .bed)
+								# BED_IFCNV="${ROI_DIR}${BED_FILE_NAME}_ifcnv.bed"
+								# if [ -e ${BED_IFCNV} ];then
+								# 	info "Activating env ${IFCNV_ENV} and launching ifCNV on run ${RUN}"
+								# 	# activates conda									
+								# 	# eval "$(${CONDA} 'shell.bash' 'hook')"
+								# 	# https://unix.stackexchange.com/questions/454957/cron-job-to-run-under-conda-virtual-environment/572951#572951
+								# 	# activates ifcnv env
+								# 	source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
+								# 	# "${CONDA}" activate "${IFCNV_ENV}" 
+								# 	debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
+								# 	srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+								# 	# deactivates conda env
+								# 	conda deactivate
+								# fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
 							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
