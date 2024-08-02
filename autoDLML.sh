@@ -72,6 +72,8 @@ log() {
 	fi
 }
 
+# -- SLURM
+SRUN="srun -N1 -c1 -p prod -J"
 
 ###############		Get options from conf file			##################################
 # CONFIG_FILE='./autoDL.conf'
@@ -270,10 +272,10 @@ workflowPostTreatment() {
 	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	# fi
 	# copy to final destination
-	${RSYNC} -aq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	"${SRUN}" autoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${OUTPUT_PATH}${RUN}/MobiDL/"
 	# ${RSYNC} -avq --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
-	${RSYNC} -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
+	"${SRUN}" autoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
@@ -384,7 +386,7 @@ prepareAchab() {
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
-		"${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		"${SRUN}" autoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
 	fi
@@ -589,8 +591,8 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/interop/" ];then
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/interop/"
 							fi
-							srun -N1 -c1 "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
-							srun -N1 -c1 "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
+							"${SRUN}" autoDL_interop "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
+							"${SRUN}" autoDL_interop "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
@@ -722,8 +724,8 @@ do
 								echo "visibility:1" >> "${LED_FILE}"
 								echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
 								# end led specific block
-								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-								cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+								"${SRUN}" autoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+								"${SRUN}" autoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
 								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 							done
 							unset SAMPLES
@@ -740,14 +742,16 @@ do
 									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
 									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
-										srun -N1 -c1 "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
-										debug "srun -N1 -c1 ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
+										"${SRUN}" autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										debug "${SRUN} autoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										conda deactivate
 										# here prepare and launch gatk_cnv
 										# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
 										# removed 20220420 as does not work as expected
 										# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
-										# ${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
-										# info "${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
+										# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
+										# info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
 									else
 										info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 									fi
@@ -755,15 +759,15 @@ do
 							else
 								info "Launching MobiCNV on run ${RUN}"
 								source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-								srun -N1 -c1 "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-								debug "srun -N1 -c1 ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								"${SRUN}" autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								debug "${SRUN} autoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 								conda deactivate
 								# here prepare and launch gatk_cnv
 								# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
 								# removed 20220420 as does not work as expected
 								# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" ""
-								# ${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml" --resources cnv_caller=4
-								# debug "${SNAKEMAKE} --cluster "sbatch -p monster -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml --resources cnv_caller=4"
+								# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml" --resources cnv_caller=4
+								# debug "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml --resources cnv_caller=4"
 								# ifCNV
 								# remove (temporarily? david 20240802)
 								# BED_FILE_NAME=$(basename ${BED} .bed)
@@ -776,17 +780,17 @@ do
 								# 	# activates ifcnv env
 								# 	source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
 								# 	# "${CONDA}" activate "${IFCNV_ENV}" 
-								# 	debug "srun -N1 -c1 ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-								# 	srun -N1 -c1 "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+								# 	debug "${SRUN}" autoDL_ifcnv ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
+								# 	"${SRUN}" autoDL_ifcnv "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
 								# 	# deactivates conda env
 								# 	conda deactivate
 								# fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
 							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
-							srun -N1 -c1  "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
-							debug "srun -N1 -c1 ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
-							srun -N1 -c1 "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
+							"${SRUN}" autoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
+							debug "${SRUN} autoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
+							"${SRUN}" autoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
 							conda deactivate
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
