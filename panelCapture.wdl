@@ -65,7 +65,6 @@ workflow panelCapture {
 		String sambambaEnv = "sambambaEnv"
 		String bedtoolsEnv = "bedtoolsEnv"
 		String crumbleEnv = "crumbleEnv"
-		String jvarkitEnv = "jvarkitEnv"
 		String bcftoolsEnv = "bcftoolsEnv"
 		String multiqcEnv = "multiqcEnv"
 		String singularityEnv = "singularityEnv"
