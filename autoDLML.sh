@@ -22,24 +22,39 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20240801
-USAGE="
-Program: AutoDLML
-Version: ${VERSION}
-Contact: Baux David <david.baux@chu-montpellier.fr>
+VERSION=20240829
+# USAGE="
+# Program: AutoDLML
+# Version: ${VERSION}
+# Contact: Baux David <david.baux@chu-montpellier.fr>
 
-Usage: This script is meant to be croned
-	Should be executed once per 10 minutes
+# Usage: This script is meant to be croned
+# 	Should be executed once per 10 minutes
 
-"
+# "
+usage() {
+	echo 'This script automates MobiDL workflows.'
+	echo 'Program: AutoDLML'
+	echo 'Version: ${VERSION}'
+	echo 'Contact: Baux David <david.baux@chu-montpellier.fr>'
+	echo 'Usage : bash autoDLML.sh --config <path to conf file> [-v 4]'
+	echo '	Mandatory arguments :'
+	echo '		* -c|--config		<path to conf file>: default: ./autoDL.conf'
+	echo '	Optional arguments :'
+	echo '		* -v | --verbosity	<integer> : decrease or increase verbosity level (ERROR : 1 | WARNING : 2 | INFO : 3 (default) | DEBUG : 5)'
+	echo '	General arguments :'
+	echo '		* -h: 			show this help message and exit'
+	echo ''
+	exit
+}
 
-
-if [ $# -ne 0 ]; then
-	echo "${USAGE}"
-	echo "Error Message : Arguments provided"
-	echo ""
-	exit 1
-fi
+# bloc needed if no arguments should be provided
+# if [ $# -ne 0 ]; then
+# 	echo "${USAGE}"
+# 	echo "Error Message : Arguments provided"
+# 	echo ""
+# 	exit 1
+# fi
 
 RED='\033[0;31m'
 LIGHTRED='\033[1;31m'
@@ -72,18 +87,53 @@ log() {
 	fi
 }
 
+
+###############		Get options from conf file			##################################
+CONFIG_FILE='./autoDL.conf'
+# CONFIG_FILE='/bioinfo/softs/MobiDL_conf/autoDL.conf'
+
+
+###############		Parse command line			##################################
+while [ "$1" != "" ];do
+	case $1 in
+		-c | --config)	shift
+			CONFIG_FILE=$1			
+			;;
+		-v | --verbosity) shift 
+			# Check if verbosity level argument is an integer before assignment 
+			if ! [[ "$1" =~ ^[0-9]+$ ]]
+			then 
+				error "\"$1\" must be an integer !"
+				echo " "
+				usage 
+			else 
+				VERBOSITY=$1
+			fi 
+			;;
+		-h | --help)	usage
+			exit
+			;;
+		* )	usage
+			exit 1
+	esac
+	shift
+done
+
 # -- SLURM
 SRUN="srun -N1 -c1 -p prod -J"
 
-###############		Get options from conf file			##################################
-# CONFIG_FILE='./autoDL.conf'
-CONFIG_FILE='/bioinfo/softs/MobiDL_conf/autoDL.conf'
+
+if [ ! -f "${CONFIG_FILE}" ]; then
+    error "Config file ${CONFIG_FILE} not found!"
+fi
+
+debug "Config file: ${CONFIG_FILE}"
 
 # we check the params against a regexp
 UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*-]*)$")
 if [ -n "${UNKNOWN}" ]; then
 	error "Error in config file. Offending lines:"
-	error ${UNKNOWN}
+	error "${UNKNOWN}"
 	exit 1
 fi
 
