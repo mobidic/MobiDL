@@ -127,8 +127,6 @@ if [ ! -f "${CONFIG_FILE}" ]; then
     error "Config file ${CONFIG_FILE} not found!"
 fi
 
-debug "Config file: ${CONFIG_FILE}"
-
 # we check the params against a regexp
 UNKNOWN=$(cat  ${CONFIG_FILE} | grep -Evi "^(#.*|[A-Z0-9_]*=[a-z0-9_ \"\.\/\$\{\}\*-]*)$")
 if [ -n "${UNKNOWN}" ]; then
@@ -252,8 +250,8 @@ modifyJsonAndLaunch() {
 		SUFFIX2=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 2)
 		FASTQ_DIR=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 3)
 		debug "FASTQ_DIR: ${FASTQ_DIR}"
-		#https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
-		#bash native character replacement
+		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
+		# bash native character replacement
 		FASTQ_SED=${FASTQ_DIR////\\/}
 		debug "FASTQ_SED: ${FASTQ_SED}"
 		ROI_SED=${ROI_DIR////\\/}
@@ -274,7 +272,9 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
 		rm "${JSON}.bak"
 		debug "$(cat ${JSON})"
-		# exit
+
+		exit
+
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
 		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${WDL}.wdl -i ${JSON}"
@@ -294,23 +294,23 @@ modifyJsonAndLaunch() {
 			conda deactivate
 			workflowPostTreatment "${WDL}"
 		else
-			# GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
-			# david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
-			GATK_LEFT_ALIGN_INDEL_ERROR=$(egrep 'Job panelCapture.gatkLeftAlignIndels:....? exited with return code 3' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
-			# search for an error with gatk LAI - if found relaunch without this step
-			# cannot explain this error - maybe a gatk bug?
-			if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
-				info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
-				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
-				conda deactivate
-				if [ $? -eq 0 ];then
-					workflowPostTreatment "${WDL}_noGatkLai"
-				else
-					error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-				fi
-			else
-				error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-			fi
+			# # GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+			# # david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
+			# GATK_LEFT_ALIGN_INDEL_ERROR=$(egrep 'Job panelCapture.gatkLeftAlignIndels:....? exited with return code 3' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+			# # search for an error with gatk LAI - if found relaunch without this step
+			# # cannot explain this error - maybe a gatk bug?
+			# if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
+			# 	info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
+			# 	"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+			# 	conda deactivate
+			# 	if [ $? -eq 0 ];then
+			# 		workflowPostTreatment "${WDL}_noGatkLai"
+			# 	else
+			# 		error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+			# 	fi
+			# else
+			error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+			# fi
 		fi
 	fi
 }
@@ -322,10 +322,10 @@ workflowPostTreatment() {
 	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	# fi
 	# copy to final destination
-	"${SRUN}" autoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
+	${SRUN} autoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	info "Moving MobiDL sample ${SAMPLE} to ${OUTPUT_PATH}${RUN}/MobiDL/"
 	# ${RSYNC} -avq --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
-	"${SRUN}" autoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
+	${SRUN} autoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
@@ -436,7 +436,7 @@ prepareAchab() {
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
-		"${SRUN}" autoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		${SRUN} autoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/panelCapture/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
 	fi
@@ -641,8 +641,9 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/interop/" ];then
 								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/interop/"
 							fi
-							"${SRUN}" autoDL_interop "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
-							"${SRUN}" autoDL_interop "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
+							${SRUN} autoDL_interop "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
+							debug "${SRUN} autoDL_interop ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
+							${SRUN} autoDL_interop "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
@@ -774,8 +775,8 @@ do
 								echo "visibility:1" >> "${LED_FILE}"
 								echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
 								# end led specific block
-								"${SRUN}" autoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-								"${SRUN}" autoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+								${SRUN} autoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+								${SRUN} autoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
 								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 							done
 							unset SAMPLES
@@ -793,7 +794,7 @@ do
 									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
 										source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-										"${SRUN}" autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										${SRUN} autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										debug "${SRUN} autoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										conda deactivate
 										# here prepare and launch gatk_cnv
@@ -809,7 +810,7 @@ do
 							else
 								info "Launching MobiCNV on run ${RUN}"
 								source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-								"${SRUN}" autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								${SRUN} autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 								debug "${SRUN} autoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
 								conda deactivate
 								# here prepare and launch gatk_cnv
@@ -830,17 +831,17 @@ do
 								# 	# activates ifcnv env
 								# 	source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
 								# 	# "${CONDA}" activate "${IFCNV_ENV}" 
-								# 	debug "${SRUN}" autoDL_ifcnv ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-								# 	"${SRUN}" autoDL_ifcnv "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+								# 	debug ${SRUN} autoDL_ifcnv ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
+								# 	${SRUN} autoDL_ifcnv "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
 								# 	# deactivates conda env
 								# 	conda deactivate
 								# fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
 							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
-							"${SRUN}" autoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
+							${SRUN} autoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
 							debug "${SRUN} autoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
-							"${SRUN}" autoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
+							${SRUN} autoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
 							conda deactivate
 							# may not be needed anymore with NFS share TEST ME
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
