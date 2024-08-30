@@ -273,8 +273,6 @@ modifyJsonAndLaunch() {
 		rm "${JSON}.bak"
 		debug "$(cat ${JSON})"
 
-		exit
-
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
 		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${WDL}.wdl -i ${JSON}"
