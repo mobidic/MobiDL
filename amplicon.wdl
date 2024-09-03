@@ -590,7 +590,7 @@ workflow amplicon {
 			CondaBin = condaBin,
 			SingularityEnv = singularityEnv,
 			Cpu = cpuHigh,
-			Memory = memoryHigh,
+			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,			
