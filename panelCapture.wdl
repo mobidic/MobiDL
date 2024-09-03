@@ -591,7 +591,7 @@ workflow panelCapture {
 			CondaBin = condaBin,
 			SingularityEnv = singularityEnv,
 			Cpu = cpuHigh,
-			Memory = memoryLow,
+			Memory = memoryHigh,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,			
