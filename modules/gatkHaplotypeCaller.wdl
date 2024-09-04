@@ -25,6 +25,7 @@ task gatkHaplotypeCaller {
 		File BamFile
 		File BamIndex
 		Int MaxMNPDist = 0
+		Int MaxReadPerAlignmentStart = 50
 		String SwMode
 		String EmitRefConfidence
 		# runtime attributes
@@ -41,6 +42,7 @@ task gatkHaplotypeCaller {
 		--smith-waterman ~{SwMode} \
 		--emit-ref-confidence ~{EmitRefConfidence} \
 		--max-mnp-distance ~{MaxMNPDist} \
+		--max-reads-per-alignment-start ~{MaxReadPerAlignmentStart} \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs/~{SampleID}.~{IntervalName}.hc.vcf"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
