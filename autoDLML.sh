@@ -806,7 +806,7 @@ do
 										info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 									fi
 								done
-							else
+							elif [ "${WDL}" != "amplicon" ];then
 								info "Launching MobiCNV on run ${RUN}"
 								source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
 								${SRUN}autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
