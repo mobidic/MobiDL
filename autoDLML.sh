@@ -642,7 +642,7 @@ do
 							fi
 							# for some reason SRUN should be called without quotes
 							debug "${SRUN}autoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
-							${SRUN}autoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
+							/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
 							debug "${SRUN}autoDL_interopi ${ILLUMINAINTEROP}index-summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							${SRUN}autoDL_interopi "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
@@ -795,7 +795,7 @@ do
 									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
 										source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-										/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										${SRUN}autoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										debug "${SRUN}autoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										conda deactivate
 										# here prepare and launch gatk_cnv
