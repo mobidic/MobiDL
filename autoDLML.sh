@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20240829
+VERSION=20240909
 # USAGE="
 # Program: AutoDLML
 # Version: ${VERSION}
@@ -236,10 +236,10 @@ modifyJsonAndLaunch() {
 		GENOME=hg19
 	fi
 	debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN} - GENOME:${GENOME}"
-	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs.json"
-	if [ "${GENOME}" != "hg19" ];then
-		MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
-	fi
+	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
+	# if [ "${GENOME}" != "hg19" ];then
+	# 	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
+	# fi
 	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
 	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
 		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
