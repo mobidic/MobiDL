@@ -600,7 +600,7 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 								mkdir -p "${OUTPUT_PATH}${RUN}"
 							fi
-							if [ ! -d "${RS_IURC_DIR}Families/${RUN}" ];then
+							if [ ! -d "${NAS_CHU}WDL/Families/${RUN}" ];then
 								# create folder meant to put family files for afterwards merging
 								mkdir -p "${NAS_CHU}WDL/Families/${RUN}"
 								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
