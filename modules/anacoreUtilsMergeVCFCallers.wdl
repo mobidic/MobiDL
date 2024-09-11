@@ -9,7 +9,7 @@ task anacoreUtilsMergeVCFCallers {
 	}
 	input {
 		# env variables
-		String CondaBin	
+		String CondaBin
 		String AnacoreEnv
 		# global variables
 		String SampleID

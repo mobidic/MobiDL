@@ -24,7 +24,7 @@ Providing wdl workflows to treat NGS data
 
 ```bash
 
-java -jar /PATH/TO/womtool.jar validate panelCapture.wdl 
+java -jar /PATH/TO/womtool.jar validate panelCapture.wdl
 
 ```
 

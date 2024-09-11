@@ -8,7 +8,7 @@ task compressIndexVcf {
 		date: "2023-09-04"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String SamtoolsEnv
 		# global variables

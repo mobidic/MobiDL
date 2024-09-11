@@ -8,12 +8,12 @@ task sambambaFlagStat {
 		date: "2023-09-04"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String SambambaEnv
 		# global variables
 		String SampleID
-		String OutDirSampleID = ""		
+		String OutDirSampleID = ""
 		String OutDir
 		String WorkflowType
 		String SambambaExe

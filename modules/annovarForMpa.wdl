@@ -8,7 +8,7 @@ task annovarForMpa {
 		date: "2023-09-07"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String AchabEnv
 		# global variables
@@ -25,7 +25,7 @@ task annovarForMpa {
 		String SampleID
 		String OutDir
 		String PerlPath
-		Boolean Version = true 
+		Boolean Version = true
 		# databases
 		String Genome
 		Int IntronHgvs = 80

@@ -11,7 +11,7 @@ task gatkCollectInsertSizeMetrics {
 		# https://software.broadinstitute.org/gatk/documentation/tooldocs/current/picard_analysis_CollectMultipleMetrics.php
 		# global variables
 		String SampleID
-		String OutDirSampleID = ""		
+		String OutDirSampleID = ""
 		String OutDir
 		String WorkflowType
 		String GatkExe

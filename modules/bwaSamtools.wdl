@@ -8,8 +8,8 @@ task bwaSamtools {
 		date: "2023-09-01"
 	}
 	input {
-		# env variables - BwaEnv includes samtools	
-		String CondaBin	
+		# env variables - BwaEnv includes samtools
+		String CondaBin
 		String BwaEnv
 		# global variables
 		String SampleID
@@ -23,7 +23,7 @@ task bwaSamtools {
 		# task specific variables
 		String BwaExe
 		String Platform
-		File RefFasta		
+		File RefFasta
 		# index files for bwa
 		File RefAmb
 		File RefAnn

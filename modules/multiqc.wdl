@@ -8,7 +8,7 @@ task multiqc {
 		date: "2023-09-05"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String MultiqcEnv
 		# global variables

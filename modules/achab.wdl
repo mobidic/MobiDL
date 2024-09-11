@@ -8,7 +8,7 @@ task achab {
 		date: "2023-09-08"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String AchabEnv
 		# global variables
@@ -30,7 +30,7 @@ task achab {
 		String MotherSample
 		Float AllelicFrequency
 		Float MozaicRate
-		Float MozaicDP		
+		Float MozaicDP
 		String CheckTrio
 		String CustomInfo
 		String IdSnp

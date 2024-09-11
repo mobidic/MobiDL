@@ -8,7 +8,7 @@ task deepVariant {
 		date: "2023-09-04"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String SingularityEnv
 		# global variables
@@ -51,7 +51,7 @@ task deepVariant {
 		--num_shards=~{Cpu} \
 		--output_vcf="~{OutDir}/~{SampleID}/~{WorkflowType}/~{SampleID}.unsorted.vcf"
 		if [ ~{Version} = true ];then
-			# fill-in tools version file			
+			# fill-in tools version file
 			echo "DeepVariant: v$(~{SingularityExe} run ~{DvSimg} ~{DvExe} --version 2>/dev/null | grep 'DeepVariant' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
 		conda deactivate

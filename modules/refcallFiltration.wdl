@@ -8,7 +8,7 @@ task refCallFiltration {
 		date: "2023-09-04"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String VcftoolsEnv
 		# global variables
@@ -19,7 +19,7 @@ task refCallFiltration {
 		Boolean Version = false
 		# task specific variables
 		String VcSuffix
-		File VcfToRefCalled		
+		File VcfToRefCalled
 		# runtime attributes
 		String Queue
 		Int Cpu

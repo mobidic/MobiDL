@@ -11,7 +11,7 @@ task cleanUpPanelCaptureTmpDirs {
 		# global variables
 		String SampleID
 		String OutDir
-		String WorkflowType		
+		String WorkflowType
 		# task specific variables
 		String JavaExe
 		String CromwellJar

@@ -8,7 +8,7 @@ task bcftoolsSplit {
 		date: "2023-09-07"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String BcftoolsEnv
 		# global variables

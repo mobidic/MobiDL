@@ -61,7 +61,7 @@ workflow panelCapture {
 		String fastpEnv = "fastpEnv"
 		String bwaEnv = "bwaEnv"
 		String samtoolsEnv = "samtoolsEnv"
-		String vcftoolsEnv = "vcftoolsEnv"	
+		String vcftoolsEnv = "vcftoolsEnv"
 		String sambambaEnv = "sambambaEnv"
 		String bedtoolsEnv = "bedtoolsEnv"
 		String crumbleEnv = "crumbleEnv"
@@ -116,7 +116,7 @@ workflow panelCapture {
 		## Standard execs
 		String awkExe = "awk"
 		String sedExe = "sed"
-		String sortExe = "sort"		
+		String sortExe = "sort"
 		String javaExe = "java"
 		String cromwellJar
 		## fastp
@@ -252,7 +252,7 @@ workflow panelCapture {
 			IntervalBedFile = intervalBedFile,
 			AwkExe = awkExe,
 			DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared,
-			
+
 	}
 	call runGatkSplitIntervals.gatkSplitIntervals {
 		input:
@@ -262,7 +262,7 @@ workflow panelCapture {
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
-			GatkExe = gatkExe,			
+			GatkExe = gatkExe,
 			RefFasta = refFasta,
 			RefFai = refFai,
 			RefDict = refDict,
@@ -594,7 +594,7 @@ workflow panelCapture {
 			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
-			WorkflowType = workflowType,			
+			WorkflowType = workflowType,
 			DvExe = dvExe,
 			GatkExe = gatkExe,
 			SingularityExe = singularityExe,

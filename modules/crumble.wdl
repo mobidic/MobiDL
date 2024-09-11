@@ -8,13 +8,13 @@ task crumble {
 		date: "2023-09-04"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String CrumbleEnv
 		# global variables
 		String SampleID
 		String OutDir
-		String OutDirSampleID = ""		
+		String OutDirSampleID = ""
 		String WorkflowType
 		String CrumbleExe
 		Boolean Version = false
@@ -22,7 +22,7 @@ task crumble {
 		File InputFile
 		File InputFileIndex
 		String LdLibraryPath
-		String FileType		
+		String FileType
 		# runtime attributes
 		String Queue
 		Int Cpu

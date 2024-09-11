@@ -8,10 +8,10 @@ task phenolyzer {
 		date: "2023-09-07"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String AchabEnv
-		# global variables		
+		# global variables
 		String DiseaseFile
 		String WorkflowType
 		String SampleID

@@ -8,10 +8,10 @@ task mpa {
 		date: "2023-09-07"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String MpaEnv
-		# global variables		
+		# global variables
 		File OutAnnotation
 		String WorkflowType
 		String SampleID

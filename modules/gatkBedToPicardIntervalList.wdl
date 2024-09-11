@@ -12,7 +12,7 @@ task gatkBedToPicardIntervalList {
 		# global variables
 		String SampleID
 		String OutDir
-		String WorkflowType		
+		String WorkflowType
 		String GatkExe
 		File RefDict
 		Boolean Version = false

@@ -68,7 +68,7 @@ task preparePanelCaptureTmpDirs {
 	runtime {
 		queue: "~{Queue}"
 		cpu: "~{Cpu}"
-		requested_memory_mb_per_core: "~{Memory}"		
+		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
 		Boolean dirsPrepared = true

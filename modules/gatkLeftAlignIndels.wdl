@@ -20,7 +20,7 @@ task gatkLeftAlignIndels {
 		Boolean Version = false
 		# task specific variables
 		File BamFile
-		File GatkInterval		
+		File GatkInterval
 		# runtime attributes
 		String Queue
 		Int Cpu

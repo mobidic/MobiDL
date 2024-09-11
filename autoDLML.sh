@@ -97,18 +97,18 @@ CONFIG_FILE='./autoDL.conf'
 while [ "$1" != "" ];do
 	case $1 in
 		-c | --config)	shift
-			CONFIG_FILE=$1			
+			CONFIG_FILE=$1
 			;;
-		-v | --verbosity) shift 
-			# Check if verbosity level argument is an integer before assignment 
+		-v | --verbosity) shift
+			# Check if verbosity level argument is an integer before assignment
 			if ! [[ "$1" =~ ^[0-9]+$ ]]
-			then 
+			then
 				error "\"$1\" must be an integer !"
 				echo " "
-				usage 
-			else 
+				usage
+			else
 				VERBOSITY=$1
-			fi 
+			fi
 			;;
 		-h | --help)	usage
 			exit
@@ -827,12 +827,12 @@ do
 								# BED_IFCNV="${ROI_DIR}${BED_FILE_NAME}_ifcnv.bed"
 								# if [ -e ${BED_IFCNV} ];then
 								# 	info "Activating env ${IFCNV_ENV} and launching ifCNV on run ${RUN}"
-								# 	# activates conda									
+								# 	# activates conda
 								# 	# eval "$(${CONDA} 'shell.bash' 'hook')"
 								# 	# https://unix.stackexchange.com/questions/454957/cron-job-to-run-under-conda-virtual-environment/572951#572951
 								# 	# activates ifcnv env
 								# 	source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
-								# 	# "${CONDA}" activate "${IFCNV_ENV}" 
+								# 	# "${CONDA}" activate "${IFCNV_ENV}"
 								# 	debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_ifcnv ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
 								# 	"/usr/bin/srun -N1 -c1 -pprod -J"autoDL_ifcnv "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
 								# 	# deactivates conda env
@@ -849,7 +849,7 @@ do
 							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
-							info "RUN ${RUN} treated" 
+							info "RUN ${RUN} treated"
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
 							rm -r "${TMP_OUTPUT_DIR2}"

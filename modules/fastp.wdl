@@ -8,7 +8,7 @@ task fastp {
 		date: "2023-09-01"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String FastpEnv
 		# global variables

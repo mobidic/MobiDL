@@ -8,13 +8,13 @@ task samtoolsCramIndex {
 		date: "2023-09-04"
 	}
 	input {
-		# env variables	
+		# env variables
 		String CondaBin
 		String SamtoolsEnv
 		# global variables
 		String SampleID
 		String OutDir
-		String OutDirSampleID = ""		
+		String OutDirSampleID = ""
 		String WorkflowType
 		String SamtoolsExe
 		Boolean Version = false
