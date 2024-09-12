@@ -90,7 +90,7 @@ task covreport2 {
 			-g ~{GenesList} \
 			-r ${path_reference} \
 			-p ~{SampleID} \
-            ~{default="" "-comment " + Comments} \
+			~{default="" "-comment " + Comments} \
 			-config ${configtempfile}
 		
 		mkdir -p "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/"
