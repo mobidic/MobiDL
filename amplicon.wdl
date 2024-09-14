@@ -17,7 +17,7 @@ import "modules/samtoolsCramIndex.wdl" as runSamtoolsCramIndex
 import "modules/crumble.wdl" as runCrumble
 import "modules/sambambaFlagStat.wdl" as runSambambaFlagStat
 import "modules/gatkCollectMultipleMetrics.wdl" as runGatkCollectMultipleMetrics
-# import "modules/gatkCollectInsertSizeMetrics.wdl" as runGatkCollectInsertSizeMetrics
+import "modules/gatkCollectInsertSizeMetrics.wdl" as runGatkCollectInsertSizeMetrics
 import "modules/gatkBedToPicardIntervalList.wdl" as runGatkBedToPicardIntervalList
 import "modules/computePoorCoverage.wdl" as runComputePoorCoverage
 import "modules/samtoolsBedCov.wdl" as runSamtoolsBedCov
@@ -466,18 +466,18 @@ workflow amplicon {
 			RefFasta = refFasta,
 			BamFile = samtoolsSort.sortedBam
 	}
-	# call runGatkCollectInsertSizeMetrics.gatkCollectInsertSizeMetrics {
-	# 	input:
-	# 		Queue = defQueue,
-	# 		Cpu = cpuLow,
-	# 		Memory = memoryHigh,
-	# 		SampleID = sampleID,
-	# 		OutDir = outDir,
-	# 		WorkflowType = workflowType,
-	# 		GatkExe = gatkExe,
-	# 		RefFasta = refFasta,
-	# 		BamFile = samtoolsSort.sortedBam
-	# }
+	call runGatkCollectInsertSizeMetrics.gatkCollectInsertSizeMetrics {
+		input:
+			Queue = defQueue,
+			Cpu = cpuLow,
+			Memory = memoryHigh,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			GatkExe = gatkExe,
+			RefFasta = refFasta,
+			BamFile = samtoolsSort.sortedBam
+	}
 	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
 		input:
 			Queue = defQueue,
