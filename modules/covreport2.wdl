@@ -10,6 +10,7 @@ task covreport2 {
 	input {
 		# global variables
 		String JavaExe = "java"
+		String GawkExe = "gawk"
 		String CovReport2Jar
 		File? ReferenceFile
 		String SampleID
@@ -64,7 +65,7 @@ task covreport2 {
 
 		if [ ~{Padding} ]; then
 			reftempfile=$(mktemp);
-			gawk 'BEGIN{OFS="\t"}{if(NR==1) {print $0} else {split($7,starts,",");split($8,ends,",");asort(starts);s="";for(i in starts){if(starts[i]>0){s=s""starts[i]-20","}};asort(ends);e="";for(i in ends){if(ends[i]>0){e=e""ends[i]+20","}};print $1,$2,$3,$4-20,$5+20,$6, s, e,$9}}' ${path_reference} > ${reftempfile};
+			~{GawkExe} 'BEGIN{OFS="\t"}{if(NR==1) {print $0} else {split($7,starts,",");split($8,ends,",");asort(starts);s="";for(i in starts){if(starts[i]>0){s=s""starts[i]-20","}};asort(ends);e="";for(i in ends){if(ends[i]>0){e=e""ends[i]+20","}};print $1,$2,$3,$4-20,$5+20,$6, s, e,$9}}' ${path_reference} > ${reftempfile};
 			path_reference=$reftempfile;
 		fi;
 
@@ -83,8 +84,6 @@ task covreport2 {
 		echo "show_report_date=~{Show_report_date}" >> ${configtempfile}
 		echo "show_statistics=~{Show_statistics}" >> ${configtempfile}
 
-		echo "~{CovReport2Jar}"
-
 		~{JavaExe} -jar ~{CovReport2Jar} \
 			-i ~{BamFile} \
 			-g ~{GenesList} \
@@ -94,7 +93,7 @@ task covreport2 {
 			-config ${configtempfile}
 		
 		mkdir -p "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/"
-		mv ${path_pdfresults}/~{SampleID}_coverage_${panel}.pdf "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/"
+		mv ${path_pdfresults}/~{SampleID}_coverage_${panel}.pdf "~{OutDir}/~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}_coverage.pdf"
 		
 	>>>
 	runtime {
@@ -103,5 +102,6 @@ task covreport2 {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
+		File covreport =  "~{OutDir}/~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}_coverage.pdf"
 	}
 }
