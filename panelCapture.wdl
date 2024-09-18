@@ -45,6 +45,7 @@ import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCalle
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
 import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
+import "modules/covreport2.wdl" as runCovreport2
 
 workflow panelCapture {
 	meta {
@@ -118,6 +119,8 @@ workflow panelCapture {
 		String sedExe = "sed"
 		String sortExe = "sort"
 		String javaExe = "java"
+		String GawkExe = "gawk"
+		String CovReport2Jar = ""
 		String cromwellJar
 		## fastp
 		String noFiltering = ""
@@ -144,6 +147,25 @@ workflow panelCapture {
 		File refFaiGzi
 		## crumble
 		Boolean doCrumble = true
+		## covreport2
+		String? ReferenceFile
+		Int GenomeVersion = 19
+		Int Coverage = 30
+		Boolean Draw_exon_size_scaled = true
+		Boolean Draw_exons_merged_same_size = false
+		Boolean Merge_non_white_exons = false
+		Boolean Merge_white_exons = true
+		Boolean Skip_white_genes = true
+		Boolean Show_file_name_abs = true
+		Boolean Show_file_name_simple = true
+		Boolean Show_gene_transcripts = true
+		Boolean Show_gene_weighted_coverage = true
+		Boolean Show_non_coding_exons = true
+		Boolean Show_report_date = true
+		Boolean Show_statistics = true
+		String? Comments
+		File GenesList = ""
+		Int? Padding
 		## gatk-picard
 		String variantEvalEV = "MetricsCollection"
 		## computePoorCoverage
@@ -407,6 +429,39 @@ workflow panelCapture {
 			SamtoolsExe = samtoolsExe,
 			CramFile = samtoolsCramConvert.cram,
 			CramSuffix = ""
+	}
+	if (CovReport2Jar != "") {
+		call runCovreport2.covreport2 {
+			input:
+				JavaExe = javaExe,
+				GawkExe = GawkExe,
+				CovReport2Jar = CovReport2Jar,
+				ReferenceFile = ReferenceFile,
+				SampleID = sampleID,
+				WorkflowType = workflowType,
+				OutDir = outDir,
+				GenomeVersion = GenomeVersion,
+				Coverage = Coverage,
+				Draw_exon_size_scaled = Draw_exon_size_scaled,
+				Draw_exons_merged_same_size = Draw_exons_merged_same_size,
+				Merge_non_white_exons = Merge_non_white_exons,
+				Merge_white_exons = Merge_white_exons,
+				Skip_white_genes = Skip_white_genes,
+				Show_file_name_abs = Show_file_name_abs,
+				Show_file_name_simple = Show_file_name_simple,
+				Show_gene_transcripts = Show_gene_transcripts,
+				Show_gene_weighted_coverage = Show_gene_weighted_coverage,
+				Show_non_coding_exons = Show_non_coding_exons,
+				Show_report_date = Show_report_date,
+				Show_statistics = Show_statistics,
+				Comments = Comments,
+				GenesList = GenesList,
+				BamFile = samtoolsCramConvert.cram,
+				Padding = Padding,
+				Queue = defQueue,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+		}
 	}
 	if (doCrumble) {
 		call runCrumble.crumble {
