@@ -43,9 +43,9 @@ task preparePanelCaptureTmpDirs {
 		if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/recal_tables" ];then \
 			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/recal_tables"; \
 		fi
-		if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/recal_bams" ];then \
-			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/recal_bams"; \
-		fi
+		# if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/recal_bams" ];then \
+		# 	mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/recal_bams"; \
+		# fi
 		# if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/qualimap" ];then \
 		# 	mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/qualimap"; \
 		# fi

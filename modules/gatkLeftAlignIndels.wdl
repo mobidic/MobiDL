@@ -20,19 +20,20 @@ task gatkLeftAlignIndels {
 		Boolean Version = false
 		# task specific variables
 		File BamFile
-		File GatkInterval		
+		# File GatkInterval		
 		# runtime attributes
 		String Queue
 		Int Cpu
 		Int Memory
 	}
-	String IntervalName = basename("~{GatkInterval}", ".intervals")
+	# String IntervalName = basename("~{GatkInterval}", ".intervals")
+		# -O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bam"
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
 		~{GatkExe} LeftAlignIndels \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
-		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bam"
+		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
@@ -44,7 +45,9 @@ task gatkLeftAlignIndels {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File lAlignedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bam"
-		File lAlignedBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bai"
+		File lAlignedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam"
+		File lAlignedBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.dupmarked.recal.laligned.bai"
+		# File lAlignedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bam"
+		# File lAlignedBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bai"
 	}
 }

@@ -19,7 +19,7 @@ task gatkApplyBQSR {
 		File RefDict
 		Boolean Version = false
 		# task specific variables
-		File GatkInterval
+		# File GatkInterval
 		File BamFile
 		File BamIndex
 		File GatheredRecaltable
@@ -28,15 +28,16 @@ task gatkApplyBQSR {
 		Int Cpu
 		Int Memory
 	}
-	String IntervalName = basename("~{GatkInterval}", ".intervals")
+	# String IntervalName = basename("~{GatkInterval}", ".intervals")
+		# -L ~{GatkInterval} \
+		# -O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.bam"
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
 		~{GatkExe} ApplyBQSR \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
 		--bqsr-recal-file ~{GatheredRecaltable} \
-		-L ~{GatkInterval} \
-		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.bam"
+		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
@@ -48,6 +49,7 @@ task gatkApplyBQSR {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File recalBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.bam"
+		# File recalBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.bam"
+		File recalBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam"
 	}
 }

@@ -306,51 +306,52 @@ workflow panelCapture {
 			GatkExe = gatkExe,
 			RecalTables = gatkBaseRecalibrator.recalTable
 	}
-	scatter (interval in gatkSplitIntervals.splittedIntervals) {
-		call runGatkApplyBQSR.gatkApplyBQSR {
-			input:
-				Queue = defQueue,
-				Cpu = cpuLow,
-				Memory = memoryLow,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				GatkExe = gatkExe,
-				RefFasta = refFasta,
-				RefFai = refFai,
-				RefDict = refDict,
-				GatkInterval = interval,
-				BamFile = sambambaMarkDup.markedBam,
-				BamIndex = sambambaMarkDup.markedBamIndex,
-				GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
-		}
-		call runGatkLeftAlignIndels.gatkLeftAlignIndels {
-			input:
-				Queue = defQueue,
-				Cpu = cpuLow,
-				Memory = memoryLow,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				GatkExe = gatkExe,
-				RefFasta = refFasta,
-				RefFai = refFai,
-				RefDict = refDict,
-				GatkInterval = interval,
-				BamFile = gatkApplyBQSR.recalBam
-		}
-	}
-	call runGatkGatherBamFiles.gatkGatherBamFiles {
+	# scatter (interval in gatkSplitIntervals.splittedIntervals) {
+	# https://gatk.broadinstitute.org/hc/en-us/community/posts/360077410652-What-interval-should-be-used-when-doing-the-BaseRecalibrator-for-exome-data?page=1#community_comment_360014580731
+	call runGatkApplyBQSR.gatkApplyBQSR {
 		input:
 			Queue = defQueue,
 			Cpu = cpuLow,
-			Memory = memoryHigh,
+			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			GatkExe = gatkExe,
-			LAlignedBams = gatkLeftAlignIndels.lAlignedBam
+			RefFasta = refFasta,
+			RefFai = refFai,
+			RefDict = refDict,
+			# GatkInterval = interval,
+			BamFile = sambambaMarkDup.markedBam,
+			BamIndex = sambambaMarkDup.markedBamIndex,
+			GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
 	}
+	call runGatkLeftAlignIndels.gatkLeftAlignIndels {
+		input:
+			Queue = defQueue,
+			Cpu = cpuLow,
+			Memory = memoryLow,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			GatkExe = gatkExe,
+			RefFasta = refFasta,
+			RefFai = refFai,
+			RefDict = refDict,
+			# GatkInterval = interval,
+			BamFile = gatkApplyBQSR.recalBam
+	}
+	# }
+	# call runGatkGatherBamFiles.gatkGatherBamFiles {
+	# 	input:
+	# 		Queue = defQueue,
+	# 		Cpu = cpuLow,
+	# 		Memory = memoryHigh,
+	# 		SampleID = sampleID,
+	# 		OutDir = outDir,
+	# 		WorkflowType = workflowType,
+	# 		GatkExe = gatkExe,
+	# 		LAlignedBams = gatkLeftAlignIndels.lAlignedBam
+	# }
 	call runSamtoolsSort.samtoolsSort {
 		input:
 			Queue = defQueue,
@@ -362,7 +363,8 @@ workflow panelCapture {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			SamtoolsExe = samtoolsExe,
-			BamFile = gatkGatherBamFiles.gatheredBam
+			BamFile = gatkLeftAlignIndels.lAlignedBam
+			# BamFile = gatkGatherBamFiles.gatheredBam
 	}
 	call runSambambaIndex.sambambaIndex as finalIndexing {
 		input:
@@ -987,7 +989,7 @@ workflow panelCapture {
 					FinalFile2 = crumbleIndexing.cramIndex,
 					JavaExe = javaExe,
 					CromwellJar = cromwellJar,
-					BamArray = ["~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
+					BamArray = ["~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
 					VcfArray = ["~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcf),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcfIndex), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.snpVcf), "~{dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.indelVcf), "~{dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcf), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcf), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
 			}
 			call runMultiqc.multiqc as multiqcDoCrumble {
@@ -1019,7 +1021,7 @@ workflow panelCapture {
 					FinalFile2 = samtoolsCramIndex.cramIndex,
 					JavaExe = javaExe,
 					CromwellJar = cromwellJar,
-					BamArray = ["~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkGatherBamFiles.gatheredBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
+					BamArray = ["~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
 					VcfArray = ["~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcf),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcfIndex), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.snpVcf), "~{dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.indelVcf), "~{dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcf), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcf), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
 			}
 			call runMultiqc.multiqc {
