@@ -28,6 +28,7 @@ task gatkHaplotypeCaller {
 		Int MaxReadPerAlignmentStart = 50
 		String SwMode
 		String EmitRefConfidence
+		String DisableSpanningEventGenotyping = "--disable-spanning-event-genotyping"
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -43,6 +44,7 @@ task gatkHaplotypeCaller {
 		--emit-ref-confidence ~{EmitRefConfidence} \
 		--max-mnp-distance ~{MaxMNPDist} \
 		--max-reads-per-alignment-start ~{MaxReadPerAlignmentStart} \
+		~{DisableSpanningEventGenotyping} \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs/~{SampleID}.~{IntervalName}.hc.vcf"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
