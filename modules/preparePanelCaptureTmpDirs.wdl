@@ -78,7 +78,7 @@ task preparePanelCaptureTmpDirs {
 		File workflowTypeDir = "~{OutDir}~{SampleID}/~{WorkflowType}"
 		File recalTablesDir = "~{OutDir}~{SampleID}/~{WorkflowType}/recal_tables"
 		File splittedIntervalsDir = "~{OutDir}~{SampleID}/~{WorkflowType}/splitted_intervals"
-		File recalBamsDir = "~{OutDir}~{SampleID}/~{WorkflowType}/recal_bams"
+		# File recalBamsDir = "~{OutDir}~{SampleID}/~{WorkflowType}/recal_bams"
 		File vcfDir = "~{OutDir}~{SampleID}/~{WorkflowType}/vcfs"
 	}
 }
