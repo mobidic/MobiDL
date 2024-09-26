@@ -46,7 +46,7 @@ task gatkLeftAlignIndels {
 	}
 	output {
 		File lAlignedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam"
-		File lAlignedBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.dupmarked.recal.laligned.bai"
+		File lAlignedBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bai"
 		# File lAlignedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bam"
 		# File lAlignedBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bai"
 	}

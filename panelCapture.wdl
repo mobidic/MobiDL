@@ -312,7 +312,7 @@ workflow panelCapture {
 		input:
 			Queue = defQueue,
 			Cpu = cpuLow,
-			Memory = memoryLow,
+			Memory = memoryHigh,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
@@ -329,7 +329,7 @@ workflow panelCapture {
 		input:
 			Queue = defQueue,
 			Cpu = cpuLow,
-			Memory = memoryLow,
+			Memory = memoryHigh,
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,
