@@ -51,5 +51,6 @@ task gatkApplyBQSR {
 	output {
 		# File recalBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.bam"
 		File recalBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam"
+		File recalBamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bai"
 	}
 }
