@@ -35,7 +35,7 @@ task computePoorCoverage {
 	command <<<
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{BedToolsExe} genomecov -ibam ~{BamFile} -bga \
-		| ~{AwkExe} -v low_coverage="~{BedtoolsLowCoverage}" '~4<low_coverage' \
+		| ~{AwkExe} -v low_coverage="~{BedtoolsLowCoverage}" '$4<low_coverage' \
 		| ~{BedToolsExe} intersect -a ~{IntervalBedFile} -b - \
 		| ~{SortExe} -k1,1 -k2,2n -k3,3n \
 		| ~{BedToolsExe} merge -c 4 -o distinct -i - \
