@@ -49,8 +49,8 @@ workflow amplicon {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.2.0"
-		date: "2023-09-01"
+		version: "1.2.1"
+		date: "2024-10-07"
 	}
 	input {
 		# variables declarations
