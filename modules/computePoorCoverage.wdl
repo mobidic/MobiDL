@@ -40,7 +40,7 @@ task computePoorCoverage {
 		| ~{SortExe} -k1,1 -k2,2n -k3,3n \
 		| ~{BedToolsExe} merge -c 4 -o distinct -i - \
 		| ~{AwkExe} -v small_intervall="~{BedToolsSmallInterval}" \
-		'BEGIN {OFS="\t";print "#chr","start","end","region","size bp","type","UCSC link"} {a=(~3-~2+1);if(a<small_intervall) {b="SMALL_INTERVAL"} else {b="OTHER"};url="http://genome-euro.ucsc.edu/cgi-bin/hgTracks?db='~{GenomeVersion}'&position="~1":"~2-10"-"~3+10"&highlight='~{GenomeVersion}'."~1":"~2"-"~3;print ~0, a, b, url}' \
+		'BEGIN {OFS="\t";print "#chr","start","end","region","size bp","type","UCSC link"} {a=($3-$2+1);if(a<small_intervall) {b="SMALL_INTERVAL"} else {b="OTHER"};url="http://genome-euro.ucsc.edu/cgi-bin/hgTracks?db='~{GenomeVersion}'&position="$1":"$2-10"-"$3+10"&highlight='~{GenomeVersion}'."$1":"$2"-"$3;print $0, a, b, url}' \
 		> "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_poor_coverage.tsv"
 		conda deactivate
 	>>>
