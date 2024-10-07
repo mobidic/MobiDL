@@ -242,7 +242,7 @@ modifyJsonAndLaunch() {
 	# fi
 	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
 	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
-		error "No json file for ${WDL}: ${MOBIDL_JSON_DIR}${WDL}_inputs.json"
+		error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
 	else
 		cp "${MOBIDL_JSON_TEMPLATE}" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		chmod 755 "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
