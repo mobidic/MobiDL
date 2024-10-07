@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20240909
+VERSION=20241007
 # USAGE="
 # Program: AutoDLML
 # Version: ${VERSION}
