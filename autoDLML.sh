@@ -495,9 +495,11 @@ do
 	for RUN in ${RUNS}
 	do
 		###### do not look at runs set to 2 in the runs.txt file
+		# debug "RUN: ${RUN}"
+		# debug "RUN STATE: ${RUN}:${RUN_ARRAY[${RUN}]}"
 		if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
 			assignVariables "${RUN_PATH}"
-			# debug "SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
+			debug "RUN: ${RUN},SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
 			# now we must look for the AnalysisLog.txt file
 			# get finished run
 			# if TRIGGER_EXPR is sthg OR (TRIGGER_EXPR is "" AND TRIGGER_FILE exists)
@@ -652,7 +654,8 @@ do
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
-								REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
+								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
+								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_R[0-9]_[0-9]+)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
 									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then
@@ -694,7 +697,7 @@ do
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
-									# exit 0
+									exit 0
 									# check custom output PATH
 									# info "MANIFEST: ${MANIFEST}"
 									# if [ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ];then
