@@ -327,6 +327,7 @@ workflowPostTreatment() {
 	# ${RSYNC} -avq --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
+		chmod -R 777 "${TMP_OUTPUT_DIR2}${SAMPLE}"
 		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
 	else
 		error "Error while syncing ${1} for ${SAMPLE} in run ${OUTPUT_PATH}${RUN}"
@@ -655,7 +656,7 @@ do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
-								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_R[0-9]_[0-9]+)$'
+								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
 									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then
@@ -855,6 +856,7 @@ do
 							info "RUN ${RUN} treated" 
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
+							chmod -R 777 "${TMP_OUTPUT_DIR2}"
 							rm -r "${TMP_OUTPUT_DIR2}"
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
