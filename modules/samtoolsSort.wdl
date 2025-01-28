@@ -28,11 +28,11 @@ task samtoolsSort {
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
 		source ~{CondaBin}activate ~{SamtoolsEnv}
-		${SamtoolsExe} sort -@ ${Cpu} -l 6 \
-		-o "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
-		"${BamFile}"
-		mv "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.sorted.bam" \
-		"${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
+		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \
+		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
+		"~{BamFile}"
+		mv "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
+		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "Samtools: v$(~{SamtoolsExe} --version | grep 'samtools' | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
