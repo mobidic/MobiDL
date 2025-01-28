@@ -27,6 +27,7 @@ task samtoolsSort {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		# TBD put set -e at the beginning of each task to avoid conda deactivate masking errors by returning 0 execution code
 		source ~{CondaBin}activate ~{SamtoolsEnv}
 		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \
 		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
@@ -45,6 +46,6 @@ task samtoolsSort {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File sortedBam = "${OutDir}${OutputDirSampleID}/${WorkflowType}/${SampleID}.bam"
+		File sortedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 	}
 }
