@@ -45,6 +45,6 @@ task sambambaIndex {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File bamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam.bai"
+		File bamIndex = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}~{OutFileSuffix}.bam.bai"
 	}
 }
