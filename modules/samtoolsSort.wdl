@@ -4,7 +4,7 @@ task samtoolsSort {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
+		version: "0.0.2"
 		date: "2023-09-04"
 	}
 	input {
@@ -32,8 +32,8 @@ task samtoolsSort {
 		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \
 		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		"~{BamFile}"
-		mv "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
-		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
+		# mv "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
+		# "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "Samtools: v$(~{SamtoolsExe} --version | grep 'samtools' | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
@@ -46,6 +46,6 @@ task samtoolsSort {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File sortedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
+		File sortedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam"
 	}
 }
