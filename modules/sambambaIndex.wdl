@@ -20,6 +20,7 @@ task sambambaIndex {
 		Boolean Version = false
 		# task specific variables
 		File BamFile
+		String? OutFileSuffix = ""
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -30,7 +31,7 @@ task sambambaIndex {
 		source ~{CondaBin}activate ~{SambambaEnv}
 		~{SambambaExe} index -t ~{Cpu} \
 		~{BamFile} \
-		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam.bai"
+		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}~{OutFileSuffix}.bam.bai"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "Sambamba: v$(~{SambambaExe} --version 2>&1 | grep 'sambamba' | cut -f2 -d ' ' | uniq)" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"

@@ -375,6 +375,7 @@ workflow panelCapture {
 			Memory = memoryLow,
 			SampleID = sampleID,
 			OutDir = outDir,
+			OutFileSuffix = ".sorted",
 			WorkflowType = workflowType,
 			SambambaExe = sambambaExe,
 			Version = true,
