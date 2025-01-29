@@ -47,7 +47,6 @@ task deepVariant {
 		--model_type=~{ModelType} \
 		--ref=~{RefFastaGz} \
 		--reads="~{OutDir}/~{SampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
-		# --reads=~{BamFile} \
 		--regions=~{IntervalBedFile} \
 		--num_shards=~{Cpu} \
 		--output_vcf="~{OutDir}/~{SampleID}/~{WorkflowType}/~{SampleID}.unsorted.vcf"
