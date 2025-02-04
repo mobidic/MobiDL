@@ -30,22 +30,25 @@ run_wdl_MobiDL() {
 
 	local main_wdl=$1
 	local input_json=$2
-	local main_conf=/mnt/Bioinfo/Softs/src/cromwell/conf/Cluster_noDB.conf
+	local main_conf=/bioinfo/softs/cromwell_conf/SLURM_nodb_nocaching.conf
 	if [ $# -eq 3 ]; then
 		main_conf=$3
 	fi
+
+	# WARN: Clean PATH from custom stuffs:
+	#       (similar to when somebody else is running pipeline)
+	OLD_PATH=$PATH && PATH="/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin"  # Minimal PATH
+
 	# Activate Conda env:
-	source /etc/profile.d/conda.sh && conda activate /bioinfo/conda_envs/gatkEnv
-	#local cwl_jar=$(find $CONDA_PREFIX -name "cromwell.jar")  # Use cromwell from env
-	#local cwl_jar=/scratch/david/MobiDL/cromwell.jar
-	local cwl_jar=/mnt/Bioinfo/Softs/src/cromwell/cromwell.jar
+	source /etc/profile.d/conda.sh && conda activate /bioinfo/conda_envs/gatk4.6Env
+	local cwl_jar=/scratch/david/MobiDL/cromwell.jar
 
 	# Actually run pipeline:
-	/mnt/Bioinfo/Softs/src/MobiDL/cww.sh \
+	bash /scratch/david/MobiDL/cww.sh \
 		--exec "$cwl_jar" \
 		--wdl "$main_wdl" \
 		--input "$input_json" \
-		--option /mnt/Bioinfo/Softs/src/cromwell/conf/cromwell_option_cluster.json \
+		--option /bioinfo/softs/cromwell_conf/cromwell_option_nocaching.json \
 		--conf "$main_conf"
 }
 export -f run_wdl_MobiDL
