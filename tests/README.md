@@ -35,7 +35,7 @@ Explanations (see [documentation](https://pytest-workflow.readthedocs.io/en/stab
 ### Available tests
 
 ```bash
-# Down-sampled (chr22 only) Twist exome (hg19) sample (takes ~ XX min):
+# Down-sampled (chr22 only) Twist exome (hg19) sample (takes ~ 20 min):
 pytest \
         --tag downsampled --tag exome --tag A161161 \
         --basetemp=/scratch \

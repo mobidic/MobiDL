@@ -1,7 +1,7 @@
 ## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
 
 - name: PanelCapture exomeTwistHg19 chr22 A161161
-  # Overall runtime : ~ 30 min
+  # Overall runtime : ~ 20 min
   tags:
     - wf_level
     - exome
