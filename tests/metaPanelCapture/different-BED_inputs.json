@@ -1,5 +1,7 @@
 {
-  "metaPanelCapture.inputsLists": [["/bioinfo/refData/intervals/bedFiles/RefSeqHG19_CDSplus20.bed","A161161","/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/FastQs/A161161.R1.fastq.gz","/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/FastQs/A161161.R2.fastq.gz"],["/bioinfo/refData/intervals/bedFiles/MAI_19_261223-JSI.bed","HG002","/mnt/chu-ngs/NEXTSEQ/runs/241220_NB501631_0255_AHH5JHAFX7/FastQs/CAD220313_S49_R1_001.fastq.gz","/mnt/chu-ngs/NEXTSEQ/runs/241220_NB501631_0255_AHH5JHAFX7/FastQs/CAD220313_S49_R2_001.fastq.gz"]],
+  "metaPanelCapture.inputsLists": [["RefSeqHG19_CDSplus20.bed","A161161","A161161.R1.fastq.gz","A161161.R2.fastq.gz"],["MAI_19_261223-JSI.bed","HG002","HG002-MAI19_S49_R1_001.fastq.gz","HG002-MAI19_S49_R2_001.fastq.gz"]],
+  "metaPanelCapture.roiDir": "/bioinfo/refData/intervals/bedFiles/",
+  "metaPanelCapture.fastqDirname": "/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/FastQs/",
   "metaPanelCapture.platform": "ILLUMINA",
   "metaPanelCapture.genomeVersion": "hg19",
   "metaPanelCapture.workflowType": "panelCapture",

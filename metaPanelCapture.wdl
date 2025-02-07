@@ -6,13 +6,15 @@ workflow metaPanelCapture {
 	meta {
 		author: "Felix VANDERMEEREN"
 		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.1.0"
+		version: "0.2.0"
 		date: "2025-02-07"
 	}
 	input {
 		# variables declarations
 		## Global
-		Array[Array[String]] inputsLists  # [["BED_A","sample1","fastq_1","fastq_2"],["BED_B", "sample2","fastq_1","fastq_2"]]
+		Array[Array[String]] inputsLists  # [["BEDbasename_A","sample1","FASTQbasename_R1","FASTQbasename_R2"],["BEDbasename_B", "sample2","FASTQbasename_R1","FASTQbasename_R2"]]
+		String roiDir  # WARN: Assume all BEDs are in same dir
+		String fastqDirname  # WARN: Assume all FASTQ are in same dir
 		String suffix1 = "_S1_R1_001"
 		String suffix2 = "_S1_R2_001"
 		String genomeVersion
@@ -128,13 +130,13 @@ workflow metaPanelCapture {
 				sampleID = inputs[1],
 				suffix1 = suffix1,
 				suffix2 = suffix2,
-				fastqR1 = inputs[2],
-				fastqR2 = inputs[3],
+				fastqR1 = fastqDirname + "/" + inputs[2],
+				fastqR2 = fastqDirname + "/" + inputs[3],
 				genomeVersion = genomeVersion,
 				refFasta = refFasta,
 				refFai = refFai,
 				refDict = refDict,
-				intervalBedFile = inputs[0],
+				intervalBedFile = roiDir + "/" + inputs[0],
 				intervalBaitBed = intervalBaitBed,
 				workflowType = workflowType,
 				outDir = outDir + "/MobiDL/",

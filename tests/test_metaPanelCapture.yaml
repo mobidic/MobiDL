@@ -30,3 +30,15 @@
       should_exist: true
     - path: MobiDL/HG002/panelCapture/HG002.vcf
       should_exist: true
+
+- name: MetaPanelCapture full UMAI
+  # Overall runtime : ~ XX min
+  tags:
+    - wf_level
+    - hg19
+    - full
+    - UMAI
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-UMAI_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
