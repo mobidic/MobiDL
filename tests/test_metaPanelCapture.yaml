@@ -1,0 +1,32 @@
+## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
+
+- name: MetaPanelCapture solo
+  # Overall runtime : ~ 20 min
+  tags:
+    - wf_level
+    - hg19
+    - solo
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/solo_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: MobiDL/A161161/panelCapture/A161161.vcf
+      should_exist: true
+
+- name: MetaPanelCapture different BED
+  # Overall runtime : ~ 20 min
+  tags:
+    - wf_level
+    - hg19
+    - duo
+    - diffBED
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/different-BED_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: MobiDL/A161161/panelCapture/A161161.vcf
+      should_exist: true
+    - path: MobiDL/HG002/panelCapture/HG002.vcf
+      should_exist: true
