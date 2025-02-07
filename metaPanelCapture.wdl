@@ -4,10 +4,10 @@ import "panelCapture.wdl" as runPanelCapture
 
 workflow metaPanelCapture {
 	meta {
-		author: "David BAUX"
-		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.2.2"
-		date: "2025-01-29"
+		author: "Felix VANDERMEEREN"
+		email: "felix.vandermeeren(at)chu-montpellier.fr"
+		version: "0.1.0"
+		date: "2025-02-07"
 	}
 	input {
 		# variables declarations
