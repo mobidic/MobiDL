@@ -1,4 +1,3 @@
-*.json
 cromwell-executions/
 cromwell-workflow-logs/
 input/
