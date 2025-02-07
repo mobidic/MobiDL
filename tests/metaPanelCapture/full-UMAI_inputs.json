@@ -22,7 +22,7 @@
   "metaPanelCapture.multiqcEnv": "/bioinfo/conda_envs/multiqcEnv",
   "metaPanelCapture.singularityEnv": "/bioinfo/conda_envs/singularityEnv",
   "metaPanelCapture.anacoreEnv": "/bioinfo/conda_envs/anacoreEnv",
-  "metaPanelCapture.defQueue": "prod",
+  "metaPanelCapture.defQueue": "test",
   "metaPanelCapture.refFasta": "/bioinfo/refData/iGenomes/Homo_sapiens/GATK/GRCh37/Sequence/WholeGenomeFasta/human_g1k_v37_decoy.fasta",
   "metaPanelCapture.refFai": "/bioinfo/refData/iGenomes/Homo_sapiens/GATK/GRCh37/Sequence/WholeGenomeFasta/human_g1k_v37_decoy.fasta.fai",
   "metaPanelCapture.refDict": "/bioinfo/refData/iGenomes/Homo_sapiens/GATK/GRCh37/Sequence/WholeGenomeFasta/human_g1k_v37_decoy.dict",
