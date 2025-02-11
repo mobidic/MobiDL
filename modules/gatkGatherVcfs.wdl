@@ -24,6 +24,7 @@ task gatkGatherVcfs {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} GatherVcfs \
 		-I ~{sep=' -I ' HcVcfs} \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.raw.vcf"

@@ -24,6 +24,7 @@ task gatkSplitVcfs {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} SplitVcfs \
 		-I ~{Vcf} \
 		--SNP_OUTPUT "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.snp.vcf" \

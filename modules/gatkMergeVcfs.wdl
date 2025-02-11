@@ -23,6 +23,7 @@ task gatkMergeVcfs {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} MergeVcfs \
 		-I ~{sep=' -I ' Vcfs} \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.merged.vcf"

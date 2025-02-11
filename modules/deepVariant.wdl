@@ -38,6 +38,7 @@ task deepVariant {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SingularityEnv}
 		~{SingularityExe} run \
 		--bind ~{Output} \

@@ -27,6 +27,7 @@ task bcftoolsNorm {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BcftoolsEnv}
 		~{BcftoolsExe} norm -O v -m -both \
 		-o "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}" \

@@ -30,6 +30,7 @@ task gatkLeftAlignIndels {
 		# -O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.laligned.bam"
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} LeftAlignIndels \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \

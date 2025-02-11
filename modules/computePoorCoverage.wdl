@@ -33,6 +33,7 @@ task computePoorCoverage {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{BedToolsExe} genomecov -ibam ~{BamFile} -bga \
 		| ~{AwkExe} -v low_coverage="~{BedtoolsLowCoverage}" '$4<low_coverage' \

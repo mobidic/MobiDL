@@ -24,6 +24,7 @@ task gatkGatherBamFiles {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} GatherBamFiles \
 		-I ~{sep=' -I ' LAlignedBams} \
 		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.gathered.bam"
