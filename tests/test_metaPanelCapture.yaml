@@ -31,9 +31,8 @@
     - path: MobiDL/HG002/panelCapture/HG002.vcf
       should_exist: true
 
-
 - name: MetaPanelCapture intermediate UMAI
-  # Overall runtime : ~ XX min
+  # Overall runtime : ~ 3.5 (on 12 CWL jobs)
   tags:
     - wf_level
     - hg19
@@ -43,7 +42,6 @@
   stdout:
     contains:
       - "workflow finished with status 'Succeeded'"
-
 
 - name: MetaPanelCapture full UMAI
   # Overall runtime : ~ XX min
