@@ -41,10 +41,11 @@ run_wdl_MobiDL() {
 
 	# Activate Conda env:
 	source /etc/profile.d/conda.sh && conda activate /bioinfo/conda_envs/gatk4.6Env
-	local cwl_jar=/scratch/david/MobiDL/cromwell.jar
+	local cwl_jar=/bioinfo/softs/cromwell/cromwell.jar
+	echo "$PWD"
 
 	# Actually run pipeline:
-	bash /scratch/david/MobiDL/cww.sh \
+	bash /bioinfo/softs/MobiDL/cww.sh \
 		--exec "$cwl_jar" \
 		--wdl "$main_wdl" \
 		--input "$input_json" \
@@ -69,7 +70,7 @@ happy_exomeTwist() {
 	local prfx_truth=/mnt/chu-ngs/refData/VCFs_ref_for_validation
 	local out_happy=out-test && mkdir --parents "$out_happy"
 
-	source /etc/profile.d/conda.sh && conda activate /home/olivier/.conda/envs/hap.py
+	source /etc/profile.d/conda.sh && conda activate /bioinfo/conda_envs/hap.py
 
 	# Run hap.py:
 	# MEMO: hap.py will match 'chr' name itself (even if not the same between all files)
