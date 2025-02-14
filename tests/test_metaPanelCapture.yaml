@@ -32,7 +32,8 @@
       should_exist: true
 
 - name: MetaPanelCapture intermediate UMAI
-  # Overall runtime : ~ 3.5 (on 12 CWL jobs)
+  # 36 'MAI_19genes' samples
+  # Overall runtime : ~ 2.5h (with max_CWL_jobs=12 & cpuHigh=8)
   tags:
     - wf_level
     - hg19
@@ -44,6 +45,7 @@
       - "workflow finished with status 'Succeeded'"
 
 - name: MetaPanelCapture full UMAI
+  # Full run of UMAI team
   # Overall runtime : ~ XX min
   tags:
     - wf_level
@@ -51,6 +53,19 @@
     - full
     - UMAI
   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-UMAI_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+
+- name: MetaPanelCapture full NS
+  # Full run of NeuroSensoriel team
+  # Overall runtime : ~ 3h (with max_CWL_jobs=12 & cpuHigh=8)
+  tags:
+    - wf_level
+    - hg38
+    - full
+    - NS
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-NS_inputs.json tests/Cluster_noDB-test.conf"
   stdout:
     contains:
       - "workflow finished with status 'Succeeded'"
