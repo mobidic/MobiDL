@@ -46,7 +46,7 @@
 
 - name: MetaPanelCapture full UMAI
   # Full run of UMAI team
-  # Overall runtime : ~ XX min
+  # Overall runtime : ~ 9h (with max_CWL_jobs=12 & cpuHigh=8)
   tags:
     - wf_level
     - hg19

@@ -7,7 +7,7 @@
   "metaPanelCapture.workflowType": "panelCapture",
   "metaPanelCapture.outDir": "/scratch/MetaPanelCapture_full_UMAI/",
   "metaPanelCapture.cpuLow": 1,
-  "metaPanelCapture.cpuHigh": 24,
+  "metaPanelCapture.cpuHigh": 8,
   "metaPanelCapture.memoryLow": 2400,
   "metaPanelCapture.memoryHigh": 16000,
   "metaPanelCapture.condaBin": "/mnt/Bioinfo/Softs/miniconda/bin/",
