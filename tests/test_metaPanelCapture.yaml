@@ -69,3 +69,42 @@
   stdout:
     contains:
       - "workflow finished with status 'Succeeded'"
+
+- name: MetaPanelCapture full DSD
+  # Full run of DSD team
+  # Overall runtime : ~ 2.5h (with max_CWL_jobs=12 & cpuHigh=8)
+  tags:
+    - wf_level
+    - hg38
+    - full
+    - DSD
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-DSD_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+
+- name: MetaPanelCapture full CF
+  # Full run of CFTR team
+  # Overall runtime : ~ 1.5h (with max_CWL_jobs=12 & cpuHigh=8)
+  tags:
+    - wf_level
+    - hg38
+    - full
+    - CF
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-CF_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+
+- name: MetaPanelCapture full MYO
+  # Full run of MYO team
+  # Overall runtime : ~ 2h (with max_CWL_jobs=12 & cpuHigh=8)
+  tags:
+    - wf_level
+    - hg38
+    - full
+    - MYO
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-MYO_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
