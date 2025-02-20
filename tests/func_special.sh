@@ -44,7 +44,7 @@ run_wdl_MobiDL() {
 	local cwl_jar=/scratch/david/MobiDL/cromwell.jar
 
 	# Actually run pipeline:
-	bash /scratch/david/MobiDL/cww.sh \
+	bash /home/felix/MobiDL/cww.sh \
 		--exec "$cwl_jar" \
 		--wdl "$main_wdl" \
 		--input "$input_json" \
