@@ -24,6 +24,7 @@ task computeCoverageClamms {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{SortExe} -k1,1 -k2,2n -k3,3n ~{BedCovFile} \
 		| awk '{ printf "%s\t%d\t%d\t%.6g\n", $1, $2, $3, $NF/($3-$2); }' \
 		> "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_coverage.bed"

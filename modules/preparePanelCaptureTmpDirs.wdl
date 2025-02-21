@@ -19,6 +19,7 @@ task preparePanelCaptureTmpDirs {
 		String GenomeVersion
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		if [ ! -d "~{OutDir}" ];then \
 			mkdir -p "~{OutDir}"; \
 		fi
