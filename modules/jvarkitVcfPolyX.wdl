@@ -28,6 +28,7 @@ task jvarkitVcfPolyX {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{JavaExe} -jar ~{VcfPolyXJar} vcfpolyx \
 		-R ~{RefFasta} \
 		-o "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.polyx.vcf" \

@@ -33,6 +33,7 @@ task gatkApplyBQSR {
 		# -O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_bams/~{SampleID}.~{IntervalName}.dupmarked.recal.bam"
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} ApplyBQSR \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \

@@ -43,4 +43,13 @@ pytest \
         --verbose \
         --git-aware \
         tests/test_panelCapture.yaml &
+
+# Reproduce issue in v1.2.1 (should fail with error):
+pytest \
+        --tag issue --tag 1-2-1 \
+        --basetemp=/scratch \
+        --keep-workflow-wd \
+        --verbose \
+        --git-aware \
+        tests/test_panelCapture.yaml &
 ```

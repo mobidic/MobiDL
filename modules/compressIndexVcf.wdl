@@ -28,6 +28,7 @@ task compressIndexVcf {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SamtoolsEnv}
 		~{BgZipExe} -c \
 		~{VcfFile} \

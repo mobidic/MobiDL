@@ -27,6 +27,7 @@ task samtoolsSort {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		# TBD put set -e at the beginning of each task to avoid conda deactivate masking errors by returning 0 execution code
 		source ~{CondaBin}activate ~{SamtoolsEnv}
 		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \

@@ -30,6 +30,7 @@ task gatkCollectHsMetrics {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} CollectHsMetrics \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
