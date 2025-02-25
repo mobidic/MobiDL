@@ -62,7 +62,7 @@ task preparePanelCaptureTmpDirs {
 		# fill-in tools version file
 		date > "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		echo "Sample ID: ~{SampleID}" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
-		echo "Workflow: MobiDL ~{WorkflowType}" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
+		echo "Workflow: MobiDL ~{WorkflowType} v1.2.3" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		echo "Genome Version: ~{GenomeVersion}" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		echo "----- FastQ pre-processing -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 	>>>
