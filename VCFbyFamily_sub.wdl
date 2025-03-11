@@ -55,6 +55,13 @@ task pedToFam {
 
 
 task mergeVCF {
+    meta {
+        author: "Felix VANDERMEEREN"
+        email: "felix.vandermeeren(at)chu-montpellier.fr"
+        version: "0.0.3"
+        date: "2025-03-11"
+    }
+
     input {
         Array[String] family
         String prefixPath  # Eg: /path/to/runID/MobiDL
