@@ -5,7 +5,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.0.3"
+        version: "0.0.4"
         date: "2025-03-11"
     }
 
@@ -52,6 +52,7 @@ task pedToFam {
 
     output {
         Array[Array[String]] families = read_json("families.json")
+        Array[Array[String]] status = read_json("status.json")  # [casIndex, father, mother, affected]
     }
 
     runtime {
