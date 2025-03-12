@@ -5,7 +5,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.0.4"
+        version: "0.0.5"
         date: "2025-03-11"
     }
 
@@ -20,17 +20,22 @@ workflow PedToVCF {
             pedFile = PedFile
     }
 
-    scatter (Family in pedToFam.families) {
-        call mergeVCF{
+    scatter (FamilyInfos in pedToFam.familiesInfos) {
+        call stringToArray {
             input:
-                family = Family,
+                aString = FamilyInfos[0]
+        }
+
+        call mergeVCF {
+            input:
+                membersList = stringToArray.outArray,
                 prefixPath = AnalysisDir
-        } 
+        }
     }
 
     output{
         Array[File] mergedVCFs = mergeVCF.vcfOut
-    } 
+    }
 }
 
 
@@ -51,8 +56,33 @@ task pedToFam {
     >>>
 
     output {
-        Array[Array[String]] families = read_json("families.json")
-        Array[Array[String]] status = read_json("status.json")  # [casIndex, father, mother, affected]
+        Array[Array[String]] familiesInfos = read_json("status.json")  # [members_list, casIndex, father, mother, affected_list]
+    }
+
+    runtime {
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+
+task stringToArray {
+    input {
+        String aString  # Eg: "casIndex,father,mother"
+        String aSep = ","
+
+        Int Cpu = 1
+        Int Memory = 768
+    }
+
+    command <<<
+        set -euo pipefail
+
+        echo "~{aString}" | sed "s/$/~{aSep}/" | tr "~{aSep}" "\n"
+    >>>
+
+    output {
+        Array[String] outArray = read_lines(stdout())  # Gives: [casIndex, father, mother]
     }
 
     runtime {
@@ -64,7 +94,7 @@ task pedToFam {
 
 task mergeVCF {
     input {
-        Array[String] family
+        Array[String] membersList    # Eg: [casIndex, father, mother]
         String prefixPath  # Eg: /path/to/runID/MobiDL
         String WDL = "panelCapture"
         String suffixVcf = ".HC.vcf"
@@ -75,8 +105,8 @@ task mergeVCF {
         Int Memory = 768
     }
 
-    String VcfOutPath = if defined(outputPath) then outputPath + "/byFamily/" + family[0] + "/" else prefixPath + "/byFamily/" + family[0] + "/"
-    String VcfOut = VcfOutPath + family[0] + ".vcf"
+    String VcfOutPath = if defined(outputPath) then outputPath + "/BY_FAMILY/" + membersList[0] + "/" else prefixPath + "/BY_FAMILY/" + membersList[0] + "/"
+    String VcfOut = VcfOutPath + membersList[0] + ".vcf"
 
     command <<<
         set -euo pipefail
@@ -85,9 +115,7 @@ task mergeVCF {
             mkdir --parents ~{VcfOutPath}
         fi
 
-        casIndex=$(echo ~{sep="," family} | cut -d"," -f1)
-
-        for memb in ~{sep=" " family} ; do
+        for memb in ~{sep=" " membersList} ; do
             ls -d "~{prefixPath}/${memb}/~{WDL}/${memb}~{suffixVcf}"
         done |
             xargs ~{bcftoolsExe} merge \
