@@ -5,7 +5,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.0.5"
+        version: "0.0.6"
         date: "2025-03-11"
     }
 
