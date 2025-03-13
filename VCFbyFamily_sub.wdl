@@ -102,6 +102,10 @@ task membListToVCF {
 task mergeVCF {
     # ENH: Use Exome.wdl's task 'bcftools merge' instead ?
     input {
+		# env variables
+		String CondaBin
+		String BcftoolsEnv
+        # task variables
         Array[File] membersVCF    # Eg: [/path/to/casIndex.vcf, /path/to/father.vcf, /path/to/mother.vcf]
         String bcftoolsExe = "bcftools"
         String? outputPath
@@ -117,6 +121,9 @@ task mergeVCF {
     String VcfOut = VcfOutPath + "/" + baseName + ".vcf"
 
     command <<<
+        source ~{CondaBin}activate ~{BcftoolsEnv}  # UNCOMMENT ME before commit
+        #micromamba activate ~{BcftoolsEnv}  # COMMENT ME before commit
+
         set -euo pipefail
 
         if [[ ! -d ~{VcfOutPath} ]]; then
