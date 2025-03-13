@@ -121,10 +121,10 @@ task mergeVCF {
     String VcfOut = VcfOutPath + "/" + baseName + ".vcf"
 
     command <<<
-        source ~{CondaBin}activate ~{BcftoolsEnv}  # UNCOMMENT ME before commit
-        #micromamba activate ~{BcftoolsEnv}  # COMMENT ME before commit
-
         set -euo pipefail
+
+        set +u; source ~{CondaBin}activate ~{BcftoolsEnv}; set -u  # UNCOMMENT ME before commit
+        #set +u; eval "$(micromamba shell hook --shell bash)"; micromamba activate ~{BcftoolsEnv}; set -u  # COMMENT ME before commit
 
         if [[ ! -d ~{VcfOutPath} ]]; then
             mkdir --parents ~{VcfOutPath}
