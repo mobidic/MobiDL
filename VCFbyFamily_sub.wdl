@@ -12,6 +12,7 @@ workflow PedToVCF {
     input {
         File PedFile
         String AnalysisDir  # Eg. /path/to/runID/MobiDL
+        String OutputPath = AnalysisDir
     }
 
 
@@ -21,15 +22,16 @@ workflow PedToVCF {
     }
 
     scatter (FamilyInfos in pedToFam.familiesInfos) {
-        call stringToArray {
+        call membListToVCF {
             input:
-                aString = FamilyInfos[0]
+                aString = FamilyInfos[0],
+                prefixPath = AnalysisDir
         }
 
         call mergeVCF {
             input:
-                membersList = stringToArray.outArray,
-                prefixPath = AnalysisDir
+                membersVCF = membListToVCF.VCFarray,
+                outputPath = OutputPath
         }
     }
 
@@ -66,10 +68,13 @@ task pedToFam {
 }
 
 
-task stringToArray {
+task membListToVCF {
     input {
         String aString  # Eg: "casIndex,father,mother"
-        String aSep = ","
+        String aSep = ','
+        String prefixPath  # Eg: /path/to/runID/MobiDL
+        String WDL = "panelCapture"
+        String suffixVcf = ".HC.vcf"
 
         Int Cpu = 1
         Int Memory = 768
@@ -78,11 +83,13 @@ task stringToArray {
     command <<<
         set -euo pipefail
 
-        echo "~{aString}" | sed "s/$/~{aSep}/" | tr "~{aSep}" "\n"
+        for memb in $(echo "~{aString}" | tr "~{aSep}" " ") ; do
+            ls -d "~{prefixPath}/${memb}/~{WDL}/${memb}~{suffixVcf}"
+        done
     >>>
 
     output {
-        Array[String] outArray = read_lines(stdout())  # Gives: [casIndex, father, mother]
+        Array[String] VCFarray = read_lines(stdout())  # Gives: [/path/to/casIndex.vcf, /path/to/father.vcf, /path/to/mother.vcf]
     }
 
     runtime {
@@ -93,11 +100,9 @@ task stringToArray {
 
 
 task mergeVCF {
+    # ENH: Use Exome.wdl's task 'bcftools merge' instead ?
     input {
-        Array[String] membersList    # Eg: [casIndex, father, mother]
-        String prefixPath  # Eg: /path/to/runID/MobiDL
-        String WDL = "panelCapture"
-        String suffixVcf = ".HC.vcf"
+        Array[File] membersVCF    # Eg: [/path/to/casIndex.vcf, /path/to/father.vcf, /path/to/mother.vcf]
         String bcftoolsExe = "bcftools"
         String? outputPath
 
@@ -105,8 +110,11 @@ task mergeVCF {
         Int Memory = 768
     }
 
-    String VcfOutPath = if defined(outputPath) then outputPath + "/BY_FAMILY/" + membersList[0] + "/" else prefixPath + "/BY_FAMILY/" + membersList[0] + "/"
-    String VcfOut = VcfOutPath + membersList[0] + ".vcf"
+    String subString = "\.(vcf|bcf)(\.gz)?$"
+    String subStringReplace = ""
+    String baseName = sub(basename(membersVCF[0]),subString,subStringReplace)
+    String VcfOutPath = if defined(outputPath) then outputPath + "/BY_FAMILY/" + baseName + "/" else "./BY_FAMILY/" + baseName
+    String VcfOut = VcfOutPath + "/" + baseName + ".vcf"
 
     command <<<
         set -euo pipefail
@@ -115,14 +123,12 @@ task mergeVCF {
             mkdir --parents ~{VcfOutPath}
         fi
 
-        for memb in ~{sep=" " membersList} ; do
-            ls -d "~{prefixPath}/${memb}/~{WDL}/${memb}~{suffixVcf}"
-        done |
-            xargs ~{bcftoolsExe} merge \
-                                        --merge none \
-                                        --missing-to-ref \
-                                        --no-index \
-                                        -Ov -o "~{VcfOut}"
+        ~{bcftoolsExe} merge \
+                             --merge none \
+                             --missing-to-ref \
+                             --no-index \
+                             -Ov -o "~{VcfOut}" \
+                             ~{sep=" " membersVCF}
     >>>
 
     output {
