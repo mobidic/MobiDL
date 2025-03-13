@@ -130,12 +130,17 @@ task mergeVCF {
             mkdir --parents ~{VcfOutPath}
         fi
 
-        ~{bcftoolsExe} merge \
-                             --merge none \
-                             --missing-to-ref \
-                             --no-index \
-                             -Ov -o "~{VcfOut}" \
-                             ~{sep=" " membersVCF}
+        if [ "~{length(membersVCF)}" -eq "1" ] ; then
+            cp --verbose "~{membersVCF[0]}" "~{VcfOut}"
+
+        else
+            ~{bcftoolsExe} merge \
+                                 --merge none \
+                                 --missing-to-ref \
+                                 --no-index \
+                                 -Ov -o "~{VcfOut}" \
+                                 ~{sep=" " membersVCF}
+        fi
     >>>
 
     output {
