@@ -50,6 +50,6 @@ task rsyncAchabFiles {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File copiedAchabVersion = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
+		File copiedAchabVersion = "~{OutDir}/~{SampleID}.versions.txt"
 	}
 }
