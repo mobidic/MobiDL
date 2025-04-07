@@ -11,16 +11,10 @@ from peds import get_probands
 families = open_ped(sys.argv[1])
 
 
+# Extract 'status' of each family = casIndex, members_list, father, mother and affected_list:
 status_list = []
-
 for fam in families:
-    # Group individuals of each family in a list:
-    members_list = [memb.id for memb in fam]
-    assert len(members_list) != 0, "Empty family is impossible"
-
-    # Extract 'status' of each family = casIndex, father, mother and affected_list:
     casIndex = fam.get_proband()
-    assert casIndex.id == members_list[0], "CasIndex should also be 1st indiv of family"
 
     # Father and Mother can be 'None' -> check it:
     father = fam.get_father(casIndex)
@@ -28,11 +22,15 @@ for fam in families:
     mother = fam.get_mother(casIndex)
     mother_ID = mother.id if mother is not None else ""
 
+    all_members = [memb.id for memb in fam]
     affected = [memb.id for memb in fam if memb.is_affected()]
 
-    # members_list ; casIndex ; father ; mother ; affected_list
-    status_list.append([",".join(members_list), casIndex.id, father_ID, mother_ID, ",".join(affected)])
+    assert casIndex.id == all_members[0], "CasIndex should also be 1st indiv of family"
+
+    # Format = casIndex ; members_list ; father ; mother ; affected_list
+    status_list.append([casIndex.id, ",".join(all_members), father_ID, mother_ID, ",".join(affected)])
 
 
+# Write out file:
 with open('status.json', 'w') as status_out:
     status_out.write(json.dumps(status_list) + '\n')

@@ -1,0 +1,16 @@
+## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
+
+- name: VCFbyFamily coriells chr22
+  # With VCFs produced by 'Exome.wdl' pipeline
+  tags:
+    - wf_level
+    - hg19
+    - exome
+    - downsampled
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/coriells_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
+      should_exist: true

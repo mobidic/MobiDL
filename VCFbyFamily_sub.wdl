@@ -12,24 +12,40 @@ workflow PedToVCF {
     input {
         File PedFile
         String AnalysisDir  # Eg. /path/to/runID/MobiDL
+        String? OutputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
+
+        String WDL = "panelCapture"
+        String SuffixVcf = ".hc.vcf"
+
+		String condaBin
+
+        # PedToFam task:
+		String pedsEnv
+        String scriptPath
+        # mergeVCF task:
+		String bcftoolsEnv
     }
 
 
     call pedToFam {
         input:
-            pedFile = PedFile
+            pedFile = PedFile,
+            CondaBin = condaBin,
+            PedsEnv = pedsEnv,
+            pathExe = scriptPath
     }
 
-    scatter (FamilyInfos in pedToFam.familiesInfos) {
-        call stringToArray {
-            input:
-                aString = FamilyInfos[0]
-        }
-
+    scatter (aStatus in pedToFam.status) {
         call mergeVCF {
             input:
-                membersList = stringToArray.outArray,
-                prefixPath = AnalysisDir
+                casIndex = aStatus[0],
+                family = aStatus[1],
+                prefixPath = AnalysisDir,
+                outputPath = OutputPath,
+                wdl = WDL,
+                suffixVcf = SuffixVcf,
+                CondaBin = condaBin,
+                BcftoolsEnv = bcftoolsEnv
         }
     }
 
@@ -45,6 +61,8 @@ task pedToFam {
         String pythonExe = "python3"
         String pathExe = "ped_to_fam.py"
 
+        String CondaBin
+        String PedsEnv  # Any python env with 'peds' package installed
         Int Cpu = 1
         Int Memory = 768
     }
@@ -52,37 +70,13 @@ task pedToFam {
     command <<<
         set -euo pipefail
 
+        source ~{CondaBin}activate ~{PedsEnv}
         "~{pythonExe}" "~{pathExe}" "~{pedFile}"
+        conda deactivate
     >>>
 
     output {
-        Array[Array[String]] familiesInfos = read_json("status.json")  # [members_list, casIndex, father, mother, affected_list]
-    }
-
-    runtime {
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
-
-task stringToArray {
-    input {
-        String aString  # Eg: "casIndex,father,mother"
-        String aSep = ","
-
-        Int Cpu = 1
-        Int Memory = 768
-    }
-
-    command <<<
-        set -euo pipefail
-
-        echo "~{aString}" | sed "s/$/~{aSep}/" | tr "~{aSep}" "\n"
-    >>>
-
-    output {
-        Array[String] outArray = read_lines(stdout())  # Gives: [casIndex, father, mother]
+        Array[Array[String]] status = read_json("status.json")  # [casIndex, membersList, father, mother, affectedList]
     }
 
     runtime {
@@ -94,35 +88,43 @@ task stringToArray {
 
 task mergeVCF {
     input {
-        Array[String] membersList    # Eg: [casIndex, father, mother]
+        String family  # Eg.: 'casIndex,father,mother'
+        String casIndex
         String prefixPath  # Eg: /path/to/runID/MobiDL
-        String WDL = "panelCapture"
+        String wdl = "panelCapture"
         String suffixVcf = ".HC.vcf"
-        String bcftoolsExe = "bcftools"
         String? outputPath
 
+        String CondaBin
+        String BcftoolsEnv
+        String bcftoolsExe = "bcftools"
         Int Cpu = 1
         Int Memory = 768
     }
 
-    String VcfOutPath = if defined(outputPath) then outputPath + "/BY_FAMILY/" + membersList[0] + "/" else prefixPath + "/BY_FAMILY/" + membersList[0] + "/"
-    String VcfOut = VcfOutPath + membersList[0] + ".vcf"
+    String VcfOutPath = if defined(outputPath) then outputPath + "/byFamily/" + casIndex + "/" else prefixPath + "/byFamily/" + casIndex + "/"
+    String VcfOut = VcfOutPath + casIndex + ".vcf"
 
     command <<<
         set -euo pipefail
+        set -x
 
         if [[ ! -d ~{VcfOutPath} ]]; then
             mkdir --parents ~{VcfOutPath}
         fi
 
-        for memb in ~{sep=" " membersList} ; do
-            ls -d "~{prefixPath}/${memb}/~{WDL}/${memb}~{suffixVcf}"
+        set +x; source ~{CondaBin}activate ~{BcftoolsEnv}; set -x
+
+        for memb in $(echo ~{family} | tr "," " ") ; do
+            ls -d "~{prefixPath}/${memb}/~{wdl}/${memb}~{suffixVcf}"
         done |
             xargs ~{bcftoolsExe} merge \
                                         --merge none \
                                         --missing-to-ref \
                                         --no-index \
                                         -Ov -o "~{VcfOut}"
+
+        set +x; conda deactivate
     >>>
 
     output {
