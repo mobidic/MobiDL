@@ -5,17 +5,17 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.0.5"
+        version: "0.0.6"
         date: "2025-03-11"
     }
 
     input {
-        File PedFile
-        String AnalysisDir  # Eg. /path/to/runID/MobiDL
-        String? OutputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
+        File pedFile
+        String analysisDir  # Eg. /path/to/runID/MobiDL
+        String? outputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
 
-        String WDL = "panelCapture"
-        String SuffixVcf = ".hc.vcf"
+        String wdl = "panelCapture"
+        String suffixVcf = ".hc.vcf"
 
         String condaBin
 
@@ -29,21 +29,21 @@ workflow PedToVCF {
 
     call pedToFam {
         input:
-            pedFile = PedFile,
+            PedFile = pedFile,
             CondaBin = condaBin,
             PedsEnv = pedsEnv,
-            pathExe = scriptExe
+            PathExe = scriptExe
     }
 
     scatter (aStatus in pedToFam.status) {
         call mergeVCF {
             input:
-                casIndex = aStatus[0],
-                family = aStatus[1],
-                prefixPath = AnalysisDir,
-                outputPath = OutputPath,
-                wdl = WDL,
-                suffixVcf = SuffixVcf,
+                CasIndex = aStatus[0],
+                Family = aStatus[1],
+                PrefixPath = analysisDir,
+                OutputPath = outputPath,
+                WDL = wdl,
+                SuffixVcf = suffixVcf,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv
         }
@@ -57,9 +57,9 @@ workflow PedToVCF {
 
 task pedToFam {
     input {
-        File pedFile
-        String pythonExe = "python3"
-        File pathExe = "ped_to_fam.py"
+        File PedFile
+        String PythonExe = "python3"
+        File PathExe = "ped_to_fam.py"
 
         String CondaBin
         String PedsEnv  # Any python env with 'peds' package installed
@@ -71,7 +71,7 @@ task pedToFam {
         set -euo pipefail
 
         source ~{CondaBin}activate ~{PedsEnv}
-        "~{pythonExe}" "~{pathExe}" "~{pedFile}"
+        "~{PythonExe}" "~{PathExe}" "~{PedFile}"
         conda deactivate
     >>>
 
@@ -88,22 +88,22 @@ task pedToFam {
 
 task mergeVCF {
     input {
-        String family  # Eg.: 'casIndex,father,mother'
-        String casIndex
-        String prefixPath  # Eg: /path/to/runID/MobiDL
-        String wdl = "panelCapture"
-        String suffixVcf = ".HC.vcf"
-        String? outputPath
+        String Family  # Eg.: 'casIndex,father,mother'
+        String CasIndex
+        String PrefixPath  # Eg: /path/to/runID/MobiDL
+        String WDL = "panelCapture"
+        String SuffixVcf = ".HC.vcf"
+        String? OutputPath
 
         String CondaBin
         String BcftoolsEnv
-        String bcftoolsExe = "bcftools"
+        String BcftoolsExe = "bcftools"
         Int Cpu = 1
         Int Memory = 768
     }
 
-    String VcfOutPath = if defined(outputPath) then outputPath + "/byFamily/" + casIndex + "/" else prefixPath + "/byFamily/" + casIndex + "/"
-    String VcfOut = VcfOutPath + casIndex + ".vcf"
+    String VcfOutPath = if defined(OutputPath) then OutputPath + "/byFamily/" + CasIndex + "/" else PrefixPath + "/byFamily/" + CasIndex + "/"
+    String VcfOut = VcfOutPath + CasIndex + ".vcf"
 
     command <<<
         set -euo pipefail
@@ -114,17 +114,17 @@ task mergeVCF {
         fi
 
         # If family has 1 single sample -> simply copy VCF
-        if [ "$(echo ~{family} | tr "," "\n" | wc -l)" -eq "1" ] ; then
-            memb=~{family}
-            cp --verbose "~{prefixPath}/${memb}/~{wdl}/${memb}~{suffixVcf}" "~{VcfOut}"
+        if [ "$(echo ~{Family} | tr "," "\n" | wc -l)" -eq "1" ] ; then
+            memb=~{Family}
+            cp --verbose "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}" "~{VcfOut}"
 
         else
             set +x; source ~{CondaBin}activate ~{BcftoolsEnv}; set -x
 
-            for memb in $(echo ~{family} | tr "," " ") ; do
-                ls -d "~{prefixPath}/${memb}/~{wdl}/${memb}~{suffixVcf}"
+            for memb in $(echo ~{Family} | tr "," " ") ; do
+                ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}"
             done |
-                xargs ~{bcftoolsExe} merge \
+                xargs ~{BcftoolsExe} merge \
                                             --merge none \
                                             --missing-to-ref \
                                             --no-index \
