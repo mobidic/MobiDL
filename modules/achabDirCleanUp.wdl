@@ -13,9 +13,10 @@ task achabDirCleanUp {
 		String SampleID
 		String OutDir
 		# task specific variables
-		String? OutPhenolyzer
-		File OutAchab
-		File OutAchabNewHope
+		String CopiedAchabVersion
+		# String? OutPhenolyzer
+		# File OutAchab
+		# File OutAchabNewHope
 		String Genome
 		# runtime attributes
 		String Queue

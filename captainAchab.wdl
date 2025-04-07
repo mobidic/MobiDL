@@ -11,6 +11,7 @@ import "modules/annovarForMpa.wdl" as runAnnovarForMpa
 import "modules/mpa.wdl" as runMpa
 import "modules/phenolyzer.wdl" as runPhenolyzer
 import "modules/achab.wdl" as runAchab
+import "modules/achabFinalCopy.wdl" as runAchabFinalCopy
 # import "modules/achabNewHope.wdl" as runAchabNewHope
 
 workflow captainAchab {
@@ -28,6 +29,7 @@ workflow captainAchab {
 		String bcftoolsEnv = "bcftoolsEnv"
 		String mpaEnv = "mpaEnv"
 		String achabEnv = "achabEnv"
+		String rsyncEnv = "rsyncEnv"
 		## queues
 		String defQueue = "prod"
 		##Resources
@@ -43,9 +45,11 @@ workflow captainAchab {
 		File tableAnnovarExe
 		String bcftoolsExe = "bcftools"
 		String gatkExe = "gatk"
+		String rsyncExe = "rsync"
 		## Global
 		String workflowType
 		String sampleID
+		String outTmpDir = "/scratch/tmp_output/"
 		String outDir
 		Boolean keepFiles
 		## For annovarForMpa
@@ -104,7 +108,7 @@ workflow captainAchab {
 			BcftoolsExe = bcftoolsExe,
 			Version = true,
 			SampleID = sampleID,
-			OutDir = outDir
+			OutDir = outTmpDir
 	}
 	call runBcftoolsLeftAlign.bcftoolsLeftAlign {
 		input:
@@ -117,7 +121,7 @@ workflow captainAchab {
 			BcftoolsExe = bcftoolsExe,
 			FastaGenome = fastaGenome,
 			SplittedVcf = bcftoolsSplit.outBcfSplit,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			SampleID = sampleID
 	}
 	call runBcftoolsNorm.bcftoolsNorm {
@@ -129,7 +133,7 @@ workflow captainAchab {
 			Memory = memory,
 			WorkflowType = workflowType,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			BcftoolsExe = bcftoolsExe,
 			VcSuffix = vcSuffix,
 			SortedVcf = bcftoolsLeftAlign.outBcfLeftAlign
@@ -141,7 +145,7 @@ workflow captainAchab {
 			Memory = memory,
 			WorkflowType = workflowType,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			GatkExe = gatkExe,
 			Version = true,
 			VcSuffix = vcSuffix,
@@ -154,7 +158,7 @@ workflow captainAchab {
 			Memory = memory,
 			WorkflowType = workflowType,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			Version = true,
 			InputVcf = inputVcf
 	}
@@ -167,9 +171,10 @@ workflow captainAchab {
 				WorkflowType = workflowType,
 				SampleID = sampleID,
 				OutDir = outDir,
-				OutPhenolyzer = phenolyzer.outPhenolyzer,
-				OutAchab = achab.outAchabHtml, 
-				OutAchabNewHope = achabNewHope.outAchabHtml,
+				CopiedAchabVersion = rsyncAchabFiles.copiedAchabVersion,
+				# OutPhenolyzer = phenolyzer.outPhenolyzer,
+				# OutAchab = achab.outAchabHtml, 
+				# OutAchabNewHope = achabNewHope.outAchabHtml,
 				Genome = genome
 		}
 	}
@@ -191,7 +196,7 @@ workflow captainAchab {
 			TableAnnovarExe = tableAnnovarExe,
 			HumanDb = humanDb,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			Version = true,
 			PerlPath = perlPath,
 			Genome = genome
@@ -208,7 +213,7 @@ workflow captainAchab {
 			MpaExe = mpaExe,
 			OutAnnotation = annovarForMpa.outAnnotationVcf,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			Genome = genome
 	}
 	if (withPhenolyzer) {
@@ -225,7 +230,7 @@ workflow captainAchab {
 				DiseaseFile = diseaseFile,
 				PhenolyzerExe = phenolyzerExe,
 				SampleID = sampleID,
-				OutDir = outDir,
+				OutDir = outTmpDir,
 				PerlPath = perlPath
 		}
 	}	
@@ -252,7 +257,7 @@ workflow captainAchab {
 			CheckTrio = checkTrio,
 			CustomInfo = customInfo,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			PerlPath = perlPath,
 			CustomVCF = customVCF,
 			MozaicRate = mozaicRate,
@@ -273,7 +278,7 @@ workflow captainAchab {
 			Queue = defQueue,
 			Cpu = cpu,
 			Memory = memory,
-			WorkflowType = workflowType, 
+			WorkflowType = workflowType,
 			AchabExe = achabExe,
 			CnvGeneList = cnvGeneList,
 			FilterList = filterList,
@@ -287,7 +292,7 @@ workflow captainAchab {
 			CheckTrio = checkTrio,
 			CustomInfo = customInfo,
 			SampleID = sampleID,
-			OutDir = outDir,
+			OutDir = outTmpDir,
 			PerlPath = perlPath,
 			CustomVCF = customVCF,
 			MozaicRate = mozaicRate,
@@ -300,6 +305,23 @@ workflow captainAchab {
 			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields
+	}
+	call runAchabFinalCopy.rsyncAchabFiles as rsyncAchabFiles {
+		input:
+			CondaBin = condaBin,
+			RsyncEnv = rsyncEnv,
+			Queue = defQueue,
+			Cpu = cpu,
+			Memory = memory,
+			WorkflowType = workflowType,
+			SampleID = sampleID,
+			Version = true,
+			RsyncExe = rsyncExe,
+			OutTmpDir = outTmpDir,
+			OutDir = outDir,
+			OutPhenolyzer = phenolyzer.outPhenolyzer,
+			OutAchab = achab.outAchabHtml, 
+			OutAchabNewHope = achabNewHope.outAchabHtml
 	}
 	output {
 		File achabHtml = achab.outAchabHtml
