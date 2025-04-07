@@ -43,6 +43,7 @@ task achabDirPreparation {
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "----- Annotation -----" > "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
+			echo "captainAchab workflow v1.3.0" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
 	>>>
 	runtime {

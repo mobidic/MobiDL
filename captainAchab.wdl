@@ -18,8 +18,8 @@ workflow captainAchab {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.2.0"
-		date: "2023-09-07"
+		version: "1.3.0"
+		date: "2025-04-07"
 	}
 	input {
 		#Variable section
