@@ -55,6 +55,8 @@ task preparePanelCaptureTmpDirs {
 		fi
 		if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/intervals" ];then \
 			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/intervals"; \
+		else
+			chmod -R 777 "~{OutDir}~{SampleID}/~{WorkflowType}/intervals"
 		fi
 		if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/coverage" ];then \
 			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/coverage"; \
