@@ -14,3 +14,21 @@
   files:
     - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
       should_exist: true
+
+- name: VCFbyFamily coriells solo
+  # PED contains solo -> should work
+  tags:
+    - wf_level
+    - hg19
+    - exome
+    - downsampled
+    - solo
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/coriells-solo_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
+      should_exist: true
+    - path: byFamily/HG004-exomeTwist-chr22/HG004-exomeTwist-chr22.vcf
+      should_exist: true

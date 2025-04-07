@@ -1,10 +1,10 @@
 {
-"PedToVCF.PedFile": "tests/VCFbyFamily/coriells.ped",
+"PedToVCF.PedFile": "tests/VCFbyFamily/coriells-solo.ped",
 "PedToVCF.AnalysisDir": "/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/out-Exome/casIndex/",
 "PedToVCF.OutputPath": "/mnt/chu-ngs2/Labos/UMAI/LancementAnalyseCluster/VCFbyFamily_coriells_chr22/",
 "PedToVCF.WDL": "VCFs",
 "PedToVCF.SuffixVcf": ".HC.vcf",
-"PedToVCF.OutputPath": "/mnt/chu-ngs2/Labos/UMAI/LancementAnalyseCluster/VCFbyFamily_coriells_chr22/",
+"PedToVCF.OutputPath": "/mnt/chu-ngs2/Labos/UMAI/LancementAnalyseCluster/VCFbyFamily_coriells_solo/",
 "PedToVCF.condaBin": "/mnt/Bioinfo/Softs/miniconda/bin/",
 "PedToVCF.pedsEnv": "/home/felix/.conda/envs/felix",
 "PedToVCF.bcftoolsEnv": "/bioinfo/conda_envs/bcftoolsEnv/"

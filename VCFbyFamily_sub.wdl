@@ -17,13 +17,13 @@ workflow PedToVCF {
         String WDL = "panelCapture"
         String SuffixVcf = ".hc.vcf"
 
-		String condaBin
+        String condaBin
 
         # PedToFam task:
-		String pedsEnv
-        String scriptPath
+        String pedsEnv  # Any python env with 'peds' package installed
+        File? scriptExe
         # mergeVCF task:
-		String bcftoolsEnv
+        String bcftoolsEnv
     }
 
 
@@ -32,7 +32,7 @@ workflow PedToVCF {
             pedFile = PedFile,
             CondaBin = condaBin,
             PedsEnv = pedsEnv,
-            pathExe = scriptPath
+            pathExe = scriptExe
     }
 
     scatter (aStatus in pedToFam.status) {
@@ -59,7 +59,7 @@ task pedToFam {
     input {
         File pedFile
         String pythonExe = "python3"
-        String pathExe = "ped_to_fam.py"
+        File pathExe = "ped_to_fam.py"
 
         String CondaBin
         String PedsEnv  # Any python env with 'peds' package installed
@@ -113,18 +113,25 @@ task mergeVCF {
             mkdir --parents ~{VcfOutPath}
         fi
 
-        set +x; source ~{CondaBin}activate ~{BcftoolsEnv}; set -x
+        # If family has 1 single sample -> simply copy VCF
+        if [ "$(echo ~{family} | tr "," "\n" | wc -l)" -eq "1" ] ; then
+            memb=~{family}
+            cp --verbose "~{prefixPath}/${memb}/~{wdl}/${memb}~{suffixVcf}" "~{VcfOut}"
 
-        for memb in $(echo ~{family} | tr "," " ") ; do
-            ls -d "~{prefixPath}/${memb}/~{wdl}/${memb}~{suffixVcf}"
-        done |
-            xargs ~{bcftoolsExe} merge \
-                                        --merge none \
-                                        --missing-to-ref \
-                                        --no-index \
-                                        -Ov -o "~{VcfOut}"
+        else
+            set +x; source ~{CondaBin}activate ~{BcftoolsEnv}; set -x
 
-        set +x; conda deactivate
+            for memb in $(echo ~{family} | tr "," " ") ; do
+                ls -d "~{prefixPath}/${memb}/~{wdl}/${memb}~{suffixVcf}"
+            done |
+                xargs ~{bcftoolsExe} merge \
+                                            --merge none \
+                                            --missing-to-ref \
+                                            --no-index \
+                                            -Ov -o "~{VcfOut}"
+
+            set +x; conda deactivate
+        fi
     >>>
 
     output {
