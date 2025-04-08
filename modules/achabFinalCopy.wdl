@@ -33,7 +33,7 @@ task rsyncAchabFiles {
 		source ~{CondaBin}activate ~{RsyncEnv}
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
-			echo "Rsync: v$(~{RsyncExe} --version | grep 'rsync' | cut -f3 -d ' ')" >> "~{OutTmpDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
+			echo "Rsync: v$(~{RsyncExe} --version | grep 'version' | cut -f4 -d ' ')" >> "~{OutTmpDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
 		mkdir -p "~{OutDir}"
 		~{RsyncExe} -az --no-g --chmod=ugo=rwX \
