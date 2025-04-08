@@ -139,7 +139,7 @@ workflow metaPanelCapture {
 				intervalBedFile = roiDir + "/" + inputs[0],
 				intervalBaitBed = intervalBaitBed,
 				workflowType = workflowType,
-				outDir = outDir + "/MobiDL/",
+				outDir = outDir,
 				debug = debug,
 				condaBin = condaBin,
 				fastpEnv = fastpEnv,
