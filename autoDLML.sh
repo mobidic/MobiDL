@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20250407
+VERSION=20250409
 # USAGE="
 # Program: AutoDLML
 # Version: ${VERSION}
@@ -917,8 +917,9 @@ do
 							info "RUN ${RUN} treated" 
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
-							chmod -R 777 "${TMP_OUTPUT_DIR2}"
-							rm -r "${TMP_OUTPUT_DIR2}"
+							#Temp outDir already removed by 'workflowPostTreatment':
+							# chmod -R 777 "${TMP_OUTPUT_DIR2}"
+							# rm -r "${TMP_OUTPUT_DIR2}"
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
