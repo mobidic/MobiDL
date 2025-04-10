@@ -358,6 +358,8 @@ setvariables() {
 
 setjsonvariables() {
 	chmod 777 "${1}"
+	# uncomment if we want to explicitly change tmp_output dir - templates must be updated as well
+	# ACHAB_TMP_OUTPUT_SED=${TMP_OUTPUT_DIR////\\/}
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
@@ -365,6 +367,7 @@ setjsonvariables() {
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
+		# -e "s/\(  \"${ACHAB}\.outTmpDir\": \"\).*/\1${ACHAB_TMP_OUTPUT_SED}\",/" \
 }
 
 

@@ -25,6 +25,7 @@ task cleanUpPanelCaptureTmpDirs {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		if [ -d "~{OutDir}~{SampleID}/~{WorkflowType}/splitted_intervals" ];then \
 			rm -r "~{OutDir}~{SampleID}/~{WorkflowType}/splitted_intervals"; \
 		fi

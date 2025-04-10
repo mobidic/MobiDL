@@ -30,6 +30,7 @@ task samtoolsCramConvert {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SamtoolsEnv}
 		~{SamtoolsExe} view \
 		-T ~{RefFastaGz} -C \

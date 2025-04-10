@@ -28,6 +28,7 @@ task gatkBedToPicardIntervalList {
 	String BedOut = if Bait then "~{OutDir}~{SampleID}/~{WorkflowType}/intervals/Intervals.Bait.bed" else "~{OutDir}~{SampleID}/~{WorkflowType}/intervals/Intervals.bed"
 	String OutFile = if Bait then "~{OutDir}~{SampleID}/~{WorkflowType}/intervals/picard.Bait.interval_list" else "~{OutDir}~{SampleID}/~{WorkflowType}/intervals/picard.interval_list"
 	command <<<
+		set -e  # To make task stop at 1st error
 		cp ~{IntervalBedFile} ~{BedOut}
 		~{GatkExe} BedToIntervalList \
 		-I ~{IntervalBedFile} \

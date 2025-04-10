@@ -27,6 +27,7 @@ task bcftoolsStats {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BcftoolsEnv}
 		~{BcftoolsExe} stats \
 		~{VcfFile} \

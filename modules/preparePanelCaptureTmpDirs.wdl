@@ -19,6 +19,7 @@ task preparePanelCaptureTmpDirs {
 		String GenomeVersion
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		if [ ! -d "~{OutDir}" ];then \
 			mkdir -p "~{OutDir}"; \
 		fi
@@ -54,6 +55,8 @@ task preparePanelCaptureTmpDirs {
 		fi
 		if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/intervals" ];then \
 			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/intervals"; \
+		else
+			chmod -R 777 "~{OutDir}~{SampleID}/~{WorkflowType}/intervals"
 		fi
 		if [ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/coverage" ];then \
 			mkdir "~{OutDir}~{SampleID}/~{WorkflowType}/coverage"; \
@@ -61,7 +64,7 @@ task preparePanelCaptureTmpDirs {
 		# fill-in tools version file
 		date > "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		echo "Sample ID: ~{SampleID}" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
-		echo "Workflow: MobiDL ~{WorkflowType}" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
+		echo "Workflow: MobiDL ~{WorkflowType} v1.2.3" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		echo "Genome Version: ~{GenomeVersion}" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		echo "----- FastQ pre-processing -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 	>>>

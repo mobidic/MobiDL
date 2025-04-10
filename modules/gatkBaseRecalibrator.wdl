@@ -36,6 +36,7 @@ task gatkBaseRecalibrator {
 	String IntervalName = basename("~{GatkInterval}", ".intervals")
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} BaseRecalibrator \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \

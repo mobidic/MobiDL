@@ -37,6 +37,7 @@ task bwaSamtools {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BwaEnv}
 		~{BwaExe} mem -M -t ~{Cpu} \
 		-R "@RG\tID:~{SampleID}\tSM:~{SampleID}\tPL:~{Platform}" \

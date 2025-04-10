@@ -23,6 +23,7 @@ task gatkSortVcf {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} SortVcf \
 		-I ~{UnsortedVcf} \
 		-O "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.sorted.vcf"

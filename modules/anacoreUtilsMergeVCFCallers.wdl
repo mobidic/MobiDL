@@ -25,6 +25,7 @@ task anacoreUtilsMergeVCFCallers {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{AnacoreEnv}
 		# anacoreUtilsMergeVCFCallersMobiDL.py must be in PATH
 		# and anacore-utils installed

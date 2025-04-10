@@ -35,6 +35,7 @@ task gatkHaplotypeCaller {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} HaplotypeCaller \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
