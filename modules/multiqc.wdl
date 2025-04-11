@@ -27,6 +27,7 @@ task multiqc {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "----- Quality -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"

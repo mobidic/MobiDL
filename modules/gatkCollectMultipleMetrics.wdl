@@ -26,6 +26,7 @@ task gatkCollectMultipleMetrics {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} CollectMultipleMetrics \
 		-I ~{BamFile} \
 		-R ~{RefFasta} \

@@ -28,6 +28,7 @@ task samtoolsCramIndex {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
  	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SamtoolsEnv}
 		~{SamtoolsExe} index \
 		~{CramFile} \

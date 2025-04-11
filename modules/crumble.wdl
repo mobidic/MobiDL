@@ -30,6 +30,7 @@ task crumble {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{CrumbleEnv}
 		export LD_LIBRARY_PATH="~{LdLibraryPath}"
 		~{CrumbleExe} \

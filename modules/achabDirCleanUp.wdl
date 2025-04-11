@@ -13,9 +13,10 @@ task achabDirCleanUp {
 		String SampleID
 		String OutDir
 		# task specific variables
-		String? OutPhenolyzer
-		File OutAchab
-		File OutAchabNewHope
+		String CopiedAchabVersion
+		# String? OutPhenolyzer
+		# File OutAchab
+		# File OutAchabNewHope
 		String Genome
 		# runtime attributes
 		String Queue
@@ -23,26 +24,26 @@ task achabDirCleanUp {
 		Int Memory
 	}
 	command <<<
-		if [ -d "~{OutDir}~{SampleID}/~{WorkflowType}/bcftools" ]; then \
-			rm -rf "~{OutDir}~{SampleID}/~{WorkflowType}/bcftools"; \
+		if [ -d "~{OutDir}/bcftools" ]; then \
+			rm -rf "~{OutDir}/bcftools"; \
 		fi
-		if [ -d "~{OutDir}~{SampleID}/~{WorkflowType}/disease" ]; then \
-			rm -rf "~{OutDir}~{SampleID}/~{WorkflowType}/disease"; \
+		if [ -d "~{OutDir}/disease" ]; then \
+			rm -rf "~{OutDir}/disease"; \
 		fi
-		if [ -f "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.avinput" ]; then \
-			rm "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.avinput"; \
+		if [ -f "~{OutDir}/~{SampleID}.avinput" ]; then \
+			rm "~{OutDir}/~{SampleID}.avinput"; \
 		fi
-		if [ -f "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.~{Genome}_multianno.txt" ]; then \
-			rm "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.~{Genome}_multianno.txt"; \
+		if [ -f "~{OutDir}/~{SampleID}.~{Genome}_multianno.txt" ]; then \
+			rm "~{OutDir}/~{SampleID}.~{Genome}_multianno.txt"; \
 		fi
-		if [ -f "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.~{Genome}_multianno.vcf" ]; then \
-			rm "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.~{Genome}_multianno.vcf"; \
+		if [ -f "~{OutDir}/~{SampleID}.~{Genome}_multianno.vcf" ]; then \
+			rm "~{OutDir}/~{SampleID}.~{Genome}_multianno.vcf"; \
 		fi
-		if [ -f "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.sorted.vcf" ]; then \
-			rm "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.sorted.vcf"; \
+		if [ -f "~{OutDir}/~{SampleID}.sorted.vcf" ]; then \
+			rm "~{OutDir}/~{SampleID}.sorted.vcf"; \
 		fi
-		if [ -f "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.sorted.vcf.idx" ]; then \
-			rm "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.sorted.vcf.idx"; \
+		if [ -f "~{OutDir}/~{SampleID}.sorted.vcf.idx" ]; then \
+			rm "~{OutDir}/~{SampleID}.sorted.vcf.idx"; \
 		fi
 	>>>
 	runtime {

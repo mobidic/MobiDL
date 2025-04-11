@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20250124
+VERSION=20250409
 # USAGE="
 # Program: AutoDLML
 # Version: ${VERSION}
@@ -224,7 +224,7 @@ dos2unixIfPossible() {
 #	fi
 #}
 
-modifyJsonAndLaunch() {
+modifyJson() {
 	# debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
 	if [ ! -d "${AUTODL_DIR}/${RUN}" ];then
 		mkdir "${AUTODL_DIR}/${RUN}"
@@ -273,23 +273,61 @@ modifyJsonAndLaunch() {
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
 			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
 		rm "${JSON}.bak"
-		debug "$(cat ${JSON})"
+		#debug "$(cat ${JSON})"
+	fi
+}
 
+gatherJsonsAndLaunch() {
+	oldWDL=${WDL}
+	WDL="metaPanelCapture"
+	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
+	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
+	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
+		error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
+	else
+		JSON="${AUTODL_DIR}${RUN}/${WDL}_inputs.json"
+		# Gather info from indiv 'panelCapture_inputs.json':
+		# INFO: 'inputsLists' variable contains quotes -> complicated with sed
+		#       Instead send string to file
+		# WARNING: Template is not a JSON anymore ???
+		#          -> FIXME ???
+		for aJson in "${AUTODL_DIR}${RUN}"/"${oldWDL}"*"_inputs.json";do
+			(
+				grep "\.intervalBedFile" "$aJson" ;
+				grep "\.sampleID" "$aJson" ;
+				grep "\.fastqR" "$aJson"
+			) |
+					awk '{print $2}' |
+					sed -e "s|${ROI_SED}||" -e "s|${FASTQ_SED}/||" |
+					tr -d '\n' |
+					sed -e 's/^/[/' -e 's/,$/],/'
+		done |
+			sed -e "s/^/{\n  \"${WDL}.inputsLists\": [/" -e 's/,$/],\n/' > "${JSON}"
+		# Then modify rest of variables:
+		chmod 755 "${JSON}"
+		cat "${MOBIDL_JSON_TEMPLATE}" >> "${JSON}"
+		sed -i.bak \
+			-e "s/\(  \"${WDL}\.roiDir\": \"\).*/\1${ROI_SED}\",/" \
+			-e "s/\(  \"${WDL}\.fastqDirname\": \"\).*/\1${FASTQ_SED}\/\",/" \
+			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
+			"${JSON}"
+		rm "${JSON}.bak"
+		#debug "$(cat ${JSON})"
 		info "${RUN} - ${SAMPLE} ready for ${WDL}"
 		info "Launching:"
 		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${WDL}.wdl -i ${JSON}"
 		if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
 			mkdir "${TMP_OUTPUT_DIR2}Logs"
 		fi
-		touch "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
-		info "MobiDL ${WDL} log for ${SAMPLE} in ${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+		touch "${TMP_OUTPUT_DIR2}Logs/${WDL}.log"
+		info "MobiDL ${WDL} log in ${TMP_OUTPUT_DIR2}Logs/${WDL}.log"
 		# actual launch and copy in the end
 		source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
 		# conda env is loaded but cromwell acts as if it were not?
 		# info "$(which gatk)"
 		# info "gatkEnv loaded"
 		# exit 0;
-		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log"
+		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${WDL}.log"
 		if [ $? -eq 0 ];then
 			conda deactivate
 			workflowPostTreatment "${WDL}"
@@ -312,6 +350,7 @@ modifyJsonAndLaunch() {
 			error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 			# fi
 		fi
+		WDL=${oldWDL}  # Get back to old value (= not 'metaPanelCapt' anymore), required for remaining steps
 	fi
 }
 
@@ -322,21 +361,22 @@ workflowPostTreatment() {
 	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	# fi
 	# copy to final destination
-	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX -remove-source-files "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" "${TMP_OUTPUT_DIR2}${SAMPLE}"
-	info "Moving MobiDL sample ${SAMPLE} to ${OUTPUT_PATH}${RUN}/MobiDL/"
+	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR2}Logs/${1}.log" "${TMP_OUTPUT_DIR2}"
+	rm -r "${TMP_OUTPUT_DIR2}Logs/"  # Remove, otherwise 'Logs' dir copied to FINAL_DIR
+	info "Moving MobiDL results to ${OUTPUT_PATH}${RUN}/MobiDL/"
 	# ${RSYNC} -avq --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
-	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}${SAMPLE}" "${OUTPUT_PATH}${RUN}/MobiDL/"
+	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/"
 	if [ $? -eq 0 ];then
-		chmod -R 777 "${TMP_OUTPUT_DIR2}${SAMPLE}"
-		rm -r "${TMP_OUTPUT_DIR2}${SAMPLE}"
+		chmod -R 777 "${TMP_OUTPUT_DIR2}"
+		rm -r "${TMP_OUTPUT_DIR2}"
 	else
-		error "Error while syncing ${1} for ${SAMPLE} in run ${OUTPUT_PATH}${RUN}"
+		error "Error while syncing ${1} in run ${OUTPUT_PATH}${RUN}"
 	fi
 	# remove cromwell data
-	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${1}.log" | rev | cut -d ' ' -f 1 | rev)
+	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${1}.log" | rev | cut -d ' ' -f 1 | rev)
 	if [[ -n "${WORKFLOW_ID}" ]]; then
 		# test récupérer le path courant
-		rm -r "./cromwell-executions/${WDL}/${WORKFLOW_ID}"
+		rm -r "./cromwell-executions/${1}/${WORKFLOW_ID}"
 		info "removed cromwell data for ${WORKFLOW_ID}"
 	fi
 }
@@ -358,8 +398,6 @@ setvariables() {
 
 setjsonvariables() {
 	chmod 777 "${1}"
-	# uncomment if we want to explicitly change tmp_output dir - templates must be updated as well
-	# ACHAB_TMP_OUTPUT_SED=${TMP_OUTPUT_DIR////\\/}
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
@@ -367,7 +405,6 @@ setjsonvariables() {
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
-		# -e "s/\(  \"${ACHAB}\.outTmpDir\": \"\).*/\1${ACHAB_TMP_OUTPUT_SED}\",/" \
 }
 
 
@@ -387,7 +424,7 @@ modifyAchabJson() {
 prepareAchab() {
 	# function to prepare dirs for autoachab execution
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" ];then
-		mkdir "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
+		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
 	fi
 
 	# disease and genes of interest files
@@ -674,7 +711,7 @@ do
 							done
 							# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
 							# mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
-							declare -A ROI_TYPES
+							debug "1st loop on SAMPLES"
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
 									# Multiple library types in one single run
@@ -699,8 +736,6 @@ do
 									# fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
-									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
-									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# exit 0
 									# check custom output PATH
 									# info "MANIFEST: ${MANIFEST}"
@@ -715,6 +750,30 @@ do
 									# 		info "NEW_OUTPUT_PATH: ${NEW_OUTPUT_PATH} - MANIFEST: ${MANIFEST} - BED: ${BED} - FASTQ_WORKFLOWS_FILE: ${FASTQ_WORKFLOWS_FILE}"
 									# 	fi
 									# fi
+								fi
+								modifyJson
+							done
+							# Exit loop, gather jsonS and run metaPipe:
+							gatherJsonsAndLaunch
+							# Then loop again (to prepare Achab + get ROI_TYPES for MobiCNV):
+							# WARN: Some steps are done twice -> not very efficient
+							debug "2nd loop on SAMPLES"
+							declare -A ROI_TYPES
+							for SAMPLE in ${!SAMPLES[@]};do
+								if [[ ${MULTIPLE} != '' ]];then
+									# Multiple library types in one single run
+									# returns ",roi1.bed#panelCapture" => bed#wdl...
+									# NEXTSEQ
+									DESCRIPTION_FIELD=11
+									if [[ "${RUN_PATH}" =~ "MISEQ" ]];then
+										DESCRIPTION_FIELD=10
+									elif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
+										DESCRIPTION_FIELD=3
+									fi
+									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
+									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
+									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
+									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
 									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
@@ -724,7 +783,6 @@ do
 										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
 									fi
 								fi
-								modifyJsonAndLaunch
 								prepareAchab
 								TREATED=1
 								# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
@@ -859,8 +917,9 @@ do
 							info "RUN ${RUN} treated" 
 							touch "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
-							chmod -R 777 "${TMP_OUTPUT_DIR2}"
-							rm -r "${TMP_OUTPUT_DIR2}"
+							#Temp outDir already removed by 'workflowPostTreatment':
+							# chmod -R 777 "${TMP_OUTPUT_DIR2}"
+							# rm -r "${TMP_OUTPUT_DIR2}"
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then

@@ -30,6 +30,7 @@ task gatkVariantFiltrationSnp {
 		#	--filter-expression "POLYX > 7.0" --filter-name "HomopolymerRegion" \
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} VariantFiltration \
 		-R ~{RefFasta} \
 		-V ~{Vcf} \

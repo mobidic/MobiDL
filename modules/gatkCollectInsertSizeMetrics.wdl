@@ -26,6 +26,7 @@ task gatkCollectInsertSizeMetrics {
 	}
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
+		set -e  # To make task stop at 1st error
 		~{GatkExe} CollectInsertSizeMetrics \
 		-I ~{BamFile} \
 		-H "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/PicardQualityDir/~{SampleID}_insertsize_metrics.pdf" \

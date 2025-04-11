@@ -12,3 +12,12 @@
   stdout:
     contains:
       - "workflow finished with status 'Succeeded'"
+
+- name: PanelCapture reproduce v1.2.1 issue
+  # Overall runtime : ~ 20 min
+  tags:
+    - wf_level
+    - issue
+    - 1-2-1
+  command: nohup bash -c "sed -i 's/~{SamtoolsExe} sort/${SamtoolsExe} sort/' modules/samtoolsSort.wdl && source tests/func_special.sh && run_wdl_MobiDL panelCapture.wdl tests/panelCapture/reproduce-1.2.1-issue_inputs.json tests/Cluster_noDB-test.conf"
+  exit_code: 1
