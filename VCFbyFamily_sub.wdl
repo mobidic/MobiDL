@@ -5,7 +5,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.0.6"
+        version: "0.0.7"
         date: "2025-03-11"
     }
 
@@ -26,7 +26,6 @@ workflow PedToVCF {
         String bcftoolsEnv
     }
 
-
     call pedToFam {
         input:
             PedFile = pedFile,
@@ -36,12 +35,15 @@ workflow PedToVCF {
     }
 
     scatter (aStatus in pedToFam.status) {
+        String aCasIndex=aStatus[0]
+        String byFamDir = if defined(outputPath) then outputPath + "/byFamily/" + aCasIndex + "/" else analysisDir + "/byFamily/" + aCasIndex + "/"
+
         call mergeVCF {
             input:
-                CasIndex = aStatus[0],
+                CasIndex = aCasIndex,
                 Family = aStatus[1],
                 PrefixPath = analysisDir,
-                OutputPath = outputPath,
+                VcfOutPath = byFamDir,
                 WDL = wdl,
                 SuffixVcf = suffixVcf,
                 CondaBin = condaBin,
@@ -49,7 +51,7 @@ workflow PedToVCF {
         }
     }
 
-    output{
+    output {
         Array[File] mergedVCFs = mergeVCF.vcfOut
     }
 }
@@ -68,7 +70,7 @@ task pedToFam {
     }
 
     command <<<
-        set -euo pipefail
+        set -e
 
         source ~{CondaBin}activate ~{PedsEnv}
         "~{PythonExe}" "~{PathExe}" "~{PedFile}"
@@ -90,10 +92,10 @@ task mergeVCF {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
         String CasIndex
-        String PrefixPath  # Eg: /path/to/runID/MobiDL
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String VcfOutPath  # Eg: /path/to/runID/MobiDL/byFam/aSample/
         String WDL = "panelCapture"
         String SuffixVcf = ".HC.vcf"
-        String? OutputPath
 
         String CondaBin
         String BcftoolsEnv
@@ -102,12 +104,10 @@ task mergeVCF {
         Int Memory = 768
     }
 
-    String VcfOutPath = if defined(OutputPath) then OutputPath + "/byFamily/" + CasIndex + "/" else PrefixPath + "/byFamily/" + CasIndex + "/"
     String VcfOut = VcfOutPath + CasIndex + ".vcf"
 
     command <<<
-        set -euo pipefail
-        set -x
+        set -e
 
         if [[ ! -d ~{VcfOutPath} ]]; then
             mkdir --parents ~{VcfOutPath}
@@ -119,7 +119,7 @@ task mergeVCF {
             cp --verbose "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}" "~{VcfOut}"
 
         else
-            set +x; source ~{CondaBin}activate ~{BcftoolsEnv}; set -x
+            source ~{CondaBin}activate ~{BcftoolsEnv}
 
             for memb in $(echo ~{Family} | tr "," " ") ; do
                 ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}"
@@ -130,7 +130,7 @@ task mergeVCF {
                                             --no-index \
                                             -Ov -o "~{VcfOut}"
 
-            set +x; conda deactivate
+            conda deactivate
         fi
     >>>
 
