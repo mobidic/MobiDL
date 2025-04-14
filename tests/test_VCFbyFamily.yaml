@@ -7,6 +7,7 @@
     - hg19
     - exome
     - downsampled
+    - NOsolo
   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/coriells_inputs.json tests/Cluster_noDB-test.conf"
   stdout:
     contains:
