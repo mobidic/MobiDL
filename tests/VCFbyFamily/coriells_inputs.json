@@ -1,7 +1,7 @@
 {
 "PedToVCF.pedFile": "tests/VCFbyFamily/coriells.ped",
 "PedToVCF.analysisDir": "/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/out-Exome/casIndex/",
-"PedToVCF.outputPath": "/mnt/chu-ngs2/Labos/UMAI/LancementAnalyseCluster/VCFbyFamily_coriells_chr22/",
+"PedToVCF.outputPath": "/scratch/VCFbyFamily_coriells_chr22/",
 "PedToVCF.wdl": "VCFs",
 "PedToVCF.suffixVcf": ".HC.vcf",
 "PedToVCF.condaBin": "/mnt/Bioinfo/Softs/miniconda/bin/",
