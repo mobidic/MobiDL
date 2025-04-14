@@ -1,0 +1,25 @@
+## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
+
+- name: CaptainAchab UMAI
+  # Total Runtime =~ 15 min
+  tags:
+    - wf_level
+    - hg19
+    - merged  # Input VCF = 'merged' one (HC + DV)
+    - UMAI
+    - MAI15genes
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL captainAchab.wdl tests/captainAchab/captainAchab-UMAI_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: CaptainAchab/HG002-MAI15G.hg19_multianno_MPA.vcf
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: CaptainAchab/achab_excel/HG002-MAI15G_newHope_achab.html
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: CaptainAchab/achab_excel/HG002-MAI15G_achab.html
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: CaptainAchab/achab_excel/HG002-MAI15G_achab_catch_newHope.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    - path: CaptainAchab/achab_excel/HG002-MAI15G_achab_catch.xlsx
+      # md5sum: Cannot md5 Excel file directly
