@@ -61,6 +61,15 @@ workflow captainAchab {
 		File refVariantsReduction
 		String humanDb
 		String genome
+		String gnomadExome
+		String gnomadGenome
+		String dbnsfp
+		String dbscsnv
+		String intervar
+		String popFreqMax
+		String spliceAI
+		String? clinvar
+		String? intronHgvs
 		#String operationSuffix
 		#String comma
 		## For phenolyzer
@@ -199,7 +208,16 @@ workflow captainAchab {
 			OutDir = outTmpDir,
 			Version = true,
 			PerlPath = perlPath,
-			Genome = genome
+			Genome = genome,
+			GnomadExome = gnomadExome,
+			GnomadGenome = gnomadGenome,
+			Intervar = intervar,
+			Dbnsfp = dbnsfp,
+			Dbscsnv = dbscsnv,
+			PopFreqMax = popFreqMax,
+			SpliceAI = spliceAI,
+			Clinvar = clinvar,
+			IntronHgvs = intronHgvs
 	}
 	call runMpa.mpa {
 		input:
