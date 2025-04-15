@@ -1,6 +1,9 @@
 version 1.0
 
 
+import "captainAchab.wdl" as runCaptainAchab
+
+
 workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
@@ -24,6 +27,76 @@ workflow PedToVCF {
         File? scriptExe
         # mergeVCF task:
         String bcftoolsEnv
+
+        # CaptainAchab inputs
+        ## envs
+        String mpaEnv = "/bioinfo/conda_envs/mpaEnv"
+        String achabEnv = "/bioinfo/conda_envs/achabEnv"
+        String rsyncEnv = "/bioinfo/conda_envs/rsyncEnv"
+        ## queues
+        String defQueue = "prod"
+        ##Resources
+        Int cpu
+        Int cpuHigh
+        Int memory
+        ## Language Path
+        String perlPath = "perl"
+        ## Exe
+        File achabExe
+        String mpaExe = "mpa"
+        String phenolyzerExe
+        File tableAnnovarExe
+        String bcftoolsExe = "bcftools"
+        String gatkExe = "gatk"
+        String rsyncExe = "rsync"
+        ## Global
+        String workflowType
+        String outTmpDir = "/scratch/tmp_output/"
+        Boolean keepFiles
+        ## For annovarForMpa
+        File customXref
+        File refAnnotateVariation
+        File refCodingChange
+        File refConvert2Annovar
+        File refRetrieveSeqFromFasta
+        File refVariantsReduction
+        String humanDb
+        String genome
+        String gnomadExome
+        String gnomadGenome
+        String dbnsfp
+        String dbscsnv
+        String intervar
+        String popFreqMax
+        String spliceAI
+        String? clinvar
+        String? intronHgvs
+        #String operationSuffix
+        #String comma
+        ## For phenolyzer
+        Boolean withPhenolyzer
+        String diseaseFile
+        ## For Achab
+        # File mdApiKeyFile
+        String genesOfInterest
+        String customVCF
+        Float allelicFrequency
+        Float mozaicRate
+        Float mozaicDP
+        String checkTrio
+        String customInfo
+        String cnvGeneList
+        String filterList
+        String mdApiKey = ''
+        String favouriteGeneRef
+        String filterCustomVCF
+        String filterCustomVCFRegex
+        String idSnp = ''
+        String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
+        String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
+        ## For BcftoolsLeftAlign
+        File fastaGenome
+        String vcSuffix = ""
     }
 
     call pedToFam {
@@ -48,6 +121,76 @@ workflow PedToVCF {
                 SuffixVcf = suffixVcf,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv
+        }
+
+        # Do Achab
+        call runCaptainAchab.captainAchab {
+            input:
+                inputVcf = mergeVCF.vcfOut,
+                caseSample = aCasIndex,
+                sampleID = aCasIndex,
+                fatherSample = aStatus[2],
+                motherSample = aStatus[3],
+                affected = aStatus[4],
+                outDir = byFamDir + "/CaptainAchab/",
+                condaBin = condaBin,
+                bcftoolsEnv = bcftoolsEnv,
+                mpaEnv = mpaEnv,
+                achabEnv = achabEnv,
+                rsyncEnv = rsyncEnv,
+                defQueue = defQueue,
+                cpu = cpu,
+                cpuHigh = cpuHigh,
+                memory = memory,
+                perlPath = perlPath,
+                achabExe = achabExe,
+                mpaExe = mpaExe,
+                phenolyzerExe = phenolyzerExe,
+                tableAnnovarExe = tableAnnovarExe,
+                bcftoolsExe = bcftoolsExe,
+                gatkExe = gatkExe,
+                rsyncExe = rsyncExe,
+                workflowType = workflowType,
+                outTmpDir = outTmpDir,
+                keepFiles = keepFiles,
+                customXref = customXref,
+                refAnnotateVariation = refAnnotateVariation,
+                refCodingChange = refCodingChange,
+                refConvert2Annovar = refConvert2Annovar,
+                refRetrieveSeqFromFasta = refRetrieveSeqFromFasta,
+                refVariantsReduction = refVariantsReduction,
+                humanDb = humanDb,
+                genome = genome,
+                gnomadExome = gnomadExome,
+                gnomadGenome = gnomadGenome,
+                dbnsfp = dbnsfp,
+                dbscsnv = dbscsnv,
+                intervar = intervar,
+                popFreqMax = popFreqMax,
+                spliceAI = spliceAI,
+                clinvar = clinvar,
+                intronHgvs = intronHgvs,
+                withPhenolyzer = withPhenolyzer,
+                diseaseFile = diseaseFile,
+                genesOfInterest = genesOfInterest,
+                customVCF = customVCF,
+                allelicFrequency = allelicFrequency,
+                mozaicRate = mozaicRate,
+                mozaicDP = mozaicDP,
+                checkTrio = checkTrio,
+                customInfo = customInfo,
+                cnvGeneList = cnvGeneList,
+                filterList = filterList,
+                mdApiKey = mdApiKey,
+                favouriteGeneRef = favouriteGeneRef,
+                filterCustomVCF = filterCustomVCF,
+                filterCustomVCFRegex = filterCustomVCFRegex,
+                idSnp = idSnp,
+                gnomadExomeFields = gnomadExomeFields,
+                gnomadGenomeFields = gnomadGenomeFields,
+                fastaGenome = fastaGenome,
+                vcSuffix = vcSuffix
+
         }
     }
 

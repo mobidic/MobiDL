@@ -15,6 +15,17 @@
   files:
     - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
       should_exist: true
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_newHope_achab.html
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab.html
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab_catch_newHope.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab_catch.xlsx
+      # md5sum: Cannot md5 Excel file directly
+
 
 - name: VCFbyFamily coriells solo affected
   # PED contains solo -> should work
