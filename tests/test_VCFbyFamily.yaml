@@ -25,6 +25,8 @@
       # md5sum: Cannot md5 Excel file directly
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab_catch.xlsx
       # md5sum: Cannot md5 Excel file directly
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_poorCoverage.xlsx
+      # md5sum: Cannot md5 Excel file directly
 
 - name: VCFbyFamily coriells solo affected
   # PED contains solo -> should work

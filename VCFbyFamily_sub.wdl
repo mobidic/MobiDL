@@ -94,6 +94,14 @@ workflow PedToVCF {
         String idSnp = ''
         String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
         String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
+        Boolean addCustomVCFRegex = false
+        String? pooledSamples
+        Boolean addCaseDepth = false
+        Boolean addCaseAB = false
+        Boolean withPoorCov = false
+        File? genemap2File
+        Boolean skipCaseWT = false
+        Boolean hideACMG = false
         ## For BcftoolsLeftAlign
         File fastaGenome
         String vcSuffix = ""
@@ -124,6 +132,14 @@ workflow PedToVCF {
         }
 
         # Do Achab
+        if (withPoorCov) {
+            call findPoorCov {
+                input:
+                    CasIndex = aCasIndex,
+                    PrefixPath = analysisDir
+            }
+        }
+
         call runCaptainAchab.captainAchab {
             input:
                 inputVcf = mergeVCF.vcfOut,
@@ -188,9 +204,16 @@ workflow PedToVCF {
                 idSnp = idSnp,
                 gnomadExomeFields = gnomadExomeFields,
                 gnomadGenomeFields = gnomadGenomeFields,
+                addCustomVCFRegex = addCustomVCFRegex,
+                pooledSamples = pooledSamples,
+                addCaseDepth = addCaseDepth,
+                addCaseAB = addCaseAB,
+                poorCoverageFile = findPoorCov.poorCovOut,
+                genemap2File = genemap2File,
+                skipCaseWT = skipCaseWT,
+                hideACMG = hideACMG,
                 fastaGenome = fastaGenome,
                 vcSuffix = vcSuffix
-
         }
     }
 
@@ -279,6 +302,37 @@ task mergeVCF {
 
     output {
         File vcfOut = VcfOut
+    }
+
+    runtime {
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+
+task findPoorCov {
+    input {
+        String CasIndex
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String WDL = "panelCapture"
+        String DirPoorCov = "coverage"
+        String SuffixPoorCov = "_poor_coverage.tsv"
+
+        Int Cpu = 1
+        Int Memory = 768
+    }
+
+    String PoorCovPath = "~{PrefixPath}/~{CasIndex}/~{WDL}/~{DirPoorCov}/~{CasIndex}~{SuffixPoorCov}"
+
+    command <<<
+        set -e
+
+        ls -d "~{PoorCovPath}"
+    >>>
+
+    output {
+        File poorCovOut = PoorCovPath
     }
 
     runtime {
