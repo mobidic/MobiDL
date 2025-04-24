@@ -112,7 +112,7 @@ task achab {
 		~{favGenRef} \
 		~{filtCustVcf} \
 		~{filtCustVcfReg} \
-		"~{idSNP}" \
+		~{idSNP} \
 		~{"--gnomadExome " + GnomadExomeFields} \
 		~{"--gnomadGenome " + GnomadGenomeFields} \
 		~{addCustVCFRegex} \
