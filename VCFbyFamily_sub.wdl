@@ -95,7 +95,7 @@ workflow PedToVCF {
         String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
         String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
         Boolean addCustomVCFRegex = false
-        String? pooledSamples
+        Boolean pooledParents = false
         Boolean addCaseDepth = false
         Boolean addCaseAB = false
         Boolean withPoorCov = false
@@ -116,13 +116,14 @@ workflow PedToVCF {
     }
 
     scatter (aStatus in pedToFam.status) {
-        String aCasIndex=aStatus[0]
+        String aCasIndex = aStatus[0]
         String byFamDir = if defined(outputPath) then outputPath + "/byFamily/" + aCasIndex + "/" else analysisDir + "/byFamily/" + aCasIndex + "/"
+        String aFamily = aStatus[1]
 
         call mergeVCF {
             input:
                 CasIndex = aCasIndex,
-                Family = aStatus[1],
+                Family = aFamily,
                 PrefixPath = analysisDir,
                 VcfOutPath = byFamDir,
                 WDL = wdl,
@@ -139,6 +140,10 @@ workflow PedToVCF {
                     PrefixPath = analysisDir
             }
         }
+
+        # MEMO: PooledSamples are either whole family or only casIndex
+        #       Apply same logic as for Exome.wdl
+        String pooledSamples = if (pooledParents) then aFamily else aCasIndex
 
         call runCaptainAchab.captainAchab {
             input:

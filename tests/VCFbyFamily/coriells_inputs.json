@@ -54,7 +54,7 @@
   "PedToVCF.spliceAI": "spliceai_filtered",
   "PedToVCF.intronHgvs": "100",
   "PedToVCF.mdApiKey": "/bioinfo/softs/MobiDL_conf/MDAPIKEYS/umai.txt",
-  "PedToVCF.pooledSamples": "HG002",
+  "PedToVCF.pooledParents": true,
   "PedToVCF.withPoorCov": true,
   "PedToVCF.findPoorCov.WDL": "Metrix",
   "PedToVCF.findPoorCov.DirPoorCov": "coverage",
