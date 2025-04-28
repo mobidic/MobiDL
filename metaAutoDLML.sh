@@ -291,6 +291,7 @@ gatherJsonsAndLaunch() {
 		#       Instead send string to file
 		# WARNING: Template is not a JSON anymore ???
 		#          -> FIXME ???
+		# WARNING: Clean 'AUTODL_DIR' before re-running with different sample list
 		for aJson in "${AUTODL_DIR}${RUN}"/"${oldWDL}"*"_inputs.json";do
 			(
 				grep "\.intervalBedFile" "$aJson" ;
@@ -347,7 +348,7 @@ gatherJsonsAndLaunch() {
 			# 		error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
 			# 	fi
 			# else
-			error "Error while executing ${WDL} for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+			error "Error while executing ${WDL} in run ${RUN_PATH}${RUN}"
 			# fi
 		fi
 		WDL=${oldWDL}  # Get back to old value (= not 'metaPanelCapt' anymore), required for remaining steps
@@ -691,7 +692,12 @@ do
 							/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
-							FASTQS=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort)
+							# MEMO: If FASTQ is a symlink, 'du -L' to follow it and get original FASTQ size (and not symlink size)
+							FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort | xargs du -bL)
+							CUTOFF_SIZE_FQ=204800  # FASTQ.GZ bellow this size (in bytes) are excluded (=~ 200 Ko)
+							FASTQS=$(echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1>cutoff_fq_size {print $2}')
+							# Create a file with excluded FASTQ:
+							echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/excluded_bellow_${CUTOFF_SIZE_FQ}bytes.txt"
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
