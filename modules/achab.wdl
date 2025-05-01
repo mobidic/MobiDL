@@ -55,6 +55,7 @@ task achab {
 		String Queue
 		Int Cpu
 		Int Memory
+		File? taskOuput  # To force this task to run AFTER a given other task
 	}
 
 	String Case = if defined(CaseSample) then CaseSample else SampleID

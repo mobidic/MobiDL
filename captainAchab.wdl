@@ -338,7 +338,16 @@ workflow captainAchab {
 			FilterCustomVCFRegex = filterCustomVCFRegex,
 			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
-			GnomadGenomeFields = gnomadGenomeFields
+			GnomadGenomeFields = gnomadGenomeFields,
+			AddCustomVCFRegex = addCustomVCFRegex,
+			PooledSamples = pooledSamples,
+			AddCaseDepth = addCaseDepth,
+			AddCaseAB = addCaseAB,
+			PoorCoverageFile = poorCoverageFile,
+			Genemap2File = genemap2File,
+			SkipCaseWT = skipCaseWT,
+			HideACMG = hideACMG,
+			taskOuput = achabNewHope.outAchabHtml
 	}
 	call runAchabFinalCopy.rsyncAchabFiles as rsyncAchabFiles {
 		input:
