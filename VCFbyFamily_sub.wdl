@@ -23,6 +23,7 @@ workflow PedToVCF {
         String condaBin
 
         # PedToFam task:
+        String csvtkExe = "/bioinfo/softs/bin/csvtk"
         String pedsEnv  # Any python env with 'peds' package installed
         File? scriptExe
         # mergeVCF task:
@@ -107,9 +108,16 @@ workflow PedToVCF {
         String vcSuffix = ""
     }
 
-    call pedToFam {
+
+    call preprocessPed {
         input:
             PedFile = pedFile,
+            CsvtkExe = csvtkExe
+    }
+
+    call pedToFam {
+        input:
+            PedFile = preprocessPed.outputFile,
             CondaBin = condaBin,
             PedsEnv = pedsEnv,
             PathExe = scriptExe
@@ -227,6 +235,41 @@ workflow PedToVCF {
     }
 }
 
+
+task preprocessPed {
+    input {
+        File PedFile
+        String CsvtkExe = "csvtk"
+
+        Int Cpu = 1
+        Int Memory = 768
+    }
+
+    command <<<
+        set -e
+
+        # Remove rows starting with '0':
+        # And ones starting with '#REF!' (= REF cell deleted in Excel)
+        "~{CsvtkExe}" grep \
+                            --comment-char '$' --tabs \
+                            --fields 1 \
+                            --pattern "0" --invert \
+                            "~{PedFile}" |
+            "~{CsvtkExe}" grep \
+                                --comment-char '$' --tabs \
+                                --fields 1 \
+                                --pattern "#REF!" --invert
+    >>>
+
+    output {
+        File outputFile = stdout()
+    }
+
+    runtime {
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
 
 task pedToFam {
     input {
