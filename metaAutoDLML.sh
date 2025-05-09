@@ -694,10 +694,10 @@ do
 							declare -A SAMPLES
 							# MEMO: If FASTQ is a symlink, 'du -L' to follow it and get original FASTQ size (and not symlink size)
 							FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort | xargs du -bL)
-							CUTOFF_SIZE_FQ=204800  # FASTQ.GZ bellow this size (in bytes) are excluded (=~ 200 Ko)
+							CUTOFF_SIZE_FQ=204800  # FASTQ.GZ below this size (in bytes) are excluded (=~ 200 Ko)
 							FASTQS=$(echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1>cutoff_fq_size {print $2}')
 							# Create a file with excluded FASTQ:
-							echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/excluded_bellow_${CUTOFF_SIZE_FQ}bytes.txt"
+							echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
