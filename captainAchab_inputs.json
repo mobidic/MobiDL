@@ -48,6 +48,8 @@
   "captainAchab.allelicFrequency": "Float",
   "captainAchab.refConvert2Annovar": "File",
   "captainAchab.tableAnnovarExe": "File",
-  "captainAchab.customInfo": "String"
+  "captainAchab.customInfo": "String",
+  "captainAchab.CaseAB": false,
+  "captainAchab.CaseDepth": false
 }
 
