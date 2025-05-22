@@ -78,6 +78,8 @@ task achab {
 		--IDSNP "~{IdSnp}" \
 		--gnomadExome  "~{GnomadExomeFields}" \
 		--gnomadGenome "~{GnomadGenomeFields}" \
+    		${ if caseDepth then "--addCaseDepth" else "" } \
+    		${ if caseAB    then "--addCaseAB"    else "" } \
 		--addCustomVCFRegex
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
