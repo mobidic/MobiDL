@@ -42,6 +42,8 @@ task achab {
 		String FilterCustomVCFRegex
 		String GnomadExomeFields
 		String GnomadGenomeFields
+		Boolean CaseAB
+		Boolean CaseDepth
 		# runtime attributes
 		String Queue
 		Int Cpu
