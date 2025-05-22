@@ -49,7 +49,7 @@
   "captainAchab.refConvert2Annovar": "File",
   "captainAchab.tableAnnovarExe": "File",
   "captainAchab.customInfo": "String",
-  "captainAchab.CaseAB": false,
-  "captainAchab.CaseDepth": false
+  "captainAchab.caseAB": false,
+  "captainAchab.caseDepth": false
 }
 
