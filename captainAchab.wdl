@@ -88,6 +88,8 @@ workflow captainAchab {
 		String idSnp = ''
 		String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
 		String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
+		Boolean caseDepth = false
+		Boolean caseAB = false
 		## For BcftoolsSplit 
 		File inputVcf
 		## For BcftoolsLeftAlign 
@@ -269,7 +271,9 @@ workflow captainAchab {
 			FilterCustomVCFRegex = filterCustomVCFRegex,
 			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
-			GnomadGenomeFields = gnomadGenomeFields
+			GnomadGenomeFields = gnomadGenomeFields,
+			CaseDepth = caseDepth,
+			CaseAB = caseAB
 	}
 	call runAchab.achab as achab {
 		input:
@@ -304,7 +308,9 @@ workflow captainAchab {
 			FilterCustomVCFRegex = filterCustomVCFRegex,
 			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
-			GnomadGenomeFields = gnomadGenomeFields
+			GnomadGenomeFields = gnomadGenomeFields,
+			CaseDepth = false,
+			CaseAB = false
 	}
 	call runAchabFinalCopy.rsyncAchabFiles as rsyncAchabFiles {
 		input:

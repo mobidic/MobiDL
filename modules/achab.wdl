@@ -42,6 +42,8 @@ task achab {
 		String FilterCustomVCFRegex
 		String GnomadExomeFields
 		String GnomadGenomeFields
+		Boolean CaseAB
+		Boolean CaseDepth
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -76,6 +78,8 @@ task achab {
 		--IDSNP "~{IdSnp}" \
 		--gnomadExome  "~{GnomadExomeFields}" \
 		--gnomadGenome "~{GnomadGenomeFields}" \
+    		~{ if CaseDepth then "--addCaseDepth" else "" } \
+    		~{ if CaseAB    then "--addCaseAB"    else "" } \
 		--addCustomVCFRegex
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
