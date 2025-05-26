@@ -43,6 +43,7 @@ import "modules/gatkVariantFiltrationIndel.wdl" as runGatkVariantFiltrationIndel
 import "modules/gatkMergeVcfs.wdl" as runGatkMergeVcfs
 import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
+import "modules/identito.wdl" as runIdentito
 import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
 
@@ -50,8 +51,8 @@ workflow panelCapture {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.2.3"
-		date: "2025-02-25"
+		version: "1.2.4"
+		date: "2025-05-25"
 	}
 	input {
 		# variables declarations
@@ -111,6 +112,7 @@ workflow panelCapture {
 		String gatkExe = "gatk"
 		String ldLibraryPath
 		String vcfPolyXJar
+		String csvtkExe = "/bioinfo/softs/bin/csvtk"
 		## Anacore-Utils custom mergeVCF script
 		File mergeVCFMobiDL
 		## Standard execs
@@ -168,6 +170,8 @@ workflow panelCapture {
 		## VcSuffix
 		String dvSuffix = ".dv"
 		String hcSuffix = ".hc"
+		## Identito (default = SNPXplex. rsIDs order here will be maintained)
+		String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
 	}
 
 	# Tasks calls
@@ -974,6 +978,20 @@ workflow panelCapture {
 			TabixExe = tabixExe,
 			VcSuffix = '',
 			VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
+	}
+	call runIdentito.identito as identito {
+		input:
+			Queue = defQueue,
+			CondaBin = condaBin,
+			BcftoolsEnv = bcftoolsEnv,
+			Cpu = cpuLow,
+			Memory = memoryLow,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			CsvtkExe = csvtkExe,
+			VcfFile = compressIndexVcfHc.bgZippedVcf,
+			IDlist = idList
 	}
 	if (!debug) {
 		String dataPath = "~{outDir}~{sampleID}/~{workflowType}/"
