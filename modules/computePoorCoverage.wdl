@@ -37,7 +37,7 @@ task computeGenomecov {
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{BedToolsExe} genomecov -ibam ~{BamFile} -bga \
 		| ~{AwkExe} -v low_coverage="~{BedtoolsLowCoverage}" '$4<low_coverage' \
-		| ~{BedToolsExe} intersect -a ~{IntervalBedFile} -b - \
+		| ~{BedToolsExe} intersect -wb -a ~{IntervalBedFile} -b - \
 		> "~{OutputFile}"
 		conda deactivate
 	>>>
@@ -47,7 +47,7 @@ task computeGenomecov {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File poorCoverageFile = OutputFile
+		File genomecovFile = OutputFile
 	}
 }
 
@@ -75,7 +75,6 @@ task computePoorCoverage {
 		# task specific variables
 		File GenomecovFile
 		Int BedToolsSmallInterval
-		File BamFile
 		# runtime attributes
 		String Queue
 		Int Cpu
