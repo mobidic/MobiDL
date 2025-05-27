@@ -40,10 +40,10 @@ task identito {
 			"~{VcfFile}" > "$tempFile"
 		# MEMO: If NO identito found -> add at least 1 dummy row, for join at (2) to work even though
 		if [[ "$(cat "$tempFile" | wc -l)" -eq "0" ]] ; then
-			(echo "rsID"; bcftools query --list-samples "~{VcfFile}") > "$tempFile"
+			(echo "rsID"; bcftools query --list-samples "~{VcfFile}") |
+				"~{CsvtkExe}" transpose --tabs -o "$tempFile"
 		fi
 		# 2) Join (on rsID) with list of expected identito SNP, to enforce 'Not found':
-		# MEMO: Debug file with more columns than expected
 		debugFinal=finalDebug.tsv
 		"~{CsvtkExe}" join \
 			--tabs --no-header-row \
