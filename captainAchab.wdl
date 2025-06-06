@@ -99,12 +99,12 @@ workflow captainAchab {
 		String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
 		Boolean addCustomVCFRegex = false
 		String? pooledSamples
-		Boolean addCaseDepth = false
-		Boolean addCaseAB = false
 		File? poorCoverageFile
 		File? genemap2File
 		Boolean skipCaseWT = false
 		Boolean hideACMG = false
+		Boolean caseDepth = false
+		Boolean caseAB = false
 		## For BcftoolsSplit 
 		File inputVcf
 		## For BcftoolsLeftAlign 
@@ -298,12 +298,12 @@ workflow captainAchab {
 			GnomadGenomeFields = gnomadGenomeFields,
 			AddCustomVCFRegex = addCustomVCFRegex,
 			PooledSamples = pooledSamples,
-			AddCaseDepth = addCaseDepth,
-			AddCaseAB = addCaseAB,
 			PoorCoverageFile = poorCoverageFile,
 			Genemap2File = genemap2File,
 			SkipCaseWT = skipCaseWT,
-			HideACMG = hideACMG
+			HideACMG = hideACMG,
+			CaseDepth = caseDepth,
+			CaseAB = caseAB
 	}
 	call runAchab.achab as achab {
 		input:
@@ -341,12 +341,12 @@ workflow captainAchab {
 			GnomadGenomeFields = gnomadGenomeFields,
 			AddCustomVCFRegex = addCustomVCFRegex,
 			PooledSamples = pooledSamples,
-			AddCaseDepth = addCaseDepth,
-			AddCaseAB = addCaseAB,
 			PoorCoverageFile = poorCoverageFile,
 			Genemap2File = genemap2File,
 			SkipCaseWT = skipCaseWT,
 			HideACMG = hideACMG,
+			CaseDepth = false,
+			CaseAB = false,
 			taskOuput = achabNewHope.outAchabHtml
 	}
 	call runAchabFinalCopy.rsyncAchabFiles as rsyncAchabFiles {

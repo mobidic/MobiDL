@@ -1,14 +1,15 @@
 ## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
 ## pytest --tag panelNS157 --tag SU9000 --basetemp=/scratch/tmp_output --keep-workflow-wd --verbose --git-aware /mnt/chu-ngs/WDL/MobiDL/tests/test_panelCapture_hg38.yaml
+## pytest --tag panelNS157 --tag SU9000 --basetemp=/scratch/tmp_output --keep-workflow-wd --verbose --git-aware /tests/test_panelCapture_hg38.yaml
 
-- name: PanelCapture panelNS157 SU9000
+- name: PanelCapture panelNS157Twist SU9550
   # Overall runtime : ~ 20 min
   tags:
     - wf_level
-    - panelNS157
+    - panelNS157Twist
     - hg38
-    - SU9000
-  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL panelCapture.wdl /mnt/chu-ngs/WDL/MobiDL/tests/panelCapture/panelCapture_SU9000_hg38_inputs.json /mnt/chu-ngs/WDL/MobiDL/tests/Cluster_noDB-test.conf"
+    - SU9550
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL panelCapture.wdl /mnt/chu-ngs/WDL/test/panelCapture_SU9550_inputs.json /mnt/chu-ngs/WDL/MobiDL/tests/Cluster_noDB-test.conf"
   stdout:
     contains:
       - "workflow finished with status 'Succeeded'"

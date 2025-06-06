@@ -45,12 +45,12 @@ task achab {
 		String? GnomadGenomeFields
 		Boolean AddCustomVCFRegex = false
 		String? PooledSamples
-		Boolean AddCaseDepth = false
-		Boolean AddCaseAB = false
 		File? PoorCoverageFile
 		File? Genemap2File
 		Boolean SkipCaseWT = false
 		Boolean HideACMG = false
+		Boolean CaseAB
+		Boolean CaseDepth
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -72,8 +72,8 @@ task achab {
 	String filtCustVcfReg = if defined(FilterCustomVCFRegex) then "--filterCustomVCFRegex ~{FilterCustomVCFRegex} " else ""
 	String addCustVCFRegex = if AddCustomVCFRegex then "--addCustomVCFRegex " else ""
 	String poolSample = if defined(PooledSamples) then "--pooledSamples ~{PooledSamples}" else ""
-	String addCasDep = if AddCaseDepth then "--addCaseDepth " else ""
-	String addCasab = if AddCaseAB then "--addCaseAB " else ""
+	String addCasDep = if CaseDepth then "--addCaseDepth " else ""
+	String addCasab = if CaseAB then "--addCaseAB " else ""
 	String poorCov = if (defined(PoorCoverageFile) && defined(Genemap2File)) then "--poorCoverageFile ~{PoorCoverageFile} --genemap2File ~{Genemap2File} " else ""
 	String SkipCase = if SkipCaseWT then "--skipCaseWT " else ""
 	String Pheno = if defined(OutPhenolyzer) then "--phenolyzerFile ~{OutPhenolyzer} " else ""
@@ -123,7 +123,6 @@ task achab {
 		~{poorCov} \
 		~{SkipCase} \
 		~{HideAcmg}
-
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>	"~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
