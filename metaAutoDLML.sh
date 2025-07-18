@@ -411,7 +411,7 @@ setjsonvariables() {
 
 modifyAchabJson() {
 	ACHAB_DIR=CaptainAchab
-	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening_hg38" ]; then
+	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
 	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
@@ -474,11 +474,15 @@ prepareAchab() {
 	debug "Manifest: ${MANIFEST}"
 	debug "JSON Suffix: ${JSON_SUFFIX}"
 	# treat VCF for CF screening => restrain to given regions
-	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening_hg38" ]; then
+	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
 		# https://www.biostars.org/p/69124/
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
-		/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		else
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+		fi
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
 	fi
@@ -498,9 +502,13 @@ prepareAchab() {
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
-		if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && [ "${JSON_SUFFIX}" == "CFScreening_hg38" ]; then
+		if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
 			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
-			cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel_hg38.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
+				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel_hg38.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			else
+				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			fi
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
 			ACHAB_DIR=CaptainAchabCFPanel
 			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
@@ -814,7 +822,7 @@ do
 								elif [[ "${SAMPLE}" =~ ^[Hh][Oo][Rr]-[0-9]+$ ]];then
 									DISEASE="DSD"
 									TEAM="DSD"
-									EXPERIMENT="nimblegen_custom"
+									EXPERIMENT="twist_custom"
 								elif [[ "${SAMPLE}" =~ ^[Cc][SsAa][GgDd][0-9]+$ ]];then
 									DISEASE="CF"
 									TEAM="MUCO"
@@ -826,11 +834,11 @@ do
 								elif [[ "${SAMPLE}" =~ ^[Ss][Uu][0-9]+$ ]];then
 									DISEASE="DFNB"
 									TEAM="SENSORINEURAL"
-									EXPERIMENT="nimblegen_custom"
+									EXPERIMENT="twist_custom"
 								elif [[ "${SAMPLE}" =~ ^[Rr][0-9]+$ ]];then
 									DISEASE="RP"
 									TEAM="SENSORINEURAL"
-									EXPERIMENT="nimblegen_custom"
+									EXPERIMENT="twist_custom"
 								fi
 								touch "${LED_FILE}"
 								echo "#patient_id	less than 15 chars" >> "${LED_FILE}"
