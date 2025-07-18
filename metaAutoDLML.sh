@@ -481,7 +481,7 @@ prepareAchab() {
 		if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
 			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		else
-			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		fi
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
