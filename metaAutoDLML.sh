@@ -22,11 +22,11 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20250409
+VERSION=20250718
 # USAGE="
-# Program: AutoDLML
+# Program: metaAutoDLML
 # Version: ${VERSION}
-# Contact: Baux David <david.baux@chu-montpellier.fr>
+# Contact: Baux David <david.baux@chu-montpellier.fr>, Felix VanDerMeeren <felix.vandermeeren@chu-montpellier.fr>
 
 # Usage: This script is meant to be croned
 # 	Should be executed once per 10 minutes
@@ -34,7 +34,7 @@ VERSION=20250409
 # "
 usage() {
 	echo 'This script automates MobiDL workflows.'
-	echo 'Program: AutoDLML'
+	echo 'Program: metaAutoDLML'
 	echo 'Version: ${VERSION}'
 	echo 'Contact: Baux David <david.baux@chu-montpellier.fr>'
 	echo 'Usage : bash autoDLML.sh --config <path to conf file> [-v 4]'
