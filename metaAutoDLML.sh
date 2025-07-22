@@ -282,27 +282,26 @@ gatherJsonsAndLaunch() {
 	# Loop on genomes:
 	for aList in "${AUTODL_DIR}${RUN}"/samplesInfos_${metaWDL}.* ; do
 		GENOME=$(basename "${aList}" | cut -d"." -f2)
-		info "Procesing all samples of genome ${GENOME}"
-		MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${metaWDL}_inputs_${GENOME}.json"
-		debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
+		info "Processing all samples of genome ${GENOME}"
+		firstSample=$(awk -F"," '{print $2}' "${aList}" | tr -d '"')
+		MOBIDL_JSON_TEMPLATE="${AUTODL_DIR}${RUN}/${WDL}_${firstSample}_inputs.json"
+		debug "Derivate 'metaPanelCapture_JSON' from JSON of 1st sample : ${MOBIDL_JSON_TEMPLATE}"
 		if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
-			error "No json file for ${metaWDL}: ${MOBIDL_JSON_TEMPLATE}"
+			error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
 		else
 			JSON="${AUTODL_DIR}${RUN}/${metaWDL}_${GENOME}_inputs.json"
 			# Extract info from 'samplesInfos' file(s) (created by 'modifyJson()'):
 			# INFO: 'inputsLists' variable contains quotes -> complicated with sed
 			#       Instead send string to file
-			# WARNING: Template is not a JSON anymore ???
-			sed -e "s/^/{\n  \"${metaWDL}.inputsLists\": [/" -e 's/,$/],\n/' "$aList" > "${JSON}"
-			# Then modify rest of variables:
+			sed -e "s/^/{\n  \"${metaWDL}.inputsLists\": [/" -e 's/,$/],\n/' "${aList}" > "${JSON}"
 			chmod 755 "${JSON}"
-			cat "${MOBIDL_JSON_TEMPLATE}" >> "${JSON}"
-			sed -i.bak \
-				-e "s/\(  \"${metaWDL}\.roiDir\": \"\).*/\1${ROI_SED}\",/" \
-				-e "s/\(  \"${metaWDL}\.fastqDirname\": \"\).*/\1${FASTQ_SED}\/\",/" \
-				-e "s/\(  \"${metaWDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-				"${JSON}"
-			rm "${JSON}.bak"
+			# Then add parms specific to 'metaPanelCapture' workflow:
+			printf "  \"${metaWDL}.roiDir\": \"${ROI_DIR}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.fastqDirname\": \"${FASTQ_DIR}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.outDir\": \"${TMP_OUTPUT_DIR2}\",\n" >> "${JSON}"
+			# Add rest of params, extracted from 'panelCapture_JSON':
+			grep -vE "\{|\.fastqR1|\.fastqR2|\.suffix1|\.suffix2|\.intervalBedFile|\.sampleID" "${MOBIDL_JSON_TEMPLATE}" |
+				sed "s/${WDL}\./${metaWDL}\./" >> "${JSON}"
 			debug "$(cat ${JSON})"
 			info "Launching:"
 			info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${metaWDL}.wdl -i ${JSON}"
