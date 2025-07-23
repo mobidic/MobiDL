@@ -613,6 +613,20 @@ do
 							# dos2unix fails on 140 for weird permission issue
 							WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep -m1 'Description,' | cut -d ',' -f 2 | cut -d '#' -f 2)
 							debug "BED: ${BED} - WDL: ${WDL}"
+							# check if BED and WDL exist otherwise continue
+							if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL}.wdl" ]];then
+								# Create a file with non treated samples:
+								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
+								echo "${RUN} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
+								# Change value on array and file to done
+								if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+									echo ${RUN}=2 >> ${RUNS_FILE}
+								elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+									sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								fi
+								RUN_ARRAY[${RUN}]=2
+								continue
+							fi
 						# elif [ -n "${MULTIPLE}" ];then
 						# 	WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
 						# 	BED="perSampleRoi"
@@ -639,7 +653,7 @@ do
 								echo ${RUN}=1 >> ${RUNS_FILE}
 								RUN_ARRAY[${RUN}]=1
 							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								#Change value on array and file to running
+								# Change value on array and file to running
 								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 								RUN_ARRAY[${RUN}]=1
 							fi
@@ -751,6 +765,13 @@ do
 									# fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
+
+									# check if BED and WDL exist otherwise continue
+									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL}.wdl" ]];then
+										# Create a file with non treated FASTQ:
+										echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
+										continue
+									fi
 									# exit 0
 									# check custom output PATH
 									# info "MANIFEST: ${MANIFEST}"
