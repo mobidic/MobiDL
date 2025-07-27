@@ -181,6 +181,8 @@ TRIGGER_FILE=''
 TRIGGER_EXPR=''
 SAMPLESHEET=''
 
+DATE=`date +%Y%m%d`
+
 assignVariables() {
 	#${RUN_PATH}
 	# if [[ "${1}" =~ "MiniSeq" ]];then
@@ -353,8 +355,8 @@ workflowPostTreatment() {
 	# copy to final destination
 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR2}Logs/${1}_${2}.log" "${TMP_OUTPUT_DIR2}"
 	rm -r "${TMP_OUTPUT_DIR2}Logs/"  # Remove, otherwise 'Logs' dir copied to FINAL_DIR
-	info "Moving MobiDL results to ${OUTPUT_PATH}${RUN}/MobiDL/"
-	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/"
+	info "Moving MobiDL results to ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
 	if [ $? -eq 0 ];then
 		chmod -R 777 "${TMP_OUTPUT_DIR2}"
 		rm -r "${TMP_OUTPUT_DIR2}"
@@ -362,7 +364,7 @@ workflowPostTreatment() {
 		error "Error while syncing ${1} in run ${OUTPUT_PATH}${RUN}"
 	fi
 	# remove cromwell data
-	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${1}_${2}.log" | rev | cut -d ' ' -f 1 | rev)
+	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${1}_{2}.log" | rev | cut -d ' ' -f 1 | rev)
 	if [[ -n "${WORKFLOW_ID}" ]]; then
 		# test récupérer le path courant
 		rm -r "./cromwell-executions/${1}/${WORKFLOW_ID}"
@@ -392,7 +394,7 @@ setjsonvariables() {
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
-		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
 }
 
@@ -402,18 +404,18 @@ modifyAchabJson() {
 	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
-	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
-	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
+	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 	# move achab input folder in todo folder for autoachab
-	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
+	cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
 	ACHAB_DIR=CaptainAchab
 }
 
 
 prepareAchab() {
 	# function to prepare dirs for autoachab execution
-	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/" ];then
-		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
+	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/" ];then
+		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
 	fi
 
 	# disease and genes of interest files
@@ -446,7 +448,7 @@ prepareAchab() {
 		echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
 		echo "DISEASE_FILE=${DISEASE_ACHAB_DIR}${DISEASE_FILE}" >> "${FAMILY_FILE_CONFIG}"
 		echo "GENES_OF_INTEREST=${GENE_FILE}" >> "${FAMILY_FILE_CONFIG}"
-		echo "ACHAB_TODO=/RS_IURC/data/MobiDL/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
+		echo "ACHAB_TODO=/mnt/chu-ngs/Labos/Transversal/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
 		echo "##### FIN ne pas modifier si analyse auto" >> "${FAMILY_FILE_CONFIG}"
 		echo "NUM_FAM=" >> "${FAMILY_FILE_CONFIG}"
 		echo "TRIO=" >> "${FAMILY_FILE_CONFIG}"
@@ -467,16 +469,16 @@ prepareAchab() {
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
 		if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
-			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		else
-			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		fi
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
 	fi
-	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
+	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF
-		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
 	fi
 
 
@@ -484,22 +486,22 @@ prepareAchab() {
 	debug "Genes file: ${GENE_FILE}"
 	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
 		# cp disease file in achab input dir
-		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/disease.txt"
+		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/disease.txt"
 		# cp json file in achab input dir and modify it
-		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
 		if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
-			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/"
+			cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
 			if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
-				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel_hg38.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel_hg38.json" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			else
-				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			fi
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
 			ACHAB_DIR=CaptainAchabCFPanel
-			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR="${ACHAB_DIR_OLD}"
 		fi
 	fi
@@ -510,11 +512,11 @@ prepareGatkCnv() {
 	# sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR:${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/gatk_cnv/" \
 	# 	-e "s/SAMPLES_PATH:/SAMPLES_PATH:${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files/" \
 	# 	-e "s/BED_PATH:/BED_PATH:${ROI_DIR_SED}${BED}/" \
-	# 	"${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml"
-	sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/${2}gatk_cnv/" \
-		-e "s/SAMPLES_PATH:/SAMPLES_PATH: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/${2}/" \
+	# 	"${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/gatk_cnv.yaml"
+	sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/alignment_files\/${2}gatk_cnv/" \
+		-e "s/SAMPLES_PATH:/SAMPLES_PATH: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/alignment_files\/${2}/" \
 		-e "s/BED_PATH:/BED_PATH: ${ROI_DIR_SED}${BED}/" \
-		-e "s/VCF_path:/VCF_path: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/MobiCNVvcfs/" \
+		-e "s/VCF_path:/VCF_path: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/MobiCNVvcfs/" \
 		"${1}gatk_cnv.yaml"
 }
 
@@ -600,6 +602,20 @@ do
 							# dos2unix fails on 140 for weird permission issue
 							WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep -m1 'Description,' | cut -d ',' -f 2 | cut -d '#' -f 2)
 							debug "BED: ${BED} - WDL: ${WDL}"
+							# check if BED and WDL exist otherwise continue
+							if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL}.wdl" ]];then
+								# Create a file with non treated samples:
+								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
+								echo "${RUN} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
+								# Change value on array and file to done
+								if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+									echo ${RUN}=2 >> ${RUNS_FILE}
+								elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+									sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								fi
+								RUN_ARRAY[${RUN}]=2
+								continue
+							fi
 						# elif [ -n "${MULTIPLE}" ];then
 						# 	WDL=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 2)
 						# 	BED="perSampleRoi"
@@ -626,7 +642,7 @@ do
 								echo ${RUN}=1 >> ${RUNS_FILE}
 								RUN_ARRAY[${RUN}]=1
 							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								#Change value on array and file to running
+								# Change value on array and file to running
 								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
 								RUN_ARRAY[${RUN}]=1
 							fi
@@ -648,8 +664,8 @@ do
 								# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
 								# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
 								# DISEASE_FILE=/usr/local/share/refData/disease_achab/disease_ND.txt # fichier disease contenant les codes HPO de la famille
-								# GENES_OF_INTEREST=/RS_IURC/data/MobiDL/captainAchab/Example/nd.txt # gènes à mettre en avant dans achab
-								# ACHAB_TODO=/RS_IURC/data/MobiDL/captainAchab/
+								# GENES_OF_INTEREST=/RS_IURC/data/MobiDL/${DATE}/captainAchab/Example/nd.txt # gènes à mettre en avant dans achab
+								# ACHAB_TODO=/RS_IURC/data/MobiDL/${DATE}/captainAchab/
 								# RUN_ID=210924_NB501631_0419_AH5LHNBGXK
 								# NUM_FAM=
 								# TRIO=
@@ -669,23 +685,23 @@ do
 								FAMILY_FILE_CREATED=0
 							fi
 							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
-								mkdir "${OUTPUT_PATH}${RUN}/MobiDL"
+								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
 							fi
-							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" ];then
-								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/"
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/" ];then
+								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs"
 							fi
-							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/" ];then
-								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/"
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/" ];then
+								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
 							fi
 							# get Illumina InterOp
-							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/interop/" ];then
-								mkdir "${OUTPUT_PATH}${RUN}/MobiDL/interop/"
+							if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/" ];then
+								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop"
 							fi
 							# for some reason SRUN should be called without quotes
-							debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
-							/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/summary"
-							debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi ${ILLUMINAINTEROP}index-summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
-							/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/interop/index-summary"
+							debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
+							/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
+							debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi ${ILLUMINAINTEROP}index-summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
+							/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							# MEMO: If FASTQ is a symlink, 'du -L' to follow it and get original FASTQ size (and not symlink size)
@@ -693,7 +709,7 @@ do
 							CUTOFF_SIZE_FQ=204800  # FASTQ.GZ below this size (in bytes) are excluded (=~ 200 Ko)
 							FASTQS=$(echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1>cutoff_fq_size {print $2}')
 							# Create a file with excluded FASTQ:
-							echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
+							echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
@@ -712,7 +728,7 @@ do
 								fi
 							done
 							# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
-							# mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/"
+							# mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/"
 							debug "Remove existing ${AUTODL_DIR}/${RUN}"
 							rm -rf "${AUTODL_DIR}/${RUN}"
 							mkdir "${AUTODL_DIR}/${RUN}"
@@ -741,6 +757,13 @@ do
 									# fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
+
+									# check if BED and WDL exist otherwise continue
+									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL}.wdl" ]];then
+										# Create a file with non treated FASTQ:
+										echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
+										continue
+									fi
 									# exit 0
 									# check custom output PATH
 									# info "MANIFEST: ${MANIFEST}"
@@ -781,28 +804,28 @@ do
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
-									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
-										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
+									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
+										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
 									fi
-									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
-										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
+									if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
+										mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
 									fi
 								fi
 								prepareAchab
 								TREATED=1
 								# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
 								# if [[ ${MULTIPLE} != '' ]];then
-								# 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/" ];then
-								# 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/"
+								# 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE_ROI_TYPE}/" ];then
+								# 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE_ROI_TYPE}/"
 								# 	fi
-								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram"
-								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram.crai"
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram"
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE_ROI_TYPE}/${SAMPLE}.crumble.cram.crai"
 								# else
-								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram"
-								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${SAMPLE}.crumble.cram.crai"
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE}.crumble.cram"
+								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE}.crumble.cram.crai"
 								# fi
 								# LED specific block
-								LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
+								LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
 								DISEASE=''
 								TEAM=''
 								EXPERIMENT=''
@@ -847,34 +870,34 @@ do
 								echo "visibility:1" >> "${LED_FILE}"
 								echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
 								# end led specific block
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+								/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+								/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
 								debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 							done
 							unset SAMPLES
 						fi
 						if [ "${TREATED}" -eq 1 ];then
 							# MobiCNV && multiqc
-							# no VCF anymore fo mobicnv: -v ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/
+							# no VCF anymore fo mobicnv: -v ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/
 							if [ -n "${MULTIPLE}" ];then
-								# get folders in ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/ and loop on it and launch mobicnv
-								# for LIBRARY in "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVvcfs/*"
+								# get folders in ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/ and loop on it and launch mobicnv
+								# for LIBRARY in "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/*"
 								for LIBRARY in ${!ROI_TYPES[@]}
 								do
 									# check if at least 3 samples  / library => count number of tsv file in the folder
-									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
+									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
 									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
 										source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-										/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
-										debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 										conda deactivate
 										# here prepare and launch gatk_cnv
 										# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
 										# removed 20220420 as does not work as expected
-										# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
-										# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
-										# info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
+										# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
+										# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
+										# info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
 									else
 										info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 									fi
@@ -882,15 +905,15 @@ do
 							elif [ "${WDL}" != "amplicon" ];then
 								info "Launching MobiCNV on run ${RUN}"
 								source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
-								debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_MobiCNV.xlsx"
+								/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_MobiCNV.xlsx"
+								debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_MobiCNV.xlsx"
 								conda deactivate
 								# here prepare and launch gatk_cnv
 								# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
 								# removed 20220420 as does not work as expected
-								# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" ""
-								# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml" --resources cnv_caller=4
-								# debug "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/gatk_cnv.yaml --resources cnv_caller=4"
+								# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/" ""
+								# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/gatk_cnv.yaml" --resources cnv_caller=4
+								# debug "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/gatk_cnv.yaml --resources cnv_caller=4"
 								# ifCNV
 								# remove (temporarily? david 20240802)
 								# BED_FILE_NAME=$(basename ${BED} .bed)
@@ -903,25 +926,25 @@ do
 								# 	# activates ifcnv env
 								# 	source "${CONDA_ACTIVATE}" "${IFCNV_ENV}"
 								# 	# "${CONDA}" activate "${IFCNV_ENV}" 
-								# 	debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_ifcnv ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
-								# 	"/usr/bin/srun -N1 -c1 -pprod -J"autoDL_ifcnv "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
+								# 	debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_ifcnv ${IFCNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/ -b ${BED_IFCNV} -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/ifCNV/ -r ${RUN} -sT 0 -ct 0.01"
+								# 	"/usr/bin/srun -N1 -c1 -pprod -J"autoDL_ifcnv "${IFCNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/" -b "${BED_IFCNV}" -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/ifCNV/" -r "${RUN}" -sT 0 -ct 0.01
 								# 	# deactivates conda env
 								# 	conda deactivate
 								# fi
 							fi
 							info "Launching MultiQC on run ${RUN}"
 							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
-							/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/"
-							debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/"
-							/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${RUN}_multiqc_data/multiqc_data.json"
+							/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+							debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+							/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
 							conda deactivate
 							# may not be needed anymore with NFS share TEST ME
-							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/"
+							chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
 							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							RUN_ARRAY[${RUN}]=2
 							info "RUN ${RUN} treated" 
-							touch "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
-							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${WDL}Complete.txt"
+							touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
+							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
 							#Temp outDir already removed by 'workflowPostTreatment':
 							# chmod -R 777 "${TMP_OUTPUT_DIR2}"
 							# rm -r "${TMP_OUTPUT_DIR2}"

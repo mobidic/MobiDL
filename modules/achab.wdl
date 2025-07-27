@@ -76,7 +76,7 @@ task achab {
 		--filterCustomVCF "~{FilterCustomVCF}" \
 		--filterCustomVCFRegex "~{FilterCustomVCFRegex}" \
 		--IDSNP "~{IdSnp}" \
-		--gnomadExome  "~{GnomadExomeFields}" \
+		--gnomadExome "~{GnomadExomeFields}" \
 		--gnomadGenome "~{GnomadGenomeFields}" \
 		~{ if CaseDepth then "--addCaseDepth" else "" } \
 		~{ if CaseAB    then "--addCaseAB"    else "" } \
