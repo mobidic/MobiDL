@@ -128,25 +128,27 @@ workflow PedToVCF {
         String byFamDir = if defined(outputPath) then outputPath + "/byFamily/" + aCasIndex + "/" else analysisDir + "/byFamily/" + aCasIndex + "/"
         String aFamily = aStatus[1]
 
-        call mergeVCF {
+        call findVCF {
             input:
                 CasIndex = aCasIndex,
                 Family = aFamily,
                 PrefixPath = analysisDir,
-                VcfOutPath = byFamDir,
                 WDL = wdl,
                 SuffixVcf = suffixVcf,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv
         }
 
-        # Do Achab
-        if (withPoorCov) {
-            call findPoorCov {
-                input:
-                    CasIndex = aCasIndex,
-                    PrefixPath = analysisDir
-            }
+        call mergeVCF {
+            input:
+                CasIndex = aCasIndex,
+                VCFlist = findVCF.vcfList,
+                PrefixPath = analysisDir,
+                VcfOutPath = byFamDir,
+                WDL = wdl,
+                SuffixVcf = suffixVcf,
+                CondaBin = condaBin,
+                BcftoolsEnv = bcftoolsEnv
         }
 
         # MEMO: PooledSamples are either whole family or only casIndex
@@ -219,9 +221,8 @@ workflow PedToVCF {
                 gnomadGenomeFields = gnomadGenomeFields,
                 addCustomVCFRegex = addCustomVCFRegex,
                 pooledSamples = pooledSamples,
-                addCaseDepth = addCaseDepth,
-                addCaseAB = addCaseAB,
-                poorCoverageFile = findPoorCov.poorCovOut,
+                caseDepth = addCaseDepth,
+                caseAB = addCaseAB,
                 genemap2File = genemap2File,
                 skipCaseWT = skipCaseWT,
                 hideACMG = hideACMG,
@@ -301,10 +302,44 @@ task pedToFam {
     }
 }
 
+task findVCF {
+    input {
+        String Family  # Eg.: 'casIndex,father,mother'
+        String CasIndex
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String WDL = "panelCapture"
+        String SuffixVcf = ".HC.vcf"
+
+        String CondaBin
+        String BcftoolsEnv
+        String BcftoolsExe = "bcftools"
+        Int Cpu = 1
+        Int Memory = 768
+    }
+
+
+    command <<<
+        set -e
+        # Should work also if 1 member in family ?
+        for memb in $(echo ~{Family} | tr "," " ") ; do
+            ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}"
+        done
+    >>>
+
+    output {
+        Array[File] vcfList = read_lines(stdout())
+    }
+
+    runtime {
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
 
 task mergeVCF {
     input {
-        String Family  # Eg.: 'casIndex,father,mother'
+        Array[File] VCFlist  # Eg.: [/path/to/casIndex.vcf, /path/to/father.vcf, /path/to/mother.vcf]
         String CasIndex
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String VcfOutPath  # Eg: /path/to/runID/MobiDL/byFam/aSample/
@@ -319,6 +354,7 @@ task mergeVCF {
     }
 
     String VcfOut = VcfOutPath + CasIndex + ".vcf"
+    Int nbSamples = length(VCFlist)
 
     command <<<
         set -e
@@ -328,59 +364,22 @@ task mergeVCF {
         fi
 
         # If family has 1 single sample -> simply copy VCF
-        if [ "$(echo ~{Family} | tr "," "\n" | wc -l)" -eq "1" ] ; then
-            memb=~{Family}
-            cp --verbose "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}" "~{VcfOut}"
+        if [ "~{nbSamples}" -eq "1" ] ; then
+            cp --verbose ~{VCFlist[0]} "~{VcfOut}" 
 
         else
             source ~{CondaBin}activate ~{BcftoolsEnv}
-
-            for memb in $(echo ~{Family} | tr "," " ") ; do
-                ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}"
-            done |
-                xargs ~{BcftoolsExe} merge \
-                                            --merge none \
-                                            --missing-to-ref \
-                                            --no-index \
-                                            -Ov -o "~{VcfOut}"
-
+            ~{BcftoolsExe} merge ~{sep=" " VCFlist} \
+                --merge none \
+                --missing-to-ref \
+                --no-index \
+                -Ov -o "~{VcfOut}"
             conda deactivate
         fi
     >>>
 
     output {
         File vcfOut = VcfOut
-    }
-
-    runtime {
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
-
-task findPoorCov {
-    input {
-        String CasIndex
-        String PrefixPath  # Eg: /path/to/runID/MobiDL/
-        String WDL = "panelCapture"
-        String DirPoorCov = "coverage"
-        String SuffixPoorCov = "_poor_coverage.tsv"
-
-        Int Cpu = 1
-        Int Memory = 768
-    }
-
-    String PoorCovPath = "~{PrefixPath}/~{CasIndex}/~{WDL}/~{DirPoorCov}/~{CasIndex}~{SuffixPoorCov}"
-
-    command <<<
-        set -e
-
-        ls -d "~{PoorCovPath}"
-    >>>
-
-    output {
-        File poorCovOut = PoorCovPath
     }
 
     runtime {
