@@ -9,7 +9,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.0"
+        version: "0.1.1"
         date: "2025-03-11"
     }
 
@@ -40,9 +40,9 @@ workflow PedToVCF {
         ## queues
         String defQueue = "prod"
         ##Resources
-        Int cpu
+        Int cpuLow
         Int cpuHigh
-        Int memory
+        Int memoryLow
         ## Language Path
         String perlPath = "perl"
         ## Exe
@@ -118,7 +118,10 @@ workflow PedToVCF {
     call preprocessPed {
         input:
             PedFile = pedFile,
-            CsvtkExe = csvtkExe
+            CsvtkExe = csvtkExe,
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow
     }
 
     call pedToFam {
@@ -126,7 +129,10 @@ workflow PedToVCF {
             PedFile = preprocessPed.outputFile,
             CondaBin = condaBin,
             PedsEnv = pedsEnv,
-            PathExe = scriptExe
+            PathExe = scriptExe,
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow
     }
 
     scatter (aStatus in pedToFam.status) {
@@ -139,7 +145,10 @@ workflow PedToVCF {
                 Family = aFamily,
                 PrefixPath = analysisDir,
                 WDL = wdl,
-                SuffixVcf = suffixVcf
+                SuffixVcf = suffixVcf,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
         }
         call mergeVCF {
             input:
@@ -150,7 +159,10 @@ workflow PedToVCF {
                 WDL = wdl,
                 SuffixVcf = suffixVcf,
                 CondaBin = condaBin,
-                BcftoolsEnv = bcftoolsEnv
+                BcftoolsEnv = bcftoolsEnv,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
         }
 
         # MEMO: PooledSamples are either whole family or only casIndex
@@ -172,9 +184,8 @@ workflow PedToVCF {
                 achabEnv = achabEnv,
                 rsyncEnv = rsyncEnv,
                 defQueue = defQueue,
-                cpu = cpu,
-                cpuHigh = cpuHigh,
-                memory = memory,
+                cpu = cpuLowHigh,
+                memory = memoryLow,
                 perlPath = perlPath,
                 achabExe = achabExe,
                 mpaExe = mpaExe,
@@ -238,17 +249,23 @@ workflow PedToVCF {
                 Family = aFamily,
                 PrefixPath = analysisDir,
                 WDL = wdlBAM,
-                SuffixBAM = suffixBAM
+                SuffixBAM = suffixBAM,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow
         }
         scatter (aBam in findBAM.bamList) {
             call runSomalier.extract as SomalierExtract {
                 input :
+                    refFasta = fastaGenome,
+                    bamFile = aBam,
+                    outputPath = byFamDir,
                     path_exe = somalierExe,
                     CondaBin = condaBin,
                     SamtoolsEnv = samtoolsEnv,
-                    refFasta = fastaGenome,
-                    bamFile = aBam,
-                    outputPath = byFamDir
+                    Queue = defQueue,
+                    Cpu = cpuLow,
+                    Memory = memoryLow
             }
         }
     }
@@ -259,7 +276,10 @@ workflow PedToVCF {
             ped = preprocessPed.outputFile,
             somalier_extracted_files = flatten(flatten([SomalierExtract.file])),
             outputPath = outputPath + "/byFamily/somalier_relate/",
-            csvtkExe = csvtkExe
+            csvtkExe = csvtkExe,
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow      
     }
 
     ##Post-process 'relate' output file
@@ -269,7 +289,10 @@ workflow PedToVCF {
             relatePairsFile = somalierRelate.RelatePairsFile,
             ped = preprocessPed.outputFile,
             outputPath = outputPath + "/byFamily/somalier_relate/",
-            csvtkExe = csvtkExe
+            csvtkExe = csvtkExe,
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow
     }
 
     output {
@@ -283,8 +306,10 @@ task preprocessPed {
         File PedFile
         String CsvtkExe = "csvtk"
 
-        Int Cpu = 1
-        Int Memory = 768
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
     }
 
     command <<<
@@ -308,6 +333,7 @@ task preprocessPed {
     }
 
     runtime {
+        queue: "~{Queue}"
         cpu: "~{Cpu}"
         requested_memory_mb_per_core: "~{Memory}"
     }
@@ -321,8 +347,10 @@ task pedToFam {
 
         String CondaBin
         String PedsEnv  # Any python env with 'peds' package installed
-        Int Cpu = 1
-        Int Memory = 768
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
     }
 
     command <<<
@@ -338,6 +366,7 @@ task pedToFam {
     }
 
     runtime {
+        queue: "~{Queue}"
         cpu: "~{Cpu}"
         requested_memory_mb_per_core: "~{Memory}"
     }
@@ -350,8 +379,10 @@ task findVCF {
         String WDL = "panelCapture"
         String SuffixVcf = ".vcf"
 
-        Int Cpu = 1
-        Int Memory = 768
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
     }
     command <<<
         set -e
@@ -366,6 +397,7 @@ task findVCF {
     }
 
     runtime {
+        queue: "~{Queue}"
         cpu: "~{Cpu}"
         requested_memory_mb_per_core: "~{Memory}"
     }
@@ -383,8 +415,10 @@ task mergeVCF {
         String CondaBin
         String BcftoolsEnv
         String BcftoolsExe = "bcftools"
-        Int Cpu = 1
-        Int Memory = 768
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
     }
 
     String VcfOut = VcfOutPath + CasIndex + ".vcf"
@@ -417,6 +451,7 @@ task mergeVCF {
     }
 
     runtime {
+        queue: "~{Queue}"
         cpu: "~{Cpu}"
         requested_memory_mb_per_core: "~{Memory}"
     }
@@ -429,8 +464,10 @@ task findBAM {
         String WDL = "panelCapture"
         String SuffixBAM = ".crumble.cram"
 
-        Int Cpu = 1
-        Int Memory = 768
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
     }
     command <<<
         set -e
@@ -445,6 +482,7 @@ task findBAM {
     }
 
     runtime {
+        queue: "~{Queue}"
         cpu: "~{Cpu}"
         requested_memory_mb_per_core: "~{Memory}"
     }

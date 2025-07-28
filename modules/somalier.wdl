@@ -42,17 +42,11 @@ task extract {
 		String sampleName = basename(bamFile, ext)
 		String outputPath = "./"
 
-		Int threads = 1
-		Int memoryByThreads = 768
-		String? memory
+		# runtime attributes
+		String Queue
+		Int Cpu
+		Int Memory
 	}
-
-	String totalMem = if defined(memory) then memory else memoryByThreads*threads + "M"
-	Boolean inGiga = (sub(totalMem,"([0-9]+)(M|G)", "$2") == "G")
-	Int memoryValue = sub(totalMem, "M|G", "")
-	Int totalMemMb = if inGiga then memoryValue*1024 else memoryValue
-	Int memoryByThreadsMb = floor(totalMemMb/threads)
-
 	command <<<
 		set -eou pipefail
 
@@ -76,8 +70,9 @@ task extract {
 	}
 
 	runtime {
-		cpu: "~{threads}"
-		requested_memory_mb_per_core: "~{memoryByThreadsMb}"
+		queue: "~{Queue}"
+		cpu: "~{Cpu}"
+		requested_memory_mb_per_core: "~{Memory}"
 	}
 }
 
@@ -97,17 +92,11 @@ task relate {
 		String outputPath = "./"
         String csvtkExe = "csvtk"
 
-		Int threads = 1
-		Int memoryByThreads = 768
-		String? memory
+		# runtime attributes
+		String Queue
+		Int Cpu
+		Int Memory
 	}
-
-	String totalMem = if defined(memory) then memory else memoryByThreads*threads + "M"
-	Boolean inGiga = (sub(totalMem,"([0-9]+)(M|G)", "$2") == "G")
-	Int memoryValue = sub(totalMem, "M|G", "")
-	Int totalMemMb = if inGiga then memoryValue*1024 else memoryValue
-	Int memoryByThreadsMb = floor(totalMemMb/threads)
-
 	String ped_or_infer = if defined(ped) then "--ped=uniq_samplID.ped" else "--infer"
 	String relatedPrefix = "~{outputPath}/related"
 	String relateSamplesFile = "~{relatedPrefix}.samples.tsv"
@@ -149,8 +138,9 @@ task relate {
 	}
 
 	runtime {
-		cpu: "~{threads}"
-		requested_memory_mb_per_core: "~{memoryByThreadsMb}"
+		queue: "~{Queue}"
+		cpu: "~{Cpu}"
+		requested_memory_mb_per_core: "~{Memory}"
 	}
 }
 
@@ -174,17 +164,11 @@ task relatePostprocess {
 		Float maxYforFemale = 0.5  # Bellow this value -> sample predicted as 'female' (otherwise 'male')
 		Float minHomConcordForRelated = 0.6  # Above this value -> pair of samples predicted as 'related'
 
-		Int threads = 1
-		Int memoryByThreads = 768
-		String? memory
+		# runtime attributes
+		String Queue
+		Int Cpu
+		Int Memory
 	}
-
-	String totalMem = if defined(memory) then memory else memoryByThreads*threads + "M"
-	Boolean inGiga = (sub(totalMem,"([0-9]+)(M|G)", "$2") == "G")
-	Int memoryValue = sub(totalMem, "M|G", "")
-	Int totalMemMb = if inGiga then memoryValue*1024 else memoryValue
-	Int memoryByThreadsMb = floor(totalMemMb/threads)
-
 	String postProcessPrefix = "~{outputPath}/related"
 	String customSamplesFile = "~{postProcessPrefix}.samples.custom.tsv"
 	String relateFilteredPairs = "~{postProcessPrefix}.pairs.filtered.tsv"
@@ -364,7 +348,8 @@ task relatePostprocess {
 	}
 
 	runtime {
-		cpu: "~{threads}"
-		requested_memory_mb_per_core: "~{memoryByThreadsMb}"
+		queue: "~{Queue}"
+		cpu: "~{Cpu}"
+		requested_memory_mb_per_core: "~{Memory}"
 	}
 }
