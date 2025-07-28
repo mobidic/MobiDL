@@ -3,13 +3,14 @@ version 1.0
 
 import "captainAchab.wdl" as runCaptainAchab
 import "modules/somalier.wdl" as runSomalier
+import "modules/achabPostProcess.wdl" as runAchabPostProcess
 
 
 workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.1"
+        version: "0.2.0"
         date: "2025-03-11"
     }
 
@@ -113,7 +114,7 @@ workflow PedToVCF {
         File fastaGenome
         String vcSuffix = ""
     }
-
+    String OutDir = if defined(outputPath) then outputPath + "/byFamily/" else analysisDir + "/byFamily/"
 
     call preprocessPed {
         input:
@@ -137,7 +138,7 @@ workflow PedToVCF {
 
     scatter (aStatus in pedToFam.status) {
         String aCasIndex = aStatus[0]
-        String byFamDir = if defined(outputPath) then outputPath + "/byFamily/" + aCasIndex + "/" else analysisDir + "/byFamily/" + aCasIndex + "/"
+        String byFamDir = OutDir + aCasIndex + "/"
         String aFamily = aStatus[1]
 
         call findVCF {
@@ -184,7 +185,8 @@ workflow PedToVCF {
                 achabEnv = achabEnv,
                 rsyncEnv = rsyncEnv,
                 defQueue = defQueue,
-                cpu = cpuLowHigh,
+                cpu = cpuLow,
+                cpuHigh = cpuHigh,
                 memory = memoryLow,
                 perlPath = perlPath,
                 achabExe = achabExe,
@@ -244,6 +246,38 @@ workflow PedToVCF {
         }
 
         # Metrix:
+        ## Post-process Achab 'newHope' results
+        ## MEMO: Cannot use outputs from captainAchab call due to use tmpDir
+        String achabOutDir = byFamDir + "/CaptainAchab/achab_excel/"
+        File achabNewHopeExcel = achabOutDir + aCasIndex + "_achab_catch_newHope.xlsx"
+        File achabHtml = achabOutDir + aCasIndex + "_newHope_achab.html"
+        # String achabPoorCov = achabOutDir + aCasIndex + "_poorCoverage.xlsx"
+        if (withPoorCov) {
+            call findPoorCov {
+                input:
+                    Family = aFamily,
+                    PrefixPath = analysisDir,
+                    WDL = wdlBAM,
+                    SuffixBAM = suffixBAM,
+                    Queue = defQueue,
+                    Cpu = cpuLow,
+                    Memory = memoryLow
+            }
+        }
+        call runAchabPostProcess.postProcess as achabCINewHopePost {
+            input :
+                OutAchab = achabNewHopeExcel,
+                OutAchabHTML = achabHtml,
+                OutAchabPoorCov = findPoorCov.achabPoorCov,
+                OutDir = OutDir + "/Metrix",
+                csvtkExe = csvtkExe,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                TaskOut = captainAchab.achabNewHopeHtml
+        }
+
+        ## Somalier
         call findBAM {
             input:
                 Family = aFamily,
@@ -269,7 +303,8 @@ workflow PedToVCF {
             }
         }
     }
-    ##Somalier 'relate' on '.somalier' files generated from BAM
+
+    ### Somalier 'relate' on '.somalier' files generated from BAM
     call runSomalier.relate as somalierRelate {
         input :
             path_exe = somalierExe,
@@ -281,8 +316,7 @@ workflow PedToVCF {
             Cpu = cpuLow,
             Memory = memoryLow      
     }
-
-    ##Post-process 'relate' output file
+    ### Post-process 'relate' output file
     call runSomalier.relatePostprocess as somalierRelatePostprocess {
         input :
             relateSamplesFile = somalierRelate.RelateSamplesFile,
@@ -479,6 +513,35 @@ task findBAM {
 
     output {
         Array[File] bamList = read_lines(stdout())
+    }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+# Dummy func -> REMOVE ME
+task findPoorCov {
+    input {
+        String Family  # Eg.: 'casIndex,father,mother'
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String WDL = "panelCapture"
+        String SuffixBAM = ".crumble.cram"
+
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    command <<<
+        set -e
+        echo "sakyt"
+    >>>
+
+    output {
+        File achabPoorCov = read_lines(stdout())
     }
 
     runtime {

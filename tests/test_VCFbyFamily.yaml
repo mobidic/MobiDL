@@ -36,6 +36,11 @@
       # md5sum: Cannot md5 Excel file directly
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_poorCoverage.xlsx
       # md5sum: Cannot md5 Excel file directly
+    # Achab metrix files
+    - path: byFamily/Metrix/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
+      md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
+    - path: byFamily/Metrix/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
+      md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
 
 - name: VCFbyFamily coriells solo affected
   # PED contains solo -> should work
