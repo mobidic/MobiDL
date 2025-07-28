@@ -50,6 +50,6 @@ task multiqc {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File multiqcHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_multiqc.html"
+		File multiqcHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/~{Name}_multiqc.html"
 	}
 }
