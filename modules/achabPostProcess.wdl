@@ -33,7 +33,7 @@ task postProcess {
     String csvtkExe = "csvtk"
 
 		# runtime attributes
-    String TaskOut  # To for exec after a given task
+    String TaskOut  # To force exec after a given task
 		String Queue
 		Int Cpu
 		Int Memory

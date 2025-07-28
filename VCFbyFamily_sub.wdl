@@ -4,13 +4,14 @@ version 1.0
 import "captainAchab.wdl" as runCaptainAchab
 import "modules/somalier.wdl" as runSomalier
 import "modules/achabPostProcess.wdl" as runAchabPostProcess
+import "modules/multiqc.wdl" as runMultiqc
 
 
 workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.2.0"
+        version: "0.3.0"
         date: "2025-03-11"
     }
 
@@ -38,6 +39,7 @@ workflow PedToVCF {
         String achabEnv = "/bioinfo/conda_envs/achabEnv"
         String rsyncEnv = "/bioinfo/conda_envs/rsyncEnv"
         String samtoolsEnv = "/bioinfo/conda_envs/samtoolsEnv"
+        String multiqcEnv = "/bioinfo/conda_envs/multiqcEnv"
         ## queues
         String defQueue = "prod"
         ##Resources
@@ -57,6 +59,7 @@ workflow PedToVCF {
         String somalierExe = "/bioinfo/softs/bin/somalier"
         # WARN: 'somalierRelatePostProcess' does not work with newer versions of csvtk
         String csvtkExe = "/bioinfo/softs/bin/csvtk-0.30.0"
+        String multiqcExe = "multiqc"
         ## Global
         String workflowType
         String outTmpDir = "/scratch/tmp_output/"
@@ -113,6 +116,8 @@ workflow PedToVCF {
         ## For BcftoolsLeftAlign
         File fastaGenome
         String vcSuffix = ""
+        ## For custom MultiQC
+        File customMQCconfig = "/home/felix/Exome/scripts/my_multiQC_config.yaml"
     }
     String OutDir = if defined(outputPath) then outputPath + "/byFamily/" else analysisDir + "/byFamily/"
 
@@ -327,6 +332,28 @@ workflow PedToVCF {
             Queue = defQueue,
             Cpu = cpuLow,
             Memory = memoryLow
+    }
+
+    # Custom MQC
+    call runMultiqc.multiqc as multiQC_custom {
+        input :
+            Queue = defQueue,
+            CondaBin = condaBin,
+            MultiqcEnv = multiqcEnv,
+            Cpu = cpuLow,
+            Memory = 16000,
+            SampleID = "",
+            Name = "custom",
+            OutDir = OutDir,
+            WorkflowType = "Metrix",
+            MultiqcExe = multiqcExe,
+            GatkExe = gatkExe,
+            Version = true,
+            configFile = customMQCconfig,
+            TaskOut = flatten([
+                [somalierRelatePostprocess.CustomSamplesFile, somalierRelatePostprocess.RelateFilteredPairs],
+                achabCINewHopePost.outAchabMetrix
+            ])
     }
 
     output {

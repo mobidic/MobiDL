@@ -41,6 +41,8 @@
       md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
     - path: byFamily/Metrix/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
       md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
+    # Custom MultiQC files
+    - path: byFamily/Metrix/custom_multiqc.html
 
 - name: VCFbyFamily coriells solo affected
   # PED contains solo -> should work
