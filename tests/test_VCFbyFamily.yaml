@@ -15,8 +15,17 @@
   files:
     - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
       should_exist: true
+    # Somalier files
+    - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.somalier
+      md5sum: fafadc577bd4635c9211b84525bcc8ec
+    - path: byFamily/somalier_relate/related.pairs.tsv
+      md5sum: 0000d673006f04a9c3645cf0f2fbcc48
+    - path: byFamily/somalier_relate/related.pairs.filtered.tsv
+      md5sum: 973da946bd518d17723f2b5336039303
+    # MPA files
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
       # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    # Achab files
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_newHope_achab.html
       # md5sum: Cannot md5 directly due to cwl-exec dir in file
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab.html

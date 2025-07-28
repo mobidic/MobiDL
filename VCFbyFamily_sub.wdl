@@ -2,13 +2,14 @@ version 1.0
 
 
 import "captainAchab.wdl" as runCaptainAchab
+import "modules/somalier.wdl" as runSomalier
 
 
 workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.0.7"
+        version: "0.1.0"
         date: "2025-03-11"
     }
 
@@ -18,12 +19,13 @@ workflow PedToVCF {
         String? outputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
 
         String wdl = "panelCapture"
-        String suffixVcf = ".hc.vcf"
+        String suffixVcf = ".vcf"
+        String wdlBAM = "panelCapture"
+        String suffixBAM = ".crumble.cram"
 
         String condaBin
 
         # PedToFam task:
-        String csvtkExe = "/bioinfo/softs/bin/csvtk"
         String pedsEnv  # Any python env with 'peds' package installed
         File? scriptExe
         # mergeVCF task:
@@ -34,6 +36,7 @@ workflow PedToVCF {
         String mpaEnv = "/bioinfo/conda_envs/mpaEnv"
         String achabEnv = "/bioinfo/conda_envs/achabEnv"
         String rsyncEnv = "/bioinfo/conda_envs/rsyncEnv"
+        String samtoolsEnv = "/bioinfo/conda_envs/samtoolsEnv"
         ## queues
         String defQueue = "prod"
         ##Resources
@@ -50,6 +53,9 @@ workflow PedToVCF {
         String bcftoolsExe = "bcftools"
         String gatkExe = "gatk"
         String rsyncExe = "rsync"
+        String somalierExe = "/bioinfo/softs/bin/somalier"
+        # WARN: 'somalierRelatePostProcess' does not work with newer versions of csvtk
+        String csvtkExe = "/bioinfo/softs/bin/csvtk-0.30.0"
         ## Global
         String workflowType
         String outTmpDir = "/scratch/tmp_output/"
@@ -135,7 +141,6 @@ workflow PedToVCF {
                 WDL = wdl,
                 SuffixVcf = suffixVcf
         }
-
         call mergeVCF {
             input:
                 CasIndex = aCasIndex,
@@ -226,6 +231,45 @@ workflow PedToVCF {
                 fastaGenome = fastaGenome,
                 vcSuffix = vcSuffix
         }
+
+        # Metrix:
+        call findBAM {
+            input:
+                Family = aFamily,
+                PrefixPath = analysisDir,
+                WDL = wdlBAM,
+                SuffixBAM = suffixBAM
+        }
+        scatter (aBam in findBAM.bamList) {
+            call runSomalier.extract as SomalierExtract {
+                input :
+                    path_exe = somalierExe,
+                    CondaBin = condaBin,
+                    SamtoolsEnv = samtoolsEnv,
+                    refFasta = fastaGenome,
+                    bamFile = aBam,
+                    outputPath = byFamDir
+            }
+        }
+    }
+    ##Somalier 'relate' on '.somalier' files generated from BAM
+    call runSomalier.relate as somalierRelate {
+        input :
+            path_exe = somalierExe,
+            ped = preprocessPed.outputFile,
+            somalier_extracted_files = flatten(flatten([SomalierExtract.file])),
+            outputPath = outputPath + "/byFamily/somalier_relate/",
+            csvtkExe = csvtkExe
+    }
+
+    ##Post-process 'relate' output file
+    call runSomalier.relatePostprocess as somalierRelatePostprocess {
+        input :
+            relateSamplesFile = somalierRelate.RelateSamplesFile,
+            relatePairsFile = somalierRelate.RelatePairsFile,
+            ped = preprocessPed.outputFile,
+            outputPath = outputPath + "/byFamily/somalier_relate/",
+            csvtkExe = csvtkExe
     }
 
     output {
@@ -304,13 +348,11 @@ task findVCF {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String WDL = "panelCapture"
-        String SuffixVcf = ".HC.vcf"
+        String SuffixVcf = ".vcf"
 
         Int Cpu = 1
         Int Memory = 768
     }
-
-
     command <<<
         set -e
         # Should work also if 1 member in family ?
@@ -328,7 +370,6 @@ task findVCF {
         requested_memory_mb_per_core: "~{Memory}"
     }
 }
-
 
 task mergeVCF {
     input {
@@ -373,6 +414,34 @@ task mergeVCF {
 
     output {
         File vcfOut = VcfOut
+    }
+
+    runtime {
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+task findBAM {
+    input {
+        String Family  # Eg.: 'casIndex,father,mother'
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String WDL = "panelCapture"
+        String SuffixBAM = ".crumble.cram"
+
+        Int Cpu = 1
+        Int Memory = 768
+    }
+    command <<<
+        set -e
+        # Should work also if 1 member in family ?
+        for memb in $(echo ~{Family} | tr "," " ") ; do
+            ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixBAM}"
+        done
+    >>>
+
+    output {
+        Array[File] bamList = read_lines(stdout())
     }
 
     runtime {
