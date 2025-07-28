@@ -130,13 +130,10 @@ workflow PedToVCF {
 
         call findVCF {
             input:
-                CasIndex = aCasIndex,
                 Family = aFamily,
                 PrefixPath = analysisDir,
                 WDL = wdl,
-                SuffixVcf = suffixVcf,
-                CondaBin = condaBin,
-                BcftoolsEnv = bcftoolsEnv
+                SuffixVcf = suffixVcf
         }
 
         call mergeVCF {
@@ -305,14 +302,10 @@ task pedToFam {
 task findVCF {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
-        String CasIndex
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String WDL = "panelCapture"
         String SuffixVcf = ".HC.vcf"
 
-        String CondaBin
-        String BcftoolsEnv
-        String BcftoolsExe = "bcftools"
         Int Cpu = 1
         Int Memory = 768
     }
