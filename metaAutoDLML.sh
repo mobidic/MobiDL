@@ -159,6 +159,11 @@ debug "CONFIG FILE: ${CONFIG_FILE}"
 # 2 => run treated - ignore directory
 # the file is stored in an array and modified by the script
 
+if [ ! -f "${RUNS_FILE}" ]; then
+    error "Runs file ${RUNS_FILE} not found!"
+	exit 1
+fi
+
 declare -A RUN_ARRAY #init array
 while read LINE
 do
