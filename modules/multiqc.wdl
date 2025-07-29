@@ -24,7 +24,7 @@ task multiqc {
 		File? Vcf
 		File? configFile  # If provided, run ONLY 'custom' metrix
 		#runtime attributes
-		Array[String] TaskOut  # To force exec after given tasks
+		Array[String]? TaskOut  # To force exec after given tasks
 		String Queue
 		Int Cpu
 		Int Memory
