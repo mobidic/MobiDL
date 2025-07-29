@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20250718
+VERSION=20250722
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -228,9 +228,6 @@ dos2unixIfPossible() {
 
 modifyJson() {
 	# debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
-	if [ ! -d "${AUTODL_DIR}/${RUN}" ];then
-		mkdir "${AUTODL_DIR}/${RUN}"
-	fi
 	if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
 		debug "BED: ${BED} - BASH_REMATCH: ${BASH_REMATCH[1]}"
 		GENOME=${BASH_REMATCH[1]}
@@ -276,85 +273,77 @@ modifyJson() {
 			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
 		rm "${JSON}.bak"
 		#debug "$(cat ${JSON})"
+		# For MetaPanelCapture:
+		# Build a JSON list by genome
+		metaWDL="metaPanelCapture"
+		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\"]," >> "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
 	fi
 }
 
 gatherJsonsAndLaunch() {
-	oldWDL=${WDL}
-	WDL="metaPanelCapture"
-	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
-	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
-	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
-		error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
-	else
-		JSON="${AUTODL_DIR}${RUN}/${WDL}_inputs.json"
-		# Gather info from indiv 'panelCapture_inputs.json':
-		# INFO: 'inputsLists' variable contains quotes -> complicated with sed
-		#       Instead send string to file
-		# WARNING: Template is not a JSON anymore ???
-		#          -> FIXME ???
-		# WARNING: Clean 'AUTODL_DIR' before re-running with different sample list
-		for aJson in "${AUTODL_DIR}${RUN}"/"${oldWDL}"*"_inputs.json";do
-			(
-				grep "\.intervalBedFile" "$aJson" ;
-				grep "\.sampleID" "$aJson" ;
-				grep "\.fastqR" "$aJson"
-			) |
-					awk '{print $2}' |
-					sed -e "s|${ROI_SED}||" -e "s|${FASTQ_SED}/||" |
-					tr -d '\n' |
-					sed -e 's/^/[/' -e 's/,$/],/'
-		done |
-			sed -e "s/^/{\n  \"${WDL}.inputsLists\": [/" -e 's/,$/],\n/' > "${JSON}"
-		# Then modify rest of variables:
-		chmod 755 "${JSON}"
-		cat "${MOBIDL_JSON_TEMPLATE}" >> "${JSON}"
-		sed -i.bak \
-			-e "s/\(  \"${WDL}\.roiDir\": \"\).*/\1${ROI_SED}\",/" \
-			-e "s/\(  \"${WDL}\.fastqDirname\": \"\).*/\1${FASTQ_SED}\/\",/" \
-			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-			"${JSON}"
-		rm "${JSON}.bak"
-		#debug "$(cat ${JSON})"
-		info "${RUN} - ${SAMPLE} ready for ${WDL}"
-		info "Launching:"
-		info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${WDL}.wdl -i ${JSON}"
-		if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
-			mkdir "${TMP_OUTPUT_DIR2}Logs"
-		fi
-		touch "${TMP_OUTPUT_DIR2}Logs/${WDL}.log"
-		info "MobiDL ${WDL} log in ${TMP_OUTPUT_DIR2}Logs/${WDL}.log"
-		# actual launch and copy in the end
-		source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
-		# conda env is loaded but cromwell acts as if it were not?
-		# info "$(which gatk)"
-		# info "gatkEnv loaded"
-		# exit 0;
-		"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${WDL}.log"
-		if [ $? -eq 0 ];then
-			conda deactivate
-			workflowPostTreatment "${WDL}"
+	# Loop on genomes:
+	for aList in "${AUTODL_DIR}${RUN}"/samplesInfos_${metaWDL}.* ; do
+		GENOME=$(basename "${aList}" | cut -d"." -f2)
+		info "Processing all samples of genome ${GENOME}"
+		firstSample=$(awk -F"," '{print $2}' "${aList}" | tr -d '"')
+		MOBIDL_JSON_TEMPLATE="${AUTODL_DIR}${RUN}/${WDL}_${firstSample}_inputs.json"
+		debug "Derivate 'metaPanelCapture_JSON' from JSON of 1st sample : ${MOBIDL_JSON_TEMPLATE}"
+		if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
+			error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
 		else
-			# # GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
-			# # david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
-			# GATK_LEFT_ALIGN_INDEL_ERROR=$(egrep 'Job panelCapture.gatkLeftAlignIndels:....? exited with return code 3' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
-			# # search for an error with gatk LAI - if found relaunch without this step
-			# # cannot explain this error - maybe a gatk bug?
-			# if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
-			# 	info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
-			# 	"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
-			# 	conda deactivate
-			# 	if [ $? -eq 0 ];then
-			# 		workflowPostTreatment "${WDL}_noGatkLai"
-			# 	else
-			# 		error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
-			# 	fi
-			# else
-			error "Error while executing ${WDL} in run ${RUN_PATH}${RUN}"
-			# fi
+			JSON="${AUTODL_DIR}${RUN}/${metaWDL}_${GENOME}_inputs.json"
+			# Extract info from 'samplesInfos' file(s) (created by 'modifyJson()'):
+			# INFO: 'inputsLists' variable contains quotes -> complicated with sed
+			#       Instead send string to file
+			sed -e "s/^/{\n  \"${metaWDL}.inputsLists\": [/" -e 's/,$/],\n/' "${aList}" > "${JSON}"
+			chmod 755 "${JSON}"
+			# Then add parms specific to 'metaPanelCapture' workflow:
+			printf "  \"${metaWDL}.roiDir\": \"${ROI_DIR}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.fastqDirname\": \"${FASTQ_DIR}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.outDir\": \"${TMP_OUTPUT_DIR2}\",\n" >> "${JSON}"
+			# Add rest of params, extracted from 'panelCapture_JSON':
+			grep -vE "\{|\.fastqR1|\.fastqR2|\.suffix1|\.suffix2|\.intervalBedFile|\.sampleID" "${MOBIDL_JSON_TEMPLATE}" |
+				sed "s/${WDL}\./${metaWDL}\./" >> "${JSON}"
+			debug "$(cat ${JSON})"
+			info "Launching:"
+			info "${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${metaWDL}.wdl -i ${JSON}"
+			if [ ! -d "${TMP_OUTPUT_DIR2}Logs" ];then
+				mkdir -p "${TMP_OUTPUT_DIR2}Logs"
+			fi
+			LOG_FILE=${TMP_OUTPUT_DIR2}Logs/${metaWDL}_${GENOME}.log
+			touch "${LOG_FILE}"
+			info "MobiDL ${metaWDL} log in ${LOG_FILE}"
+			# actual launch and copy in the end
+			source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
+			# conda env is loaded but cromwell acts as if it were not?
+			# info "$(which gatk)"
+			# info "gatkEnv loaded"
+			# exit 0;
+			"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${metaWDL}.wdl" -i "${JSON}" >> "${LOG_FILE}"
+			if [ $? -eq 0 ];then
+				conda deactivate
+				workflowPostTreatment "${metaWDL}" "${GENOME}"
+			else
+				# # GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+				# # david 20210215 replace with below because of cromwell change does not report errors in main logs anymore
+				# GATK_LEFT_ALIGN_INDEL_ERROR=$(egrep 'Job panelCapture.gatkLeftAlignIndels:....? exited with return code 3' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
+				# # search for an error with gatk LAI - if found relaunch without this step
+				# # cannot explain this error - maybe a gatk bug?
+				# if [ "${GATK_LEFT_ALIGN_INDEL_ERROR}" != '' ];then
+				# 	info "GATK LeftAlignIndel Error occured - relaunching MobiDL without this step"
+				# 	"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${WDL}_noGatkLai.wdl" -i "${JSON}" >> "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}_noGatkLai.log"
+				# 	conda deactivate
+				# 	if [ $? -eq 0 ];then
+				# 		workflowPostTreatment "${WDL}_noGatkLai"
+				# 	else
+				# 		error "Error while executing ${WDL}_noGatkLai for ${SAMPLE} in run ${RUN_PATH}${RUN}"
+				# 	fi
+				# else
+				error "Error while executing ${metaWDL} for ${GENOME} in run ${RUN_PATH}${RUN}"
+				# fi
+			fi
 		fi
-		WDL=${oldWDL}  # Get back to old value (= not 'metaPanelCapt' anymore), required for remaining steps
-	fi
+	done
 }
 
 workflowPostTreatment() {
@@ -364,7 +353,7 @@ workflowPostTreatment() {
 	# 	RUN_PATH="${MISEQ_RUNS_DEST_DIR}"
 	# fi
 	# copy to final destination
-	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR2}Logs/${1}.log" "${TMP_OUTPUT_DIR2}"
+	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR2}Logs/${1}_${2}.log" "${TMP_OUTPUT_DIR2}"
 	rm -r "${TMP_OUTPUT_DIR2}Logs/"  # Remove, otherwise 'Logs' dir copied to FINAL_DIR
 	info "Moving MobiDL results to ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
@@ -375,7 +364,7 @@ workflowPostTreatment() {
 		error "Error while syncing ${1} in run ${OUTPUT_PATH}${RUN}"
 	fi
 	# remove cromwell data
-	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${1}.log" | rev | cut -d ' ' -f 1 | rev)
+	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${1}_{2}.log" | rev | cut -d ' ' -f 1 | rev)
 	if [[ -n "${WORKFLOW_ID}" ]]; then
 		# test récupérer le path courant
 		rm -r "./cromwell-executions/${1}/${WORKFLOW_ID}"
@@ -740,6 +729,9 @@ do
 							done
 							# ifcnv/gatk_cnv specific feature: create a folder with symbolic links to the alignment files
 							# mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/"
+							debug "Remove existing ${AUTODL_DIR}/${RUN}"
+							rm -rf "${AUTODL_DIR}/${RUN}"
+							mkdir "${AUTODL_DIR}/${RUN}"
 							debug "1st loop on SAMPLES"
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
