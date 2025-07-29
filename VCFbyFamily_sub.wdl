@@ -2,6 +2,7 @@ version 1.0
 
 
 import "modules/somalier.wdl" as runSomalier
+import "exomeMetrix_sub.wdl" as runExomeMetrix
 import "captainAchab.wdl" as runCaptainAchab
 import "modules/achabPostProcess.wdl" as runAchabPostProcess
 import "modules/multiqc.wdl" as runMultiqc
@@ -11,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.3"
+        version: "0.4.0"
         date: "2025-03-11"
     }
 
@@ -24,6 +25,8 @@ workflow PedToVCF {
         String suffixVcf = ".vcf"
         String wdlBAM = "panelCapture"
         String suffixBAM = ".crumble.cram"
+        String suffixBAMidx = ".crumble.cram.crai"
+        File intervalBedFile
 
         String condaBin
 
@@ -46,6 +49,7 @@ workflow PedToVCF {
         Int cpuLow
         Int cpuHigh
         Int memoryLow
+        Int memoryHigh
         ## Language Path
         String perlPath = "perl"
         ## Exe
@@ -109,13 +113,18 @@ workflow PedToVCF {
         Boolean pooledParents = false
         Boolean addCaseDepth = false
         Boolean addCaseAB = false
-        Boolean withPoorCov = false
         File? genemap2File
         Boolean skipCaseWT = false
         Boolean hideACMG = false
         ## For BcftoolsLeftAlign
         File fastaGenome
         String vcSuffix = ""
+        ## For runCovMetrix
+        String genomeVersion = "hg19"
+        Int minCovBamQual = 30
+        Int bedtoolsLowCoverage = 10  # Value used in exome -> different from MobiDL
+        Int bedToolsSmallInterval = 5  # Value used in exome -> different from MobiDL
+        File? poorCoverageFileFolder
         ## For custom MultiQC
         File customMQCconfig = "/home/felix/Exome/scripts/mobiDL_customMQC.yaml"
     }
@@ -177,6 +186,36 @@ workflow PedToVCF {
                 Queue = defQueue,
                 Cpu = cpuLow,
                 Memory = memoryLow
+        }
+        call findFile as findBAMidx {
+            input:
+                Family = aFamily,
+                PrefixPath = analysisDir,
+                WDL = wdlBAM,
+                SuffixFile = suffixBAMidx,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow
+        }
+        # Always re-run metrix
+        call runExomeMetrix.exomeMetrix {
+            input:
+                sortedBam = findBAM.filesList[0],
+                sortedBamIdx = findBAMidx.filesList[0],
+                intervalBedFile = intervalBedFile,
+                poorCoverageFileFolder = poorCoverageFileFolder,
+                sampleID = aCasIndex,
+                outDir = byFamDir,
+                genomeVersion = genomeVersion,
+                minCovBamQual = minCovBamQual,
+                bedtoolsLowCoverage = bedtoolsLowCoverage,
+                bedToolsSmallInterval = bedToolsSmallInterval,
+                cpuHigh = cpuHigh,
+                memoryHigh = memoryHigh,
+                cpuLow = cpuLow,
+                memoryLow = memoryLow,
+                workflowType = workflowType,
+                condaBin = condaBin
         }
 
         # MEMO: PooledSamples are either whole family or only casIndex
@@ -251,6 +290,7 @@ workflow PedToVCF {
                 pooledSamples = pooledSamples,
                 caseDepth = addCaseDepth,
                 caseAB = addCaseAB,
+                poorCoverageFile = exomeMetrix.outPoorCovExtended,
                 genemap2File = genemap2File,
                 skipCaseWT = skipCaseWT,
                 hideACMG = hideACMG,
@@ -269,7 +309,7 @@ workflow PedToVCF {
         # String? achabPoorCov = achabOutDir + aCasIndex + "_poorCoverage.xlsx"
         # So use dummy block
         # >>> DUMMY START
-        if (withPoorCov) {
+        if (defined(poorCoverageFileFolder)) {
             call findPoorCovExcel {
                 input:
                     Family = aFamily,
