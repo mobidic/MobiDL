@@ -1,8 +1,8 @@
 version 1.0
 
 
-import "captainAchab.wdl" as runCaptainAchab
 import "modules/somalier.wdl" as runSomalier
+import "captainAchab.wdl" as runCaptainAchab
 import "modules/achabPostProcess.wdl" as runAchabPostProcess
 import "modules/multiqc.wdl" as runMultiqc
 
@@ -11,7 +11,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.2"
+        version: "0.3.3"
         date: "2025-03-11"
     }
 
@@ -130,7 +130,6 @@ workflow PedToVCF {
             Cpu = cpuLow,
             Memory = memoryLow
     }
-
     call pedToFam {
         input:
             PedFile = preprocessPed.outputFile,
@@ -147,12 +146,12 @@ workflow PedToVCF {
         String byFamDir = OutDir + aCasIndex + "/"
         String aFamily = aStatus[1]
 
-        call findVCF {
+        call findFile as findVCF {
             input:
                 Family = aFamily,
                 PrefixPath = analysisDir,
                 WDL = wdl,
-                SuffixVcf = suffixVcf,
+                SuffixFile = suffixVcf,
                 Queue = defQueue,
                 Cpu = cpuLow,
                 Memory = memoryLow,
@@ -160,13 +159,24 @@ workflow PedToVCF {
         call mergeVCF {
             input:
                 CasIndex = aCasIndex,
-                VCFlist = findVCF.vcfList,
+                VCFlist = findVCF.filesList,
                 VcfOutPath = byFamDir,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
                 Queue = defQueue,
                 Cpu = cpuLow,
                 Memory = memoryLow,
+        }
+
+        call findFile as findBAM {
+            input:
+                Family = aFamily,
+                PrefixPath = analysisDir,
+                WDL = wdlBAM,
+                SuffixFile = suffixBAM,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow
         }
 
         # MEMO: PooledSamples are either whole family or only casIndex
@@ -254,24 +264,30 @@ workflow PedToVCF {
         String achabOutDir = byFamDir + "/CaptainAchab/achab_excel/"
         File achabNewHopeExcel = achabOutDir + aCasIndex + "_achab_catch_newHope.xlsx"
         File achabHtml = achabOutDir + aCasIndex + "_newHope_achab.html"
-        # String achabPoorCov = achabOutDir + aCasIndex + "_poorCoverage.xlsx"
+
+        # Cannot use bellow:
+        # String? achabPoorCov = achabOutDir + aCasIndex + "_poorCoverage.xlsx"
+        # So use dummy block
+        # >>> DUMMY START
         if (withPoorCov) {
-            call findPoorCov {
+            call findPoorCovExcel {
                 input:
                     Family = aFamily,
                     PrefixPath = analysisDir,
                     WDL = wdlBAM,
-                    SuffixBAM = suffixBAM,
+                    SuffixFile = suffixBAM,
                     Queue = defQueue,
                     Cpu = cpuLow,
                     Memory = memoryLow
-            }
+                }
         }
+        # <<< DUMMY END
+
         call runAchabPostProcess.postProcess as achabCINewHopePost {
             input :
                 OutAchab = achabNewHopeExcel,
                 OutAchabHTML = achabHtml,
-                OutAchabPoorCov = findPoorCov.achabPoorCov,
+                OutAchabPoorCov = findPoorCovExcel.filesList,
                 OutDir = OutMetrix,
                 csvtkExe = csvtkExe,
                 Queue = defQueue,
@@ -281,17 +297,7 @@ workflow PedToVCF {
         }
 
         ## Somalier
-        call findBAM {
-            input:
-                Family = aFamily,
-                PrefixPath = analysisDir,
-                WDL = wdlBAM,
-                SuffixBAM = suffixBAM,
-                Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow
-        }
-        scatter (aBam in findBAM.bamList) {
+        scatter (aBam in findBAM.filesList) {
             call runSomalier.extract as SomalierExtract {
                 input :
                     refFasta = fastaGenome,
@@ -431,37 +437,6 @@ task pedToFam {
     }
 }
 
-task findVCF {
-    input {
-        String Family  # Eg.: 'casIndex,father,mother'
-        String PrefixPath  # Eg: /path/to/runID/MobiDL/
-        String WDL = "panelCapture"
-        String SuffixVcf = ".vcf"
-
-        # runtime attributes
-        String Queue
-        Int Cpu
-        Int Memory
-    }
-    command <<<
-        set -e
-        # Should work also if 1 member in family ?
-        for memb in $(echo ~{Family} | tr "," " ") ; do
-            ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixVcf}"
-        done
-    >>>
-
-    output {
-        Array[File] vcfList = read_lines(stdout())
-    }
-
-    runtime {
-        queue: "~{Queue}"
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
 task mergeVCF {
     input {
         Array[File] VCFlist  # Eg.: [/path/to/casIndex.vcf, /path/to/father.vcf, /path/to/mother.vcf]
@@ -513,12 +488,12 @@ task mergeVCF {
     }
 }
 
-task findBAM {
+task findFile {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String WDL = "panelCapture"
-        String SuffixBAM = ".crumble.cram"
+        String SuffixFile = ".crumble.cram"
 
         # runtime attributes
         String Queue
@@ -529,12 +504,12 @@ task findBAM {
         set -e
         # Should work also if 1 member in family ?
         for memb in $(echo ~{Family} | tr "," " ") ; do
-            ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixBAM}"
+            ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixFile}"
         done
     >>>
 
     output {
-        Array[File] bamList = read_lines(stdout())
+        Array[File] filesList = read_lines(stdout())
     }
 
     runtime {
@@ -544,13 +519,13 @@ task findBAM {
     }
 }
 
-# Dummy func -> REMOVE ME
-task findPoorCov {
+# Dummy func -> USE 'findFile' later
+task findPoorCovExcel {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String WDL = "panelCapture"
-        String SuffixBAM = ".crumble.cram"
+        String SuffixFile = ".crumble.cram"
 
         # runtime attributes
         String Queue
@@ -559,11 +534,11 @@ task findPoorCov {
     }
     command <<<
         set -e
-        echo "sakyt"
+        echo "_poorCoverage_extended.tsv"
     >>>
 
     output {
-        File achabPoorCov = read_lines(stdout())
+        File filesList = read_lines(stdout())
     }
 
     runtime {
