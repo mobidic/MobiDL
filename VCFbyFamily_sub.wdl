@@ -11,7 +11,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.1"
+        version: "0.3.2"
         date: "2025-03-11"
     }
 
@@ -161,10 +161,7 @@ workflow PedToVCF {
             input:
                 CasIndex = aCasIndex,
                 VCFlist = findVCF.vcfList,
-                PrefixPath = analysisDir,
                 VcfOutPath = byFamDir,
-                WDL = wdl,
-                SuffixVcf = suffixVcf,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
                 Queue = defQueue,
@@ -469,10 +466,7 @@ task mergeVCF {
     input {
         Array[File] VCFlist  # Eg.: [/path/to/casIndex.vcf, /path/to/father.vcf, /path/to/mother.vcf]
         String CasIndex
-        String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String VcfOutPath  # Eg: /path/to/runID/MobiDL/byFam/aSample/
-        String WDL = "panelCapture"
-        String SuffixVcf = ".HC.vcf"
 
         String CondaBin
         String BcftoolsEnv
