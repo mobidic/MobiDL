@@ -126,7 +126,7 @@ task computePoorCovExtended {
 		Int BedToolsSmallInterval	
 		File GenomecovFile
 		File CoverageFile
-		String PoorCoverageFileFolder
+		String? PoorCoverageFileFolder
 		# runtime attributes
 		String Queue
 		Int Cpu
