@@ -22,7 +22,7 @@ task multiqc {
 		Boolean Version = false
 		# task specific variables
 		File? Vcf
-		File? configFile  # Optional custom multiQC config file
+		File? configFile  # If provided, run ONLY 'custom' metrix
 		#runtime attributes
 		Array[String] TaskOut  # To force exec after given tasks
 		String Queue
@@ -37,8 +37,8 @@ task multiqc {
 			echo "GATK (Picard): $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
 		source ~{CondaBin}activate ~{MultiqcEnv}
-		~{MultiqcExe} ~{"--config " + configFile} -o "~{OutDir}~{SampleID}/~{WorkflowType}/" -n "~{Name}_multiqc" "~{OutDir}~{SampleID}/~{WorkflowType}/" -f
-		~{perlExe} -pi.bak -e 's/NaN/null/g' "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_multiqc_data/multiqc_data.json"
+		~{MultiqcExe} ~{"--module custom_content --config " + configFile} -o "~{OutDir}~{SampleID}/~{WorkflowType}/" -n "~{Name}_multiqc" "~{OutDir}~{SampleID}/~{WorkflowType}/" -f
+		~{perlExe} -pi.bak -e 's/NaN/null/g' "~{OutDir}~{SampleID}/~{WorkflowType}/~{Name}_multiqc_data/multiqc_data.json"
 		if [ ~{Version} = true ];then
 			echo "MultiQC: v$(~{MultiqcExe} --version | grep 'multiqc' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
