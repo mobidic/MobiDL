@@ -16,11 +16,11 @@
     - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
       should_exist: true
     # Somalier files
-    - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.somalier
+    - path: byFamily/Metrix/HG002-exomeTwist-chr22.somalier
       md5sum: fafadc577bd4635c9211b84525bcc8ec
-    - path: byFamily/somalier_relate/related.pairs.tsv
+    - path: byFamily/Metrix/somalier_relate/related.pairs.tsv
       md5sum: 0000d673006f04a9c3645cf0f2fbcc48
-    - path: byFamily/somalier_relate/related.pairs.filtered.tsv
+    - path: byFamily/Metrix/somalier_relate/related.pairs.filtered.tsv
       md5sum: 973da946bd518d17723f2b5336039303
     # MPA files
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
@@ -42,7 +42,7 @@
     - path: byFamily/Metrix/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
       md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
     # Custom MultiQC files
-    - path: byFamily/Metrix/custom_multiqc.html
+    - path: byFamily/custom_multiqc.html
 
 - name: VCFbyFamily coriells solo affected
   # PED contains solo -> should work

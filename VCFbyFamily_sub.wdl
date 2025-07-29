@@ -11,7 +11,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.0"
+        version: "0.3.1"
         date: "2025-03-11"
     }
 
@@ -117,9 +117,10 @@ workflow PedToVCF {
         File fastaGenome
         String vcSuffix = ""
         ## For custom MultiQC
-        File customMQCconfig = "/home/felix/Exome/scripts/my_multiQC_config.yaml"
+        File customMQCconfig = "/home/felix/Exome/scripts/mobiDL_customMQC.yaml"
     }
     String OutDir = if defined(outputPath) then outputPath + "/byFamily/" else analysisDir + "/byFamily/"
+    String OutMetrix = OutDir + "Metrix/"
 
     call preprocessPed {
         input:
@@ -274,7 +275,7 @@ workflow PedToVCF {
                 OutAchab = achabNewHopeExcel,
                 OutAchabHTML = achabHtml,
                 OutAchabPoorCov = findPoorCov.achabPoorCov,
-                OutDir = OutDir + "/Metrix",
+                OutDir = OutMetrix,
                 csvtkExe = csvtkExe,
                 Queue = defQueue,
                 Cpu = cpuLow,
@@ -298,7 +299,7 @@ workflow PedToVCF {
                 input :
                     refFasta = fastaGenome,
                     bamFile = aBam,
-                    outputPath = byFamDir,
+                    outputPath = OutMetrix,
                     path_exe = somalierExe,
                     CondaBin = condaBin,
                     SamtoolsEnv = samtoolsEnv,
@@ -315,7 +316,7 @@ workflow PedToVCF {
             path_exe = somalierExe,
             ped = preprocessPed.outputFile,
             somalier_extracted_files = flatten(flatten([SomalierExtract.file])),
-            outputPath = outputPath + "/byFamily/somalier_relate/",
+            outputPath = OutMetrix + "somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
             Cpu = cpuLow,
@@ -327,7 +328,7 @@ workflow PedToVCF {
             relateSamplesFile = somalierRelate.RelateSamplesFile,
             relatePairsFile = somalierRelate.RelatePairsFile,
             ped = preprocessPed.outputFile,
-            outputPath = outputPath + "/byFamily/somalier_relate/",
+            outputPath = OutMetrix + "somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
             Cpu = cpuLow,
@@ -345,7 +346,7 @@ workflow PedToVCF {
             SampleID = "",
             Name = "custom",
             OutDir = OutDir,
-            WorkflowType = "Metrix",
+            WorkflowType = "",
             MultiqcExe = multiqcExe,
             GatkExe = gatkExe,
             Version = true,
