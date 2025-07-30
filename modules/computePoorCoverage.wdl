@@ -2,9 +2,9 @@ version 1.0
 
 task computeGenomecov {
 	meta {
-		author: "David BAUX"
-		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
+		author: "Felix VANDERMEEREN"
+		email: "felix.vandermeeren(at)chu-montpellier.fr"
+		version: "0.1.0"
 		date: "2023-09-04"
 	}
 	input {
@@ -13,7 +13,6 @@ task computeGenomecov {
 		String BedtoolsEnv
 		# global variables
 		String SampleID
-		String OutDirSampleID = ""
 		String OutDir
 		String WorkflowType
 		String GenomeVersion
@@ -30,8 +29,7 @@ task computeGenomecov {
 		Int Cpu
 		Int Memory
 	}
-	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
-	String OutputFile = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_genomecov.tsv"
+	String OutputFile = "~{OutDir}/~{WorkflowType}/coverage/~{SampleID}_genomecov.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BedtoolsEnv}
@@ -126,7 +124,7 @@ task computePoorCovExtended {
 		Int BedToolsSmallInterval	
 		File GenomecovFile
 		File CoverageFile
-		String? PoorCoverageFileFolder
+		String PoorCoverageFileFolder
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -136,6 +134,10 @@ task computePoorCovExtended {
 	String OutputFile = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_poorCoverage_extended.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
+		if [ -z "~{PoorCoverageFileFolder}" ] ; then
+			echo "WARNING: NO poorCoverageFileFolder provided"
+			exit
+		fi
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{SortExe} -k1,1 -k2,2n -k3,3n "~{GenomecovFile}" \
 		| ~{BedToolsExe} merge -d 1 -c 4,10,10 -o distinct,min,max -i - \
@@ -152,6 +154,6 @@ task computePoorCovExtended {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File poorCoverageFile = OutputFile
+		File? poorCoverageFile = OutputFile
 	}
 }

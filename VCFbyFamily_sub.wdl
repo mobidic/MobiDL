@@ -1,10 +1,10 @@
 version 1.0
 
 
-import "modules/somalier.wdl" as runSomalier
 import "exomeMetrix_sub.wdl" as runExomeMetrix
 import "captainAchab.wdl" as runCaptainAchab
 import "modules/achabPostProcess.wdl" as runAchabPostProcess
+import "modules/somalier.wdl" as runSomalier
 import "modules/multiqc.wdl" as runMultiqc
 
 
@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.0"
+        version: "0.4.1"
         date: "2025-03-11"
     }
 
@@ -60,9 +60,9 @@ workflow PedToVCF {
         String bcftoolsExe = "bcftools"
         String gatkExe = "gatk"
         String rsyncExe = "rsync"
-        String somalierExe = "/bioinfo/softs/bin/somalier"
         # WARN: 'somalierRelatePostProcess' does not work with newer versions of csvtk
         String csvtkExe = "/bioinfo/softs/bin/csvtk-0.30.0"
+        String somalierExe = "/bioinfo/softs/bin/somalier"
         String multiqcExe = "multiqc"
         ## Global
         String workflowType
@@ -124,7 +124,7 @@ workflow PedToVCF {
         Int minCovBamQual = 30
         Int bedtoolsLowCoverage = 10  # Value used in exome -> different from MobiDL
         Int bedToolsSmallInterval = 5  # Value used in exome -> different from MobiDL
-        File? poorCoverageFileFolder
+        String poorCoverageFileFolder = ""
         ## For custom MultiQC
         File customMQCconfig = "/home/felix/Exome/scripts/mobiDL_customMQC.yaml"
     }
@@ -155,6 +155,51 @@ workflow PedToVCF {
         String byFamDir = OutDir + aCasIndex + "/"
         String aFamily = aStatus[1]
 
+        # Coverage metrix + 'somalier extract'
+        call findFile as findBAM {
+            input:
+                Family = aFamily,
+                PrefixPath = analysisDir,
+                WDL = wdlBAM,
+                SuffixFile = suffixBAM,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow
+        }
+        # Create 'coverage' subdir otherwise error
+        call mkdirCov {
+            input:
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                OutDir = byFamDir
+        }
+        scatter (aBam in findBAM.filesList) {
+            ## Always re-run metrix
+            call runExomeMetrix.exomeMetrix {
+                input:
+                    sortedBam = aBam,
+                    intervalBedFile = intervalBedFile,
+                    poorCoverageFileFolder = poorCoverageFileFolder,
+                    sampleID = aCasIndex,
+                    outDir = mkdirCov.outDir,
+                    fastaGenome = fastaGenome,
+                    genomeVersion = genomeVersion,
+                    minCovBamQual = minCovBamQual,
+                    bedtoolsLowCoverage = bedtoolsLowCoverage,
+                    bedToolsSmallInterval = bedToolsSmallInterval,
+                    cpuHigh = cpuHigh,
+                    memoryHigh = memoryHigh,
+                    cpuLow = cpuLow,
+                    memoryLow = memoryLow,
+                    defQueue = defQueue,
+                    workflowType = "",
+                    somalierExe = somalierExe,
+                    condaBin = condaBin
+            }
+        }
+
+        # Gather all VCF of family + Achab
         call findFile as findVCF {
             input:
                 Family = aFamily,
@@ -176,48 +221,6 @@ workflow PedToVCF {
                 Cpu = cpuLow,
                 Memory = memoryLow,
         }
-
-        call findFile as findBAM {
-            input:
-                Family = aFamily,
-                PrefixPath = analysisDir,
-                WDL = wdlBAM,
-                SuffixFile = suffixBAM,
-                Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow
-        }
-        call findFile as findBAMidx {
-            input:
-                Family = aFamily,
-                PrefixPath = analysisDir,
-                WDL = wdlBAM,
-                SuffixFile = suffixBAMidx,
-                Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow
-        }
-        # Always re-run metrix
-        call runExomeMetrix.exomeMetrix {
-            input:
-                sortedBam = findBAM.filesList[0],
-                sortedBamIdx = findBAMidx.filesList[0],
-                intervalBedFile = intervalBedFile,
-                poorCoverageFileFolder = poorCoverageFileFolder,
-                sampleID = aCasIndex,
-                outDir = byFamDir,
-                genomeVersion = genomeVersion,
-                minCovBamQual = minCovBamQual,
-                bedtoolsLowCoverage = bedtoolsLowCoverage,
-                bedToolsSmallInterval = bedToolsSmallInterval,
-                cpuHigh = cpuHigh,
-                memoryHigh = memoryHigh,
-                cpuLow = cpuLow,
-                memoryLow = memoryLow,
-                workflowType = workflowType,
-                condaBin = condaBin
-        }
-
         # MEMO: PooledSamples are either whole family or only casIndex
         #       Apply same logic as for Exome.wdl
         String pooledSamples = if (pooledParents) then aFamily else aCasIndex
@@ -290,7 +293,7 @@ workflow PedToVCF {
                 pooledSamples = pooledSamples,
                 caseDepth = addCaseDepth,
                 caseAB = addCaseAB,
-                poorCoverageFile = exomeMetrix.outPoorCovExtended,
+                poorCoverageFile = exomeMetrix.outPoorCovExtended[0],
                 genemap2File = genemap2File,
                 skipCaseWT = skipCaseWT,
                 hideACMG = hideACMG,
@@ -298,7 +301,7 @@ workflow PedToVCF {
                 vcSuffix = vcSuffix
         }
 
-        # Metrix:
+        # Achab metrix + 'somalier relate' + custom MultiQC
         ## Post-process Achab 'newHope' results
         ## MEMO: Cannot use outputs from captainAchab call due to use tmpDir
         String achabOutDir = byFamDir + "/CaptainAchab/achab_excel/"
@@ -309,7 +312,7 @@ workflow PedToVCF {
         # String? achabPoorCov = achabOutDir + aCasIndex + "_poorCoverage.xlsx"
         # So use dummy block
         # >>> DUMMY START
-        if (defined(poorCoverageFileFolder)) {
+        if (false) {
             call findPoorCovExcel {
                 input:
                     Family = aFamily,
@@ -335,22 +338,6 @@ workflow PedToVCF {
                 Memory = memoryLow,
                 TaskOut = captainAchab.achabNewHopeHtml
         }
-
-        ## Somalier
-        scatter (aBam in findBAM.filesList) {
-            call runSomalier.extract as SomalierExtract {
-                input :
-                    refFasta = fastaGenome,
-                    bamFile = aBam,
-                    outputPath = OutMetrix,
-                    path_exe = somalierExe,
-                    CondaBin = condaBin,
-                    SamtoolsEnv = samtoolsEnv,
-                    Queue = defQueue,
-                    Cpu = cpuLow,
-                    Memory = memoryLow
-            }
-        }
     }
 
     ### Somalier 'relate' on '.somalier' files generated from BAM
@@ -358,8 +345,8 @@ workflow PedToVCF {
         input :
             path_exe = somalierExe,
             ped = preprocessPed.outputFile,
-            somalier_extracted_files = flatten(flatten([SomalierExtract.file])),
-            outputPath = OutMetrix + "somalier_relate/",
+            somalier_extracted_files = flatten(flatten([exomeMetrix.somalierExtracted])),
+            outputPath = OutDir + "/somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
             Cpu = cpuLow,
@@ -371,7 +358,7 @@ workflow PedToVCF {
             relateSamplesFile = somalierRelate.RelateSamplesFile,
             relatePairsFile = somalierRelate.RelatePairsFile,
             ped = preprocessPed.outputFile,
-            outputPath = OutMetrix + "somalier_relate/",
+            outputPath = OutDir + "/somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
             Cpu = cpuLow,
@@ -550,6 +537,31 @@ task findFile {
 
     output {
         Array[File] filesList = read_lines(stdout())
+    }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+task mkdirCov {
+    input {
+        String OutDir
+
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    command <<<
+        set -e
+        mkdir -p ~{OutDir}/coverage
+    >>>
+
+    output {
+        String outDir = OutDir
     }
 
     runtime {

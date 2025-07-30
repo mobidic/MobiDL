@@ -34,9 +34,7 @@ task extract {
 		File sites = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.hg19.vcf.gz"
 		String refFasta
 		File bamFile
-		String CondaBin
-        String SamtoolsEnv
-        String SamtoolsExe = "samtools"
+		File BamIndex
 		String ext = ".bam"
 		# MEMO: Somalier always name '.somalier' from BAM ReadGroup tag -> use bellow param if needed:
 		String sampleName = basename(bamFile, ext)
@@ -53,10 +51,6 @@ task extract {
 		if [[ ! -d ~{outputPath} ]]; then
 			mkdir --parents ~{outputPath}
 		fi
-		# Somalier requires BAM to be indexed -> Do it here to simplify:
-		source ~{CondaBin}activate ~{SamtoolsEnv}
-		samtools index "~{bamFile}"
-		conda deactivate
 		# Then run 'somalier extract'
 		"~{path_exe}" extract \
 			--sites="~{sites}" \
