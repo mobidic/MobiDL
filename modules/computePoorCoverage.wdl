@@ -13,6 +13,7 @@ task computeGenomecov {
 		String BedtoolsEnv
 		# global variables
 		String SampleID
+		String OutDirSampleID = ""
 		String OutDir
 		String WorkflowType
 		String GenomeVersion
@@ -29,7 +30,8 @@ task computeGenomecov {
 		Int Cpu
 		Int Memory
 	}
-	String OutputFile = "~{OutDir}/~{WorkflowType}/coverage/~{SampleID}_genomecov.tsv"
+	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
+	String OutputFile = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_genomecov.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BedtoolsEnv}

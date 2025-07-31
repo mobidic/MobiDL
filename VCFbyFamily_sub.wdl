@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.1"
+        version: "0.4.2"
         date: "2025-03-11"
     }
 
@@ -129,7 +129,6 @@ workflow PedToVCF {
         File customMQCconfig = "/home/felix/Exome/scripts/mobiDL_customMQC.yaml"
     }
     String OutDir = if defined(outputPath) then outputPath + "/byFamily/" else analysisDir + "/byFamily/"
-    String OutMetrix = OutDir + "Metrix/"
 
     call preprocessPed {
         input:
@@ -154,6 +153,7 @@ workflow PedToVCF {
         String aCasIndex = aStatus[0]
         String byFamDir = OutDir + aCasIndex + "/"
         String aFamily = aStatus[1]
+        String OutMetrix = byFamDir + "coverage/"
 
         # Coverage metrix + 'somalier extract'
         call findFile as findBAM {
@@ -181,7 +181,6 @@ workflow PedToVCF {
                     sortedBam = aBam,
                     intervalBedFile = intervalBedFile,
                     poorCoverageFileFolder = poorCoverageFileFolder,
-                    sampleID = aCasIndex,
                     outDir = mkdirCov.outDir,
                     fastaGenome = fastaGenome,
                     genomeVersion = genomeVersion,

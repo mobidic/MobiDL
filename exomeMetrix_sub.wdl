@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.1"
+        version: "0.1.2"
         date: "2025-05-26"
     }
 
@@ -48,11 +48,11 @@ workflow exomeMetrix {
         Int memoryLow
         Int memoryHigh
         ## Global
-        String sampleID
         String outDir
         String genomeVersion
         String workflowType
     }
+    String sampleID = basename (sortedBam, bamExt)
 
     # 'somalier and 'samtools bedcov' requires indexed BAM
     call indexBAM {
@@ -83,6 +83,7 @@ workflow exomeMetrix {
             Memory = memoryLow
     }
 
+    # 'samtools bedCov' and derived files
     call runSamtoolsBedCov.samtoolsBedCov {
         input:
             Queue = defQueue,
@@ -101,6 +102,33 @@ workflow exomeMetrix {
             MinCovBamQual = minCovBamQual
     }
 
+    call runComputeCoverage.computeCoverage {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            OutDirSampleID = "/",
+            WorkflowType = workflowType,
+            AwkExe = awkExe,
+            SortExe = sortExe,
+            BedCovFile = samtoolsBedCov.BedCovFile
+    }
+    call runComputeCoverageClamms.computeCoverageClamms {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            OutDirSampleID = "/",
+            WorkflowType = workflowType,
+            AwkExe = awkExe,
+            SortExe = sortExe,
+            BedCovFile = samtoolsBedCov.BedCovFile
+    }
+
 
     # TODO: Run genomeCov with 'samtools view --min-MQ 30'
     call runComputePoorCoverage.computeGenomecov {
@@ -112,6 +140,7 @@ workflow exomeMetrix {
             Memory = memoryHigh,
             SampleID = sampleID,
             OutDir = outDir,
+            OutDirSampleID = "/",
             WorkflowType = workflowType,
             GenomeVersion = genomeVersion,
             BedToolsExe = bedToolsExe,
@@ -131,6 +160,7 @@ workflow exomeMetrix {
             Memory = memoryHigh,
             SampleID = sampleID,
             OutDir = outDir,
+            OutDirSampleID = "/",
             WorkflowType = workflowType,
             GenomeVersion = genomeVersion,
             BedToolsExe = bedToolsExe,
@@ -138,32 +168,6 @@ workflow exomeMetrix {
             SortExe = sortExe,
             BedToolsSmallInterval = bedToolsSmallInterval,
             GenomecovFile = computeGenomecov.genomecovFile
-    }
-
-    call runComputeCoverage.computeCoverage {
-        input:
-            Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            WorkflowType = workflowType,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            BedCovFile = samtoolsBedCov.BedCovFile
-    }
-
-    call runComputeCoverageClamms.computeCoverageClamms {
-        input:
-            Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            WorkflowType = workflowType,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            BedCovFile = samtoolsBedCov.BedCovFile
     }
 
     call runComputePoorCoverage.computePoorCovExtended {
@@ -176,6 +180,7 @@ workflow exomeMetrix {
             Queue = defQueue,
             SampleID = sampleID,
             OutDir = outDir,
+            OutDirSampleID = "/",
             WorkflowType = workflowType,
             GenomeVersion = genomeVersion,
             BedToolsExe = bedToolsExe,

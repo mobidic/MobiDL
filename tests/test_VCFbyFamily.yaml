@@ -16,12 +16,23 @@
     - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
       should_exist: true
     # Somalier files
-    - path: byFamily/Metrix/HG002-exomeTwist-chr22.somalier
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22.somalier
       md5sum: fafadc577bd4635c9211b84525bcc8ec
-    - path: byFamily/Metrix/somalier_relate/related.pairs.tsv
+    - path: byFamily/somalier_relate/related.pairs.tsv
       md5sum: 0000d673006f04a9c3645cf0f2fbcc48
-    - path: byFamily/Metrix/somalier_relate/related.pairs.filtered.tsv
+    - path: byFamily/somalier_relate/related.pairs.filtered.tsv
       md5sum: 973da946bd518d17723f2b5336039303
+    # Coverage files
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_bedcov.bed
+      md5sum: 3afaff806c47aa97cd7e20620e69b6fd
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_coverage.bed
+      md5sum: 10b9dcba3e615cb42c59a4270d55d7d8
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_coverage.tsv
+      md5sum: f124f39086244b2a73c207df17cefee0
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_genomecov.tsv
+      md5sum: bd557909232b4b74ed9d61b2d20e3309
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poor_coverage.tsv
+      md5sum: 2316ccc68c936e6f3451f1cdc479dc35
     # MPA files
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
       # md5sum: Cannot md5 directly due to cwl-exec dir in file
@@ -37,9 +48,9 @@
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_poorCoverage.xlsx
       # md5sum: Cannot md5 Excel file directly
     # Achab metrix files
-    - path: byFamily/Metrix/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
       md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
-    - path: byFamily/Metrix/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
       md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
     # Custom MultiQC files
     - path: byFamily/custom_multiqc.html
