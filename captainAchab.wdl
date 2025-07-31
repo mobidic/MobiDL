@@ -367,7 +367,10 @@ workflow captainAchab {
 			OutAchabNewHope = achabNewHope.outAchabHtml
 	}
 	output {
-		File achabHtml = achab.outAchabHtml
-		File achabNewHopeHtml = achabNewHope.outAchabHtml
+		File achabHtml = "~{outDir}/achab_excel/~{sampleID}_achab.html"
+		File achabNewHopeHtml = "~{outDir}/achab_excel/~{sampleID}_newHope_achab.html"
+		File achabExcel = "~{outDir}/achab_excel/~{sampleID}_achab_catch.xlsx"
+		File achabNewHopeExcel = "~{outDir}/achab_excel/~{sampleID}_achab_catch_newHope.xlsx"
+		File? achabPoorCov = "~{outDir}/achab_excel/~{sampleID}_poorCoverage.xlsx"
 	}
 }
