@@ -33,6 +33,8 @@
       md5sum: bd557909232b4b74ed9d61b2d20e3309
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poor_coverage.tsv
       md5sum: 2316ccc68c936e6f3451f1cdc479dc35
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poorCoverage_extended.tsv
+      md5sum: 2f4d422553afe527ccb3c489c7e9cea2
     # MPA files
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
       # md5sum: Cannot md5 directly due to cwl-exec dir in file
@@ -49,9 +51,9 @@
       # md5sum: Cannot md5 Excel file directly
     # Achab metrix files
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
-      md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
+      md5sum: 29ff85a9160974703b49f1d22ca4c19c
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
-      md5sum: c0f15fc5e75c2fdadbc28dec45e0d6d2
+      md5sum: 00431f1b07268bd95fa17f2b8b86ab72
     # Custom MultiQC files
     - path: byFamily/custom_multiqc.html
 

@@ -3,6 +3,7 @@
   "PedToVCF.analysisDir": "/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/out-Exome/casIndex/",
   "PedToVCF.outputPath": "/scratch/VCFbyFamily_coriells_chr22/",
   "PedToVCF.intervalBedFile": "/mnt/chu-ngs/refData/intervals/RefSeqHG19_CDSplus20.bed",
+  "PedToVCF.poorCoverageFileFolder": "/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/test_PoorCoverageExtented/",
   "PedToVCF.wdl": "VCFs",
   "PedToVCF.wdlBAM": "Alignement",
   "PedToVCF.suffixVcf": ".HC.vcf",

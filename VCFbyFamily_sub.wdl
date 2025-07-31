@@ -22,13 +22,11 @@ workflow PedToVCF {
         String? outputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
 
         String wdl = "panelCapture"
-        String suffixVcf = ".vcf"
+        String suffixVcf = ".vcf"  # VCF merged HC + DV
         String wdlBAM = "panelCapture"
         String suffixBAM = ".crumble.cram"
         String suffixBAMidx = ".crumble.cram.crai"
         File intervalBedFile
-
-        String condaBin
 
         # PedToFam task:
         String pedsEnv  # Any python env with 'peds' package installed
@@ -38,6 +36,7 @@ workflow PedToVCF {
 
         # CaptainAchab inputs
         ## envs
+        String condaBin
         String mpaEnv = "/bioinfo/conda_envs/mpaEnv"
         String achabEnv = "/bioinfo/conda_envs/achabEnv"
         String rsyncEnv = "/bioinfo/conda_envs/rsyncEnv"
@@ -60,10 +59,10 @@ workflow PedToVCF {
         String bcftoolsExe = "bcftools"
         String gatkExe = "gatk"
         String rsyncExe = "rsync"
+        String multiqcExe = "multiqc"
         # WARN: 'somalierRelatePostProcess' does not work with newer versions of csvtk
         String csvtkExe = "/bioinfo/softs/bin/csvtk-0.30.0"
         String somalierExe = "/bioinfo/softs/bin/somalier"
-        String multiqcExe = "multiqc"
         ## Global
         String workflowType
         String outTmpDir = "/scratch/tmp_output/"
@@ -86,13 +85,10 @@ workflow PedToVCF {
         String spliceAI
         String? clinvar
         String? intronHgvs
-        #String operationSuffix
-        #String comma
         ## For phenolyzer
         Boolean withPhenolyzer
         String diseaseFile
         ## For Achab
-        # File mdApiKeyFile
         String genesOfInterest
         String customVCF
         Float allelicFrequency
@@ -302,34 +298,11 @@ workflow PedToVCF {
 
         # Achab metrix + 'somalier relate' + custom MultiQC
         ## Post-process Achab 'newHope' results
-        ## MEMO: Cannot use outputs from captainAchab call due to use tmpDir
-        String achabOutDir = byFamDir + "/CaptainAchab/achab_excel/"
-        File achabNewHopeExcel = achabOutDir + aCasIndex + "_achab_catch_newHope.xlsx"
-        File achabHtml = achabOutDir + aCasIndex + "_newHope_achab.html"
-
-        # Cannot use bellow:
-        # String? achabPoorCov = achabOutDir + aCasIndex + "_poorCoverage.xlsx"
-        # So use dummy block
-        # >>> DUMMY START
-        if (false) {
-            call findPoorCovExcel {
-                input:
-                    Family = aFamily,
-                    PrefixPath = analysisDir,
-                    WDL = wdlBAM,
-                    SuffixFile = suffixBAM,
-                    Queue = defQueue,
-                    Cpu = cpuLow,
-                    Memory = memoryLow
-                }
-        }
-        # <<< DUMMY END
-
         call runAchabPostProcess.postProcess as achabCINewHopePost {
             input :
-                OutAchab = achabNewHopeExcel,
-                OutAchabHTML = achabHtml,
-                OutAchabPoorCov = findPoorCovExcel.filesList,
+                OutAchab = captainAchab.achabNewHopeExcel,
+                OutAchabHTML = captainAchab.achabNewHopeHtml,
+                OutAchabPoorCov = captainAchab.achabPoorCov,
                 OutDir = OutMetrix,
                 csvtkExe = csvtkExe,
                 Queue = defQueue,
@@ -341,7 +314,7 @@ workflow PedToVCF {
 
     ### Somalier 'relate' on '.somalier' files generated from BAM
     call runSomalier.relate as somalierRelate {
-        input :
+        input:
             path_exe = somalierExe,
             ped = preprocessPed.outputFile,
             somalier_extracted_files = flatten(flatten([exomeMetrix.somalierExtracted])),
@@ -353,7 +326,7 @@ workflow PedToVCF {
     }
     ### Post-process 'relate' output file
     call runSomalier.relatePostprocess as somalierRelatePostprocess {
-        input :
+        input:
             relateSamplesFile = somalierRelate.RelateSamplesFile,
             relatePairsFile = somalierRelate.RelatePairsFile,
             ped = preprocessPed.outputFile,
@@ -366,7 +339,7 @@ workflow PedToVCF {
 
     # Custom MQC
     call runMultiqc.multiqc as multiQC_custom {
-        input :
+        input:
             Queue = defQueue,
             CondaBin = condaBin,
             MultiqcEnv = multiqcEnv,
