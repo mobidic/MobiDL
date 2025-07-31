@@ -369,7 +369,7 @@ workflowPostTreatment() {
 		error "Error while syncing ${1} in run ${OUTPUT_PATH}${RUN}"
 	fi
 	# remove cromwell data
-	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${1}_{2}.log" | rev | cut -d ' ' -f 1 | rev)
+	WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${1}_${2}.log" | rev | cut -d ' ' -f 1 | rev)
 	if [[ -n "${WORKFLOW_ID}" ]]; then
 		# test récupérer le path courant
 		rm -r "./cromwell-executions/${1}/${WORKFLOW_ID}"
