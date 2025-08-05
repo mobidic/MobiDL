@@ -910,26 +910,27 @@ do
 								# for LIBRARY in "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/*"
 								for LIBRARY in ${!ROI_TYPES[@]}
 								do
-									# check if at least 3 samples  / library => count number of tsv file in the folder
-									NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
-									if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
+									if [ "${DRY_RUN}" = true ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
-										source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-										if [ "${DRY_RUN}" = true ];then
-											info "MobiCNV launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/ -t tsv -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
-										else
+										info "MobiCNV launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/ -t tsv -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+									else
+										# check if at least 3 samples  / library => count number of tsv file in the folder
+										NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
+										if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
+											info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
+											source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
 											/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
 											debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+											conda deactivate
+											# here prepare and launch gatk_cnv
+											# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
+											# removed 20220420 as does not work as expected
+											# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
+											# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
+											# info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
+										else
+											info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 										fi
-										conda deactivate
-										# here prepare and launch gatk_cnv
-										# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
-										# removed 20220420 as does not work as expected
-										# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
-										# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
-										# info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
-									else
-										info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 									fi
 								done
 							elif [ "${WDL}" != "amplicon" ];then
