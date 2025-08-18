@@ -56,3 +56,31 @@
       md5sum: 00431f1b07268bd95fa17f2b8b86ab72
     # Custom MultiQC files
     - path: byFamily/custom_multiqc.html
+
+- name: VCFbyFamily coriells FULL panelCapture
+  # With VCFs produced by 'MobiDL/panelCapture.wdl' pipeline (runtime = 1h)
+  tags:
+    - wf_level
+    - hg19
+    - exome
+    - full
+    - NOsolo
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/panelCapture_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: byFamily/HG002-exomeTwist-full/HG002-exomeTwist-full.vcf
+      should_exist: true
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.metrix.tsv
+      md5sum: 1b0583ca4b06ad79148024a08f05f0a4
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.poorCovMetrix.tsv
+      md5sum: 09ce9f7928829962d7f17b738e4ecca8
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_coverage.tsv
+      md5sum: 95dc5abbc946cc08a7b074e65084e51d
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_genomecov.tsv
+      md5sum: 62c6963ba96be7da27b3cadabbc06cac
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poorCoverage_extended.tsv
+      md5sum: 495b78b8faec65cfdd835a9226ab50b9
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poor_coverage.tsv
+      md5sum: e74015401cd110c9aca088d21de52bb9
