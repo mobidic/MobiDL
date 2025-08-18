@@ -28,7 +28,7 @@ task postProcess {
     File OutAchab
     File OutAchabHTML
     String OutDir = "./"
-    File? OutAchabPoorCov
+    String? OutAchabPoorCov
 
     String csvtkExe = "csvtk"
 
@@ -90,7 +90,7 @@ task postProcess {
       "~{csvtkExe}" transpose --out-tabs -o "~{OutAchabMetrix}"
 
     ## Process 'poorCoverage.xlsx' (if provided)
-    if [ -n "~{'' + OutAchabPoorCov}" ] ; then
+    if [ -s "~{'' + OutAchabPoorCov}" ] ; then
       temp_poorCov=temp_poorCov
       occurr_threshold=5
       "~{csvtkExe}" xlsx2csv --comment-char '$' --sheet-index 1 "~{OutAchabPoorCov}" |
