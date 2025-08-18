@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.2"
+        version: "0.4.3"
         date: "2025-03-11"
     }
 
@@ -25,7 +25,7 @@ workflow PedToVCF {
         String suffixVcf = ".vcf"  # VCF merged HC + DV
         String wdlBAM = "panelCapture"
         String suffixBAM = ".crumble.cram"
-        String suffixBAMidx = ".crumble.cram.crai"
+        String bamExt = ".cram"  # ENH: Guess that
         File intervalBedFile
 
         # PedToFam task:
@@ -175,6 +175,7 @@ workflow PedToVCF {
             call runExomeMetrix.exomeMetrix {
                 input:
                     sortedBam = aBam,
+                    bamExt = bamExt,
                     intervalBedFile = intervalBedFile,
                     poorCoverageFileFolder = poorCoverageFileFolder,
                     outDir = mkdirCov.outDir,
