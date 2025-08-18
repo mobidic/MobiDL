@@ -8,7 +8,6 @@
   "PedToVCF.wdlBAM": "Alignement",
   "PedToVCF.suffixVcf": ".HC.vcf",
   "PedToVCF.suffixBAM": ".bam",
-  "PedToVCF.suffixBAMidx": ".bam.bai",
   "PedToVCF.pedsEnv": "/home/felix/.conda/envs/felix",
   "PedToVCF.condaBin": "/mnt/Bioinfo/Softs/miniconda/bin/",
   "PedToVCF.withPhenolyzer": true,
