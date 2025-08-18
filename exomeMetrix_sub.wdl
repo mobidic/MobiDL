@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.2"
+        version: "0.1.3"
         date: "2025-05-26"
     }
 
@@ -19,9 +19,10 @@ workflow exomeMetrix {
         # Tasks specific
         File sortedBam
         File? sortedBamIdx
-        String bamExt = ".bam"  # ENH: Guess that
+        String bamExt
         File intervalBedFile
         File fastaGenome
+        File somalierSites  = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.hg19.vcf.gz"
         ## Params
         Int minCovBamQual
         Int bedtoolsLowCoverage
@@ -74,6 +75,7 @@ workflow exomeMetrix {
     call runSomalier.extract as somalierExtract {
         input :
             refFasta = fastaGenome,
+            sites = somalierSites,
             bamFile = sortedBam,
             BamIndex = indexBAM.bamIdx,
             outputPath = outDir + "/coverage/",
