@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20250722
+VERSION=20250818
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -292,7 +292,7 @@ gatherJsonsAndLaunch() {
 	# Loop on genomes:
 	for aList in "${AUTODL_DIR}${RUN}"/samplesInfos_${metaWDL}.* ; do
 		GENOME=$(basename "${aList}" | cut -d"." -f2)
-		info "Processing all samples of genome ${GENOME}"
+		info "Processing all samples with genome ${GENOME}"
 		firstSample=$(awk -F"," '{print $2}' "${aList}" | tr -d '"')
 		MOBIDL_JSON_TEMPLATE="${AUTODL_DIR}${RUN}/${WDL}_${firstSample}_inputs.json"
 		debug "Derivate 'metaPanelCapture_JSON' from JSON of 1st sample : ${MOBIDL_JSON_TEMPLATE}"
@@ -454,31 +454,31 @@ prepareAchab() {
 		GENE_FILE="${CONF_DIR}$(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2)"
 		JSON_SUFFIX=$(grep "${BED}" "${FASTQ_WORKFLOWS_FILE}" | cut -d ',' -f 4)
 	fi
-	# do it only once
+	# deprecated david 20250818
 	# we keep on filling the example conf file for merge_multisample
 	# if [ -z "${FAMILY_FILE_CREATED}" ];then
-	if [ "${FAMILY_FILE_CREATED}" -eq 0 ];then
-		if [ -z "${FAMILY_FILE_CONFIG}" ];then
-			# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
-			FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
-		fi
-		# debug "Family config file: ${FAMILY_FILE_CONFIG}"
-		echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
-		echo "DISEASE_FILE=${DISEASE_ACHAB_DIR}${DISEASE_FILE}" >> "${FAMILY_FILE_CONFIG}"
-		echo "GENES_OF_INTEREST=${GENE_FILE}" >> "${FAMILY_FILE_CONFIG}"
-		echo "ACHAB_TODO=/mnt/chu-ngs/Labos/Transversal/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
-		echo "##### FIN ne pas modifier si analyse auto" >> "${FAMILY_FILE_CONFIG}"
-		echo "NUM_FAM=" >> "${FAMILY_FILE_CONFIG}"
-		echo "TRIO=" >> "${FAMILY_FILE_CONFIG}"
-		echo "# si oui" >> "${FAMILY_FILE_CONFIG}"
-		echo "CI=" >> "${FAMILY_FILE_CONFIG}"
-		echo "FATHER=" >> "${FAMILY_FILE_CONFIG}"
-		echo "MOTHER=" >> "${FAMILY_FILE_CONFIG}"
-		echo "AFFECTED=" >> "${FAMILY_FILE_CONFIG}"
-		echo "# si non" >> "${FAMILY_FILE_CONFIG}"
-		echo "HEALTHY=" >> "${FAMILY_FILE_CONFIG}"
-		FAMILY_FILE_CREATED=1
-	fi
+	# if [ "${FAMILY_FILE_CREATED}" -eq 0 ];then
+	# 	if [ -z "${FAMILY_FILE_CONFIG}" ];then
+	# 		# we need to redefine the file path - can happen with MiniSeq when the fastqs are imported manually (thks LRM2)
+	# 		FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
+	# 	fi
+	# 	# debug "Family config file: ${FAMILY_FILE_CONFIG}"
+	# 	echo "BASE_JSON=${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "DISEASE_FILE=${DISEASE_ACHAB_DIR}${DISEASE_FILE}" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "GENES_OF_INTEREST=${GENE_FILE}" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "ACHAB_TODO=/mnt/chu-ngs/Labos/Transversal/captainAchab/Todo/" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "##### FIN ne pas modifier si analyse auto" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "NUM_FAM=" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "TRIO=" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "# si oui" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "CI=" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "FATHER=" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "MOTHER=" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "AFFECTED=" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "# si non" >> "${FAMILY_FILE_CONFIG}"
+	# 	echo "HEALTHY=" >> "${FAMILY_FILE_CONFIG}"
+	# 	FAMILY_FILE_CREATED=1
+	# fi
 	debug "Manifest: ${MANIFEST}"
 	debug "JSON Suffix: ${JSON_SUFFIX}"
 	# treat VCF for CF screening => restrain to given regions
@@ -674,34 +674,35 @@ do
 							if [ ! -d "${OUTPUT_PATH}${RUN}" ];then
 								mkdir -p "${OUTPUT_PATH}${RUN}"
 							fi
-							if [ ! -d "${NAS_CHU}WDL/Families/${RUN}" ];then
-								# create folder meant to put family files for afterwards merging
-								mkdir -p "${NAS_CHU}WDL/Families/${RUN}"
-								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
-								# create example config file for merge_multisample.sh
-								# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
-								# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
-								# DISEASE_FILE=/usr/local/share/refData/disease_achab/disease_ND.txt # fichier disease contenant les codes HPO de la famille
-								# GENES_OF_INTEREST=/RS_IURC/data/MobiDL/${DATE}/captainAchab/Example/nd.txt # gènes à mettre en avant dans achab
-								# ACHAB_TODO=/RS_IURC/data/MobiDL/${DATE}/captainAchab/
-								# RUN_ID=210924_NB501631_0419_AH5LHNBGXK
-								# NUM_FAM=
-								# TRIO=
-								# # si oui
-								# CI=
-								# FATHER=
-								# MOTHER=
-								# AFFECTED=
-								# # si non
-								# HEALTHY=
-								FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
-								touch "${FAMILY_FILE_CONFIG}"
-								chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
-								echo "##### DEBUT ne pas modifier les champs ci-dessous si analyse auto" > "${FAMILY_FILE_CONFIG}"
-								echo "RUN_PATH=${OUTPUT_PATH}" >> "${FAMILY_FILE_CONFIG}"
-								echo "RUN_ID=${RUN}" >> "${FAMILY_FILE_CONFIG}"
-								FAMILY_FILE_CREATED=0
-							fi
+							# deprecated david 20250818
+							# if [ ! -d "${NAS_CHU}WDL/Families/${RUN}" ];then
+							# 	# create folder meant to put family files for afterwards merging
+							# 	mkdir -p "${NAS_CHU}WDL/Families/${RUN}"
+							# 	chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
+							# 	# create example config file for merge_multisample.sh
+							# 	# RUN_PATH=/RS_IURC/data/NextSeq/nd/2021 # ou trouver le répertoire de base qui contient le run
+							# 	# BASE_JSON=/usr/local/share/refData/mobidlJson/captainAchab_inputs_ND.json # json pour achab
+							# 	# DISEASE_FILE=/usr/local/share/refData/disease_achab/disease_ND.txt # fichier disease contenant les codes HPO de la famille
+							# 	# GENES_OF_INTEREST=/RS_IURC/data/MobiDL/${DATE}/captainAchab/Example/nd.txt # gènes à mettre en avant dans achab
+							# 	# ACHAB_TODO=/RS_IURC/data/MobiDL/${DATE}/captainAchab/
+							# 	# RUN_ID=210924_NB501631_0419_AH5LHNBGXK
+							# 	# NUM_FAM=
+							# 	# TRIO=
+							# 	# # si oui
+							# 	# CI=
+							# 	# FATHER=
+							# 	# MOTHER=
+							# 	# AFFECTED=
+							# 	# # si non
+							# 	# HEALTHY=
+							# 	FAMILY_FILE_CONFIG="${NAS_CHU}WDL/Families/${RUN}/Example_file_config.txt"
+							# 	touch "${FAMILY_FILE_CONFIG}"
+							# 	chmod -R 777 "${NAS_CHU}WDL/Families/${RUN}"
+							# 	echo "##### DEBUT ne pas modifier les champs ci-dessous si analyse auto" > "${FAMILY_FILE_CONFIG}"
+							# 	echo "RUN_PATH=${OUTPUT_PATH}" >> "${FAMILY_FILE_CONFIG}"
+							# 	echo "RUN_ID=${RUN}" >> "${FAMILY_FILE_CONFIG}"
+							# 	FAMILY_FILE_CREATED=0
+							# fi
 							if [ "${DRY_RUN}" = false ];then
 								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
