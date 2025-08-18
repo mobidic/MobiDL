@@ -78,6 +78,7 @@ workflow exomeMetrix {
             sites = somalierSites,
             bamFile = sortedBam,
             BamIndex = indexBAM.bamIdx,
+            ext = bamExt,
             outputPath = outDir + "/coverage/",
             path_exe = somalierExe,
             Queue = defQueue,
