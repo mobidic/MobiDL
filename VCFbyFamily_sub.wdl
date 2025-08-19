@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.4"
+        version: "0.4.5"
         date: "2025-03-11"
     }
 
@@ -21,9 +21,9 @@ workflow PedToVCF {
         String analysisDir  # Eg. /path/to/runID/MobiDL
         String? outputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
 
-        String wdl = "panelCapture"
+        String wdl = "*/panelCapture"
         String suffixVcf = ".vcf"  # VCF merged HC + DV
-        String wdlBAM = "panelCapture"
+        String wdlBAM = "*/panelCapture"
         String suffixBAM = ".crumble.cram"
         String bamExt = ".cram"  # ENH: Guess that
         File intervalBedFile
@@ -502,9 +502,16 @@ task findFile {
     }
     command <<<
         set -e
+        set -x
         # Should work also if 1 member in family ?
         for memb in $(echo ~{Family} | tr "," " ") ; do
-            ls -d "~{PrefixPath}/${memb}/~{WDL}/${memb}~{SuffixFile}"
+            # WARN: No quotes around 'WDL' bellow, to correctly expand possible '*' (a bit dirty)
+            foundFile=$(find "~{PrefixPath}"/~{WDL}/ -type f -name "${memb}~{SuffixFile}")
+            if [ -z "$foundFile" ] || [ "$(echo "$foundFile" | wc -l)" -ne 1 ] ; then
+                echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
+                exit 1
+            fi
+            echo "$foundFile"
         done
     >>>
 

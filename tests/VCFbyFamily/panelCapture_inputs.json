@@ -21,7 +21,7 @@
   "PedToVCF.mozaicRate": 0.2,
   "PedToVCF.mozaicDP": 5,
   "PedToVCF.customInfo": "QD,AAChange.refGeneWithVer,GeneDetail.refGeneWithVer,regsnp_fpr,regsnp_disease,regsnp_splicing_site",
-  "PedToVCF.customVCF": "/mnt/Bioinfo/UMAI/DI/ALL_VCF/all_ExDI.norm.vcf",
+  "PedToVCF.customVCF": "/bioinfo/refData/annotations/UMAI/all_ExDI.norm.NOchr.vcf",
   "PedToVCF.favouriteGeneRef": "",
   "PedToVCF.filterCustomVCF": "10",
   "PedToVCF.filterCustomVCFRegex": "HTZ=",
