@@ -543,32 +543,3 @@ task mkdirCov {
         requested_memory_mb_per_core: "~{Memory}"
     }
 }
-
-# Dummy func -> USE 'findFile' later
-task findPoorCovExcel {
-    input {
-        String Family  # Eg.: 'casIndex,father,mother'
-        String PrefixPath  # Eg: /path/to/runID/MobiDL/
-        String WDL = "panelCapture"
-        String SuffixFile = ".crumble.cram"
-
-        # runtime attributes
-        String Queue
-        Int Cpu
-        Int Memory
-    }
-    command <<<
-        set -e
-        echo "_poorCoverage_extended.tsv"
-    >>>
-
-    output {
-        File filesList = read_lines(stdout())
-    }
-
-    runtime {
-        queue: "~{Queue}"
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
