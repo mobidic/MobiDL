@@ -754,7 +754,7 @@ workflow panelCapture {
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
 		call runGatkHaplotypeCaller.gatkHaplotypeCaller {
 			input:
-				Queue = defQueue,
+				Queue = avxQueue,
 				Cpu = cpuLow,
 				Memory = memoryLow,
 				SampleID = sampleID,
