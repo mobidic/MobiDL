@@ -20,7 +20,7 @@ task extract {
 	meta {
     author: "Felix VANDERMEEREN"
     email: "felix.vandermeeren(at)chu-montpellier.fr"
-    version: "0.0.1"
+    version: "0.1.0"
     date: "2024-03-01"
   }
 
@@ -52,7 +52,11 @@ task extract {
 			mkdir --parents ~{outputPath}
 		fi
 		# Then run 'somalier extract'
-		"~{path_exe}" extract \
+		# MEMO: Use method described here https://github.com/brentp/somalier/issues/115#issuecomment-1593541868
+		#       To enforce naming of outfile as 'sample.somalier'
+		#       Mostly for Sarek data, where CRAM read-group is 'sample_sample'
+		#       Leading somalier to create a 'sample_sample.somalier' (instead of expected 'sample.somalier')
+		SOMALIER_SAMPLE_NAME=~{sampleName} "~{path_exe}" extract \
 			--sites="~{sites}" \
 			--fasta="~{refFasta}" \
 			--out-dir="~{outputPath}" \

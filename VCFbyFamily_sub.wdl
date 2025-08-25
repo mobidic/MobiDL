@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.5"
+        version: "0.4.6"
         date: "2025-03-11"
     }
 
@@ -175,7 +175,7 @@ workflow PedToVCF {
             call runExomeMetrix.exomeMetrix {
                 input:
                     sortedBam = aBam,
-                    bamExt = bamExt,
+                    bamExt = suffixBAM,
                     intervalBedFile = intervalBedFile,
                     poorCoverageFileFolder = poorCoverageFileFolder,
                     outDir = mkdirCov.outDir,
@@ -196,12 +196,14 @@ workflow PedToVCF {
         }
 
         # Gather all VCF of family + Achab
-        call findFile as findVCF {
+        call findRenameVCF {
             input:
                 Family = aFamily,
                 PrefixPath = analysisDir,
                 WDL = wdl,
                 SuffixFile = suffixVcf,
+                CondaBin = condaBin,
+                BcftoolsEnv = bcftoolsEnv,
                 Queue = defQueue,
                 Cpu = cpuLow,
                 Memory = memoryLow,
@@ -209,7 +211,7 @@ workflow PedToVCF {
         call mergeVCF {
             input:
                 CasIndex = aCasIndex,
-                VCFlist = findVCF.filesList,
+                VCFlist = findRenameVCF.filesList,
                 VcfOutPath = byFamDir,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
@@ -512,6 +514,52 @@ task findFile {
                 exit 1
             fi
             echo "$foundFile"
+        done
+    >>>
+
+    output {
+        Array[File] filesList = read_lines(stdout())
+    }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+task findRenameVCF {
+    input {
+        String Family  # Eg.: 'casIndex,father,mother'
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String WDL = "panelCapture"
+        String SuffixFile = ".crumble.cram"
+
+        String CondaBin
+        String BcftoolsEnv
+        String BcftoolsExe = "bcftools"
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    command <<<
+        set -e
+        source ~{CondaBin}activate ~{BcftoolsEnv}
+        set -x
+        # Should work also if 1 member in family ?
+        for memb in $(echo ~{Family} | tr "," " ") ; do
+            # WARN: No quotes around 'WDL' bellow, to correctly expand possible '*' (a bit dirty)
+            foundFile=$(find "~{PrefixPath}"/~{WDL}/ -type f -name "${memb}~{SuffixFile}")
+            if [ -z "$foundFile" ] || [ "$(echo "$foundFile" | wc -l)" -ne 1 ] ; then
+                echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
+                exit 1
+            fi
+            # Rename VCF samples (for Sarek mostly, as it produce sample_sample)
+            renamedVCF=$PWD/${memb}.vcf.gz
+            ~{BcftoolsExe} reheader -s <(echo "$memb") "$foundFile" -o "$renamedVCF"
+            # ~{BcftoolsExe} index "$renamedVCF"
+            echo "$renamedVCF"
         done
     >>>
 

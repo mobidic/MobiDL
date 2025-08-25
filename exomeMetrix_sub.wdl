@@ -11,14 +11,13 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.3"
+        version: "0.1.4"
         date: "2025-05-26"
     }
 
     input {
         # Tasks specific
         File sortedBam
-        File? sortedBamIdx
         String bamExt
         File intervalBedFile
         File fastaGenome
@@ -53,10 +52,11 @@ workflow exomeMetrix {
         String genomeVersion
         String workflowType
     }
+    # WARN: 'bamExt' is rather a 'suffix', we want to remove ('.md.cram' in 'sample.md.cram')
     String sampleID = basename (sortedBam, bamExt)
 
     # 'somalier and 'samtools bedcov' requires indexed BAM
-    call indexBAM {
+    call toIndexedBAM {
         input:
             Queue = defQueue,
             CondaBin = condaBin,
@@ -67,8 +67,7 @@ workflow exomeMetrix {
             OutDir = outDir,
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
-            BamFile = sortedBam,
-            BamExt = bamExt
+            BamFile = sortedBam
     }
 
     # Somalier extract
@@ -76,9 +75,8 @@ workflow exomeMetrix {
         input :
             refFasta = fastaGenome,
             sites = somalierSites,
-            bamFile = sortedBam,
-            BamIndex = indexBAM.bamIdx,
-            ext = bamExt,
+            bamFile = toIndexedBAM.sortedBam,
+            BamIndex = toIndexedBAM.bamIdx,
             outputPath = outDir + "/coverage/",
             path_exe = somalierExe,
             Queue = defQueue,
@@ -100,8 +98,8 @@ workflow exomeMetrix {
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
             IntervalBedFile = intervalBedFile,
-            BamFile = sortedBam,
-            BamIndex = indexBAM.bamIdx,
+            BamFile = toIndexedBAM.sortedBam,
+            BamIndex = toIndexedBAM.bamIdx,
             MinCovBamQual = minCovBamQual
     }
 
@@ -151,7 +149,7 @@ workflow exomeMetrix {
             SortExe = sortExe,
             IntervalBedFile = intervalBedFile,
             BedtoolsLowCoverage = bedtoolsLowCoverage,
-            BamFile = sortedBam
+            BamFile = toIndexedBAM.sortedBam
     }
 
     call runComputePoorCoverage.computePoorCoverage {
@@ -206,8 +204,8 @@ workflow exomeMetrix {
 }
 
 
-# Re-wrote this cuz existing modules does not handle both BAM and CRAM ?
-task indexBAM {
+# Take any CRAM/BAM and output a 'sample.bam' (+ index)
+task toIndexedBAM {
     input {
         # Env variables
         String CondaBin
@@ -215,7 +213,6 @@ task indexBAM {
         String SamtoolsEnv
         # task specific variables
         File BamFile
-        String BamExt
         # global variables
         String SampleID
         String OutDir
@@ -225,16 +222,18 @@ task indexBAM {
         Int Cpu
         Int Memory
     }
-    String extIndx = if (BamExt == ".bam") then ".bai" else ".crai"
-    String outBamIdx = BamFile + extIndx
+    String outBam = "./" + SampleID + ".bam"
+    String outBamIdx = "./" + SampleID + ".bam.bai"
     command <<<
         set -e
         source ~{CondaBin}activate ~{SamtoolsEnv}
-        ~{SamtoolsExe} index -o ~{outBamIdx} ~{BamFile}
+        ~{SamtoolsExe} view -h -O BAM -o ~{outBam} ~{BamFile}
+        ~{SamtoolsExe} index -o ~{outBamIdx} ~{outBam}
         conda deactivate
     >>>
 
     output {
+        File sortedBam = outBam
         File bamIdx = outBamIdx
     }
 
