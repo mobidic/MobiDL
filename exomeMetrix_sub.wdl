@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.4"
+        version: "0.1.5"
         date: "2025-05-26"
     }
 
@@ -116,19 +116,19 @@ workflow exomeMetrix {
             SortExe = sortExe,
             BedCovFile = samtoolsBedCov.BedCovFile
     }
-    call runComputeCoverageClamms.computeCoverageClamms {
-        input:
-            Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            OutDirSampleID = "/",
-            WorkflowType = workflowType,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            BedCovFile = samtoolsBedCov.BedCovFile
-    }
+    # call runComputeCoverageClamms.computeCoverageClamms {
+    #     input:
+    #         Queue = defQueue,
+    #         Cpu = cpuLow,
+    #         Memory = memoryHigh,
+    #         SampleID = sampleID,
+    #         OutDir = outDir,
+    #         OutDirSampleID = "/",
+    #         WorkflowType = workflowType,
+    #         AwkExe = awkExe,
+    #         SortExe = sortExe,
+    #         BedCovFile = samtoolsBedCov.BedCovFile
+    # }
 
 
     # TODO: Run genomeCov with 'samtools view --min-MQ 30'
@@ -197,7 +197,7 @@ workflow exomeMetrix {
         File somalierExtracted = somalierExtract.file
         File outCoverage = computeCoverage.TsvCoverageFile
         File outBedCov = samtoolsBedCov.BedCovFile
-        File outBedCovClamms = computeCoverageClamms.ClammsCoverageFile
+        # File outBedCovClamms = computeCoverageClamms.ClammsCoverageFile
         File outPoorCoverage = computePoorCoverage.poorCoverageFile
         File? outPoorCovExtended = computePoorCovExtended.poorCoverageFile
     }
