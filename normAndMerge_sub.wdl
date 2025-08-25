@@ -39,7 +39,7 @@ workflow normAndMerge {
 		File mergeVCFMobiDL = "/bioinfo/softs/anacore-custom/anacoreUtils/anacoreUtilsMergeVCFCallersMobiDL.py"  # Anacore-Utils custom mergeVCF script
         String gatkExe = "gatk"
         ## Global
-		String sampleID
+		String samplesList  # Same as MobiCorail '--samples' = CSG123,CAD456,CSG789
         String workflowType = ""
         ## Workflow specific
 		File refFasta
@@ -49,169 +49,180 @@ workflow normAndMerge {
         String inDir
         String dvDir = inDir + "/variant_calling/deepvariant/"
         String hcDir = inDir + "/variant_calling/haplotypecaller/"
-        File deepVariantVcf = dvDir + sampleID + "/" + sampleID + ".deepvariant.vcf.gz"
-        # MEMO: Bellow use 'filtered' HC VCF (= after 'CNNScoreVariants' to set 'FILTER' field):
-        File haplotypeCallerVcf = hcDir + sampleID + "/" + sampleID + ".haplotypecaller.filtered.vcf.gz"
         # OUTPUTS:
         String outDir = inDir
         String outDvDir = outDir + "/variant_calling/deepvariant/"
         String outHcDir = outDir + "/variant_calling/haplotypecaller/"
         String outMergeDir = outDir + "/variant_calling/merge/"
     }
-	# DeepVariant VCF produced by Sarek still contains 'refCall' -> remove them
-	# vcftools support only VCF by default -> decompress first
-	call bcftoolsDecompress {
+
+	call listToArray {
 		input:
 			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
 			Cpu = cpuLow,
 			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = "./",
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = ".deepvariant",
-			SortedVcf = deepVariantVcf
+			List = samplesList,
+			Separator = ","
 	}
-	call runRefCallFiltration.refCallFiltration {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			VcftoolsEnv = vcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDvDir,
-			WorkflowType = workflowType,
-			VcSuffix = ".deepvariant",
-			VcftoolsExe = vcftoolsExe,
-			Version = true,
-			VcfToRefCalled = bcftoolsDecompress.outVcf
-	}
-    #Normalize DeepVariant VCF (+ index)
-	call bcftoolsNorm as bcftoolsNormDv {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDvDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = dvSuffix,
-			Version = true,
-			SortedVcf = refCallFiltration.noRefCalledVcf,
-            RefFasta = refFasta
-	}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDvDir,
-			WorkflowType = workflowType,
-			BgZipExe = bgZipExe,
-			TabixExe = tabixExe,
-			VcSuffix = dvSuffix,
-			Version = true,
-			VcfFile = bcftoolsNormDv.normVcf
-	}
-    #Normalize HaplotypeCaller VCF (+ index)
-	call bcftoolsNorm as bcftoolsNormHc {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outHcDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = hcSuffix,
-			SortedVcf = haplotypeCallerVcf,
-            RefFasta = refFasta
-	}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outHcDir,
-			WorkflowType = workflowType,
-			BgZipExe = bgZipExe,
-			TabixExe = tabixExe,
-			VcSuffix = hcSuffix,
-			VcfFile = bcftoolsNormHc.normVcf
-	}
-    #Merge both HC and DV VCFs (+ index)
-    # MEMO: Have to create 'merge' subdir first
-	call mkMergeDir {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outMergeDir,
-			WorkflowType = workflowType
-	}
-	call runAnacoreUtilsMergeVCFCallers.anacoreUtilsMergeVCFCallers {
-		input:
-			Queue = defQueue,
-            CondaBin = condaBin,
-            AnacoreEnv = anacoreEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = "./",
-			WorkflowType = workflowType,
-			MergeVCFMobiDL = mergeVCFMobiDL,
-			Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
-			Callers = ["HaplotypeCaller", "DeepVariant"]
-	}
-	call runGatkUpdateVCFSequenceDictionary.gatkUpdateVCFSequenceDictionary {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outMergeDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			Vcf = anacoreUtilsMergeVCFCallers.mergedVcf
-	}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexMergedVcf {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outMergeDir,
-			WorkflowType = workflowType,
-			BgZipExe = bgZipExe,
-			TabixExe = tabixExe,
-			VcSuffix = '',
-			VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
+	scatter (sampleID in listToArray.samplesArray) {
+        File deepVariantVcf = dvDir + sampleID + "/" + sampleID + ".deepvariant.vcf.gz"
+        # MEMO: Bellow use 'filtered' HC VCF (= after 'CNNScoreVariants' to set 'FILTER' field):
+        File haplotypeCallerVcf = hcDir + sampleID + "/" + sampleID + ".haplotypecaller.filtered.vcf.gz"
+		# DeepVariant VCF produced by Sarek still contains 'refCall' -> remove them
+		# vcftools support only VCF by default -> decompress first
+		call bcftoolsDecompress {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = "./",
+				WorkflowType = workflowType,
+				BcftoolsExe = bcftoolsExe,
+				VcSuffix = ".deepvariant",
+				SortedVcf = deepVariantVcf
+		}
+		call runRefCallFiltration.refCallFiltration {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				VcftoolsEnv = vcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outDvDir,
+				WorkflowType = workflowType,
+				VcSuffix = ".deepvariant",
+				VcftoolsExe = vcftoolsExe,
+				Version = true,
+				VcfToRefCalled = bcftoolsDecompress.outVcf
+		}
+		#Normalize DeepVariant VCF (+ index)
+		call bcftoolsNorm as bcftoolsNormDv {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outDvDir,
+				WorkflowType = workflowType,
+				BcftoolsExe = bcftoolsExe,
+				VcSuffix = dvSuffix,
+				Version = true,
+				SortedVcf = refCallFiltration.noRefCalledVcf,
+				RefFasta = refFasta
+		}
+		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				SamtoolsEnv = samtoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outDvDir,
+				WorkflowType = workflowType,
+				BgZipExe = bgZipExe,
+				TabixExe = tabixExe,
+				VcSuffix = dvSuffix,
+				Version = true,
+				VcfFile = bcftoolsNormDv.normVcf
+		}
+		#Normalize HaplotypeCaller VCF (+ index)
+		call bcftoolsNorm as bcftoolsNormHc {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outHcDir,
+				WorkflowType = workflowType,
+				BcftoolsExe = bcftoolsExe,
+				VcSuffix = hcSuffix,
+				SortedVcf = haplotypeCallerVcf,
+				RefFasta = refFasta
+		}
+		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				SamtoolsEnv = samtoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outHcDir,
+				WorkflowType = workflowType,
+				BgZipExe = bgZipExe,
+				TabixExe = tabixExe,
+				VcSuffix = hcSuffix,
+				VcfFile = bcftoolsNormHc.normVcf
+		}
+		#Merge both HC and DV VCFs (+ index)
+		# MEMO: Have to create 'merge' subdir first
+		call mkMergeDir {
+			input:
+				Queue = defQueue,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outMergeDir,
+				WorkflowType = workflowType
+		}
+		call runAnacoreUtilsMergeVCFCallers.anacoreUtilsMergeVCFCallers {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				AnacoreEnv = anacoreEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = "./",
+				WorkflowType = workflowType,
+				MergeVCFMobiDL = mergeVCFMobiDL,
+				Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
+				Callers = ["HaplotypeCaller", "DeepVariant"]
+		}
+		call runGatkUpdateVCFSequenceDictionary.gatkUpdateVCFSequenceDictionary {
+			input:
+				Queue = defQueue,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outMergeDir,
+				WorkflowType = workflowType,
+				GatkExe = gatkExe,
+				RefFasta = refFasta,
+				RefFai = refFai,
+				RefDict = refDict,
+				Vcf = anacoreUtilsMergeVCFCallers.mergedVcf
+		}
+		call runCompressIndexVcf.compressIndexVcf as compressIndexMergedVcf {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				SamtoolsEnv = samtoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outMergeDir,
+				WorkflowType = workflowType,
+				BgZipExe = bgZipExe,
+				TabixExe = tabixExe,
+				VcSuffix = '',
+				VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
+		}
 	}
 
     output {
-        File normHcVcf = compressIndexVcfHc.bgZippedVcf
-        File normDvVcf = compressIndexVcfDv.bgZippedVcf
-        File mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
+        Array[File] normHcVcf = compressIndexVcfHc.bgZippedVcf
+        Array[File] normDvVcf = compressIndexVcfDv.bgZippedVcf
+        Array[File] mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
     }
 }
 
@@ -344,5 +355,38 @@ task mkMergeDir {
 	}
 	output {
 		String mergeDir = "~{OutDir}~{SampleID}/~{WorkflowType}/"
+	}
+}
+
+task listToArray {
+	meta {
+		author: "Felix VANDERMEEREN"
+		email: "felix.vandermeeren(at)chu-montpellier.fr"
+		version: "0.0.1"
+		date: "2025-08-25"
+	}
+	input {
+		# global variables
+		String List
+		String Separator
+		Boolean Version = false
+		# runtime attributes
+		String Queue
+		Int Cpu
+		Int Memory
+	}
+	command <<<
+		set -e  # To make task stop at 1st error
+		for item in $(echo "~{List}" | tr ~{Separator} ' '); do
+			echo "$item"
+		done
+	>>>
+	runtime {
+		queue: "~{Queue}"
+		cpu: "~{Cpu}"
+		requested_memory_mb_per_core: "~{Memory}"
+	}
+	output {
+		Array[String] samplesArray = read_lines(stdout())
 	}
 }
