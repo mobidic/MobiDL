@@ -42,9 +42,9 @@ workflow normAndMerge {
 		String samplesList  # Same as MobiCorail '--samples' = CSG123,CAD456,CSG789
         String workflowType = ""
         ## Workflow specific
-		File refFasta
-		File refFai
-		File refDict
+		File fasta
+		File fasta_fai
+		File dict
         # INPUTS (assume Sarek style output):
         String inDir
         String dvDir = inDir + "/variant_calling/deepvariant/"
@@ -114,7 +114,7 @@ workflow normAndMerge {
 				VcSuffix = dvSuffix,
 				Version = true,
 				SortedVcf = refCallFiltration.noRefCalledVcf,
-				RefFasta = refFasta
+				RefFasta = fasta
 		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
 			input:
@@ -146,7 +146,7 @@ workflow normAndMerge {
 				BcftoolsExe = bcftoolsExe,
 				VcSuffix = hcSuffix,
 				SortedVcf = haplotypeCallerVcf,
-				RefFasta = refFasta
+				RefFasta = fasta
 		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
 			input:
@@ -182,7 +182,7 @@ workflow normAndMerge {
 				Cpu = cpuLow,
 				Memory = memoryLow,
 				SampleID = sampleID,
-				OutDir = "./",
+				OutDir = outMergeDir,
 				WorkflowType = workflowType,
 				MergeVCFMobiDL = mergeVCFMobiDL,
 				Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
@@ -197,9 +197,9 @@ workflow normAndMerge {
 				OutDir = outMergeDir,
 				WorkflowType = workflowType,
 				GatkExe = gatkExe,
-				RefFasta = refFasta,
-				RefFai = refFai,
-				RefDict = refDict,
+				RefFasta = fasta,
+				RefFai = fasta_fai,
+				RefDict = dict,
 				Vcf = anacoreUtilsMergeVCFCallers.mergedVcf
 		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexMergedVcf {
