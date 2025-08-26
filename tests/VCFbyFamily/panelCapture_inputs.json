@@ -4,6 +4,8 @@
   "PedToVCF.outputPath": "/scratch/VCFbyFamily_coriells_FULL_panelCapture/",
   "PedToVCF.intervalBedFile": "/bioinfo/refData/intervals/bedFiles/RefSeqHG19_CDSplus20.bed",
   "PedToVCF.poorCoverageFileFolder": "/mnt/chu-ngs/NEXTSEQ/runs/721028_NB501631_0007_AAAOOOPPPY/test_PoorCoverageExtented_NOchr/",
+  "PedToVCF.wdl": "*/panelCapture",
+  "PedToVCF.wdlBAM": "*/panelCapture",
   "PedToVCF.suffixBAM": ".cram",
   "PedToVCF.bamExt": ".cram",
   "PedToVCF.exomeMetrix.somalierSites": "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz",

@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.6"
+        version: "0.4.7"
         date: "2025-03-11"
     }
 
@@ -21,10 +21,10 @@ workflow PedToVCF {
         String analysisDir  # Eg. /path/to/runID/MobiDL
         String? outputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
 
-        String wdl = "*/panelCapture"
+        String wdl = "variant_calling/merge"
         String suffixVcf = ".vcf"  # VCF merged HC + DV
-        String wdlBAM = "*/panelCapture"
-        String suffixBAM = ".crumble.cram"
+        String wdlBAM = "preprocessing/markduplicates"
+        String suffixBAM = ".md.cram"
         String bamExt = ".cram"  # ENH: Guess that
         File intervalBedFile
 
