@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.7"
+        version: "0.4.8"
         date: "2025-03-11"
     }
 
@@ -31,8 +31,6 @@ workflow PedToVCF {
         # PedToFam task:
         String pedsEnv  # Any python env with 'peds' package installed
         File? scriptExe
-        # mergeVCF task:
-        String bcftoolsEnv
 
         # CaptainAchab inputs
         ## envs
@@ -41,14 +39,15 @@ workflow PedToVCF {
         String achabEnv = "/bioinfo/conda_envs/achabEnv"
         String rsyncEnv = "/bioinfo/conda_envs/rsyncEnv"
         String samtoolsEnv = "/bioinfo/conda_envs/samtoolsEnv"
+        String bcftoolsEnv = "/bioinfo/conda_envs/bcftoolsEnv"
         String multiqcEnv = "/bioinfo/conda_envs/multiqcEnv"
         ## queues
         String defQueue = "prod"
         ##Resources
-        Int cpuLow
+        Int cpu
         Int cpuHigh
-        Int memoryLow
-        Int memoryHigh
+        Int memory = 4000
+        Int memoryHigh = 16000
         ## Language Path
         String perlPath = "perl"
         ## Exe
@@ -131,8 +130,8 @@ workflow PedToVCF {
             PedFile = pedFile,
             CsvtkExe = csvtkExe,
             Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryLow
+            Cpu = cpu,
+            Memory = memory
     }
     call pedToFam {
         input:
@@ -141,8 +140,8 @@ workflow PedToVCF {
             PedsEnv = pedsEnv,
             PathExe = scriptExe,
             Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryLow
+            Cpu = cpu,
+            Memory = memory
     }
 
     scatter (aStatus in pedToFam.status) {
@@ -159,15 +158,15 @@ workflow PedToVCF {
                 WDL = wdlBAM,
                 SuffixFile = suffixBAM,
                 Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow
+                Cpu = cpu,
+                Memory = memory
         }
         # Create 'coverage' subdir otherwise error
         call mkdirCov {
             input:
                 Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow,
+                Cpu = cpu,
+                Memory = memory,
                 OutDir = byFamDir
         }
         scatter (aBam in findBAM.filesList) {
@@ -186,8 +185,8 @@ workflow PedToVCF {
                     bedToolsSmallInterval = bedToolsSmallInterval,
                     cpuHigh = cpuHigh,
                     memoryHigh = memoryHigh,
-                    cpuLow = cpuLow,
-                    memoryLow = memoryLow,
+                    cpuLow = cpu,
+                    memoryLow = memory,
                     defQueue = defQueue,
                     workflowType = "",
                     somalierExe = somalierExe,
@@ -205,8 +204,8 @@ workflow PedToVCF {
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
                 Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow,
+                Cpu = cpu,
+                Memory = memory,
         }
         call mergeVCF {
             input:
@@ -216,8 +215,8 @@ workflow PedToVCF {
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
                 Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow,
+                Cpu = cpu,
+                Memory = memory,
         }
         # MEMO: PooledSamples are either whole family or only casIndex
         #       Apply same logic as for Exome.wdl
@@ -238,9 +237,9 @@ workflow PedToVCF {
                 achabEnv = achabEnv,
                 rsyncEnv = rsyncEnv,
                 defQueue = defQueue,
-                cpu = cpuLow,
+                cpu = cpu,
                 cpuHigh = cpuHigh,
-                memory = memoryLow,
+                memory = memory,
                 perlPath = perlPath,
                 achabExe = achabExe,
                 mpaExe = mpaExe,
@@ -309,8 +308,8 @@ workflow PedToVCF {
                 OutDir = OutMetrix,
                 csvtkExe = csvtkExe,
                 Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow,
+                Cpu = cpu,
+                Memory = memory,
                 TaskOut = captainAchab.achabNewHopeHtml
         }
     }
@@ -324,8 +323,8 @@ workflow PedToVCF {
             outputPath = OutDir + "/somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryLow      
+            Cpu = cpu,
+            Memory = memory
     }
     ### Post-process 'relate' output file
     call runSomalier.relatePostprocess as somalierRelatePostprocess {
@@ -336,8 +335,8 @@ workflow PedToVCF {
             outputPath = OutDir + "/somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryLow
+            Cpu = cpu,
+            Memory = memory
     }
 
     # Custom MQC
@@ -346,7 +345,7 @@ workflow PedToVCF {
             Queue = defQueue,
             CondaBin = condaBin,
             MultiqcEnv = multiqcEnv,
-            Cpu = cpuLow,
+            Cpu = cpu,
             Memory = 16000,
             SampleID = "",
             Name = "custom",

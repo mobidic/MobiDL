@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.6"
+        version: "0.1.7"
         date: "2025-05-26"
     }
 
@@ -56,6 +56,7 @@ workflow exomeMetrix {
     String sampleID = basename (sortedBam, bamExt)
 
     # 'somalier and 'samtools bedcov' requires indexed BAM
+    # TODO: Run genomeCov and upstream with 'samtools view --min-MQ 30'
     call toIndexedBAM {
         input:
             Queue = defQueue,
@@ -67,6 +68,7 @@ workflow exomeMetrix {
             OutDir = outDir,
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
+            FastaGenome = fastaGenome,
             BamFile = sortedBam
     }
 
@@ -131,7 +133,6 @@ workflow exomeMetrix {
     # }
 
 
-    # TODO: Run genomeCov with 'samtools view --min-MQ 30'
     call runComputePoorCoverage.computeGenomecov {
         input:
             Queue = defQueue,
@@ -213,6 +214,8 @@ task toIndexedBAM {
         String SamtoolsEnv
         # task specific variables
         File BamFile
+        File FastaGenome
+        Int MinCovBamQual = 0  # Default = no filter
         # global variables
         String SampleID
         String OutDir
@@ -227,7 +230,7 @@ task toIndexedBAM {
     command <<<
         set -e
         source ~{CondaBin}activate ~{SamtoolsEnv}
-        ~{SamtoolsExe} view -h -O BAM -o ~{outBam} ~{BamFile}
+        ~{SamtoolsExe} view -T ~{FastaGenome} -q ~{MinCovBamQual} -h -O BAM -o ~{outBam} ~{BamFile}
         ~{SamtoolsExe} index -o ~{outBamIdx} ~{outBam}
         conda deactivate
     >>>
