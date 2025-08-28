@@ -51,7 +51,7 @@ workflow panelCapture {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.2.4"
+		version: "1.3.1"
 		date: "2025-05-25"
 	}
 	input {
