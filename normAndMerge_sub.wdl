@@ -12,7 +12,7 @@ workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.2.1"
+        version: "0.2.2"
         date: "2025-07-15"
     }
 
@@ -41,6 +41,7 @@ workflow normAndMerge {
         ## Global
 		String samplesList  # Same as MobiCorail '--samples' = CSG123,CAD456,CSG789
         String workflowType = ""
+		Boolean keepFiles = false
         ## Workflow specific
 		File fasta
 		File fasta_fai
@@ -217,6 +218,17 @@ workflow normAndMerge {
 				VcSuffix = '',
 				VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
 		}
+
+		if (!keepFiles) {
+			call cleanUp {
+				input:
+					Queue = defQueue,
+					Cpu = cpuLow,
+					Memory = memoryLow,
+					TaskOuput = [compressIndexMergedVcf.bgZippedVcf],
+					ListToRm = [refCallFiltration.noRefCalledVcf, bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf, anacoreUtilsMergeVCFCallers.mergedVcf, gatkUpdateVCFSequenceDictionary.refUpdatedVcf, gatkUpdateVCFSequenceDictionary.refUpdatedVcfIndex]
+			}
+		}
 	}
 
     output {
@@ -224,6 +236,38 @@ workflow normAndMerge {
         Array[File] normDvVcf = compressIndexVcfDv.bgZippedVcf
         Array[File] mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
     }
+}
+
+task cleanUp {
+	meta {
+		author: "Felix VANDERMEEREN"
+		email: "felix.vandermeeren(at)chu-montpellier.fr"
+		version: "0.0.1"
+		date: "2025-08-31"
+	}
+	input {
+		# global variables
+		Array[File] ListToRm
+		Boolean Version = false
+		# runtime attributes
+		Array[File]? TaskOuput  # To enforce serial execution
+		String Queue
+		Int Cpu
+		Int Memory
+	}
+	command <<<
+		set -e  # To make task stop at 1st error
+		set -x
+		# MEMO: Cwl outfiles are symlinks to real file -> readlink required
+		for aFile in ~{sep=" " ListToRm}; do
+			rm "$(readlink "$aFile")"
+		done
+	>>>
+	runtime {
+		queue: "~{Queue}"
+		cpu: "~{Cpu}"
+		requested_memory_mb_per_core: "~{Memory}"
+	}
 }
 
 task bcftoolsDecompress {
