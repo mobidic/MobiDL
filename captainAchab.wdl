@@ -105,6 +105,7 @@ workflow captainAchab {
 		Boolean hideACMG = false
 		Boolean caseDepth = false
 		Boolean caseAB = false
+		Boolean penalizeAffected = false  # Requires Achab >= v1.0.19
 		## For BcftoolsSplit 
 		File inputVcf
 		## For BcftoolsLeftAlign 
@@ -303,7 +304,8 @@ workflow captainAchab {
 			SkipCaseWT = skipCaseWT,
 			HideACMG = hideACMG,
 			CaseDepth = caseDepth,
-			CaseAB = caseAB
+			CaseAB = caseAB,
+			PenalizeAffected = penalizeAffected
 	}
 	call runAchab.achab as achab {
 		input:
@@ -347,6 +349,7 @@ workflow captainAchab {
 			HideACMG = hideACMG,
 			CaseDepth = false,
 			CaseAB = false,
+			PenalizeAffected = penalizeAffected,
 			taskOuput = achabNewHope.outAchabHtml
 	}
 	call runAchabFinalCopy.rsyncAchabFiles as rsyncAchabFiles {

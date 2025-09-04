@@ -4,7 +4,7 @@ task achab {
 	meta {
 		author: "Felix VANDERMEEREN"
 		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.0.1"
+		version: "0.1.2"
 		date: "2025-04-16"
 	}
 
@@ -51,6 +51,7 @@ task achab {
 		Boolean HideACMG = false
 		Boolean CaseAB
 		Boolean CaseDepth
+		Boolean PenalizeAffected
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -79,6 +80,7 @@ task achab {
 	String Pheno = if defined(OutPhenolyzer) then "--phenolyzerFile ~{OutPhenolyzer} " else ""
 	String HideAcmg = if HideACMG then "--hideACMG " else ""
 	String idSNP = if defined(IdSnp) then "--IDSNP ~{IdSnp}" else ""
+	String PenalAffect = if PenalizeAffected then "--penalizeAffected " else ""  # Requires Achab >= v1.0.19
 
 	command <<<
 		set -e
@@ -122,7 +124,8 @@ task achab {
 		~{addCasab} \
 		~{poorCov} \
 		~{SkipCase} \
-		~{HideAcmg}
+		~{HideAcmg} \
+		~{PenalAffect}
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>	"~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
