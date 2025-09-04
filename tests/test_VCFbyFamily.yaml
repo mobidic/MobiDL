@@ -29,11 +29,11 @@
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_coverage.tsv
       md5sum: f124f39086244b2a73c207df17cefee0
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_genomecov.tsv
-      md5sum: bd557909232b4b74ed9d61b2d20e3309
+      md5sum: 8061343f317f3ad579bfed8ce2895383
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poor_coverage.tsv
-      md5sum: 2316ccc68c936e6f3451f1cdc479dc35
+      md5sum: 648723b1809a2ad151c78e98ebe2fcc5
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poorCoverage_extended.tsv
-      md5sum: 2f4d422553afe527ccb3c489c7e9cea2
+      md5sum: bc4e2677f4b86b83c0e96ee978ac5288
     # MPA files
     - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
       # md5sum: Cannot md5 directly due to cwl-exec dir in file
@@ -52,7 +52,7 @@
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
       md5sum: 29ff85a9160974703b49f1d22ca4c19c
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
-      md5sum: 00431f1b07268bd95fa17f2b8b86ab72
+      md5sum: 1a7e2fb61fca54ed6b52f35a37d47870
     # Custom MultiQC files
     - path: byFamily/custom_multiqc.html
 
@@ -73,15 +73,15 @@
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.metrix.tsv
       md5sum: 1b0583ca4b06ad79148024a08f05f0a4
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.poorCovMetrix.tsv
-      md5sum: 09ce9f7928829962d7f17b738e4ecca8
+      md5sum: d48e466c4f84ed86b9e51b3b3231dd9e
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_coverage.tsv
       md5sum: 95dc5abbc946cc08a7b074e65084e51d
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_genomecov.tsv
-      md5sum: 62c6963ba96be7da27b3cadabbc06cac
+      md5sum: 0de8e1e9154feeeb5a45f8138df9e75c
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poorCoverage_extended.tsv
-      md5sum: 495b78b8faec65cfdd835a9226ab50b9
+      md5sum: 54fb2fea8917a3992557e43adf21b2db
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poor_coverage.tsv
-      md5sum: e74015401cd110c9aca088d21de52bb9
+      md5sum: c91539781b8f683fbe2938dd044c0671
 
 - name: VCFbyFamily coriells FULL mobiCorail
   # With VCFs produced by 'MobiCorail_Sarek' pipeline (runtime = 1h)
@@ -104,12 +104,12 @@
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.metrix.tsv
       md5sum: b878a80d079ed01a0ec5d1812d020c3e
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.poorCovMetrix.tsv
-      md5sum: 0370f3628626e4e37b331c7ce7b147f4
+      md5sum: 8485c2e7937e94accee3f658847d817a
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_coverage.tsv
       md5sum: b5ceaac4bb2184c202e4e046c7f8c953
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_genomecov.tsv
-      md5sum: 325b6fab1aea561d6917e22105eb1881
+      md5sum: 0ea54d1761bce10a4b3ca458f90549a7
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poorCoverage_extended.tsv
-      md5sum: 168494bdf01bcafc36dffc43841c43b0
+      md5sum: 10b0bf13e6c72e7621a3c0906d5dee50
     - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poor_coverage.tsv
-      md5sum: 3b7733ad61dc450cfeb28e4ae5866a6f
+      md5sum: 3d050a7de1bfb7eeeb36bec972c3345d

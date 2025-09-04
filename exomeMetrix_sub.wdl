@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.1.7"
+        version: "0.2.0"
         date: "2025-05-26"
     }
 
@@ -72,6 +72,21 @@ workflow exomeMetrix {
             BamFile = sortedBam
     }
 
+    call filterBAM {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SamtoolsExe = samtoolsExe,
+            MinCovBamQual = minCovBamQual,
+            BamFile = sortedBam
+    }
+
     # Somalier extract
     call runSomalier.extract as somalierExtract {
         input :
@@ -118,6 +133,7 @@ workflow exomeMetrix {
             SortExe = sortExe,
             BedCovFile = samtoolsBedCov.BedCovFile
     }
+
     # call runComputeCoverageClamms.computeCoverageClamms {
     #     input:
     #         Queue = defQueue,
@@ -131,7 +147,6 @@ workflow exomeMetrix {
     #         SortExe = sortExe,
     #         BedCovFile = samtoolsBedCov.BedCovFile
     # }
-
 
     call runComputePoorCoverage.computeGenomecov {
         input:
@@ -150,7 +165,7 @@ workflow exomeMetrix {
             SortExe = sortExe,
             IntervalBedFile = intervalBedFile,
             BedtoolsLowCoverage = bedtoolsLowCoverage,
-            BamFile = toIndexedBAM.sortedBam
+            BamFile = filterBAM.sortedBam
     }
 
     call runComputePoorCoverage.computePoorCoverage {
@@ -215,6 +230,45 @@ task toIndexedBAM {
         # task specific variables
         File BamFile
         File FastaGenome
+        # global variables
+        String SampleID
+        String OutDir
+        String WorkflowType
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    String outBam = "./" + SampleID + ".bam"
+    String outBamIdx = "./" + SampleID + ".bam.bai"
+    command <<<
+        set -e
+        source ~{CondaBin}activate ~{SamtoolsEnv}
+        ~{SamtoolsExe} view -T ~{FastaGenome} -h -O BAM -o ~{outBam} ~{BamFile}
+        ~{SamtoolsExe} index -o ~{outBamIdx} ~{outBam}
+        conda deactivate
+    >>>
+
+    output {
+        File sortedBam = outBam
+        File bamIdx = outBamIdx
+    }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+task filterBAM {
+    input {
+        # Env variables
+        String CondaBin
+        String SamtoolsExe
+        String SamtoolsEnv
+        # task specific variables
+        File BamFile
         Int MinCovBamQual = 0  # Default = no filter
         # global variables
         String SampleID
@@ -230,7 +284,7 @@ task toIndexedBAM {
     command <<<
         set -e
         source ~{CondaBin}activate ~{SamtoolsEnv}
-        ~{SamtoolsExe} view -T ~{FastaGenome} -q ~{MinCovBamQual} -h -O BAM -o ~{outBam} ~{BamFile}
+        ~{SamtoolsExe} view -q ~{MinCovBamQual} -h -O BAM -o ~{outBam} ~{BamFile}
         ~{SamtoolsExe} index -o ~{outBamIdx} ~{outBam}
         conda deactivate
     >>>
