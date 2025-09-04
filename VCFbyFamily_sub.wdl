@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.8"
+        version: "0.5.0"
         date: "2025-03-11"
     }
 
@@ -111,6 +111,7 @@ workflow PedToVCF {
         File? genemap2File
         Boolean skipCaseWT = false
         Boolean hideACMG = false
+        Boolean penalizeAffected = false
         ## For BcftoolsLeftAlign
         File fastaGenome
         String vcSuffix = ""
@@ -294,6 +295,7 @@ workflow PedToVCF {
                 genemap2File = genemap2File,
                 skipCaseWT = skipCaseWT,
                 hideACMG = hideACMG,
+                penalizeAffected = penalizeAffected,
                 fastaGenome = fastaGenome,
                 vcSuffix = vcSuffix
         }

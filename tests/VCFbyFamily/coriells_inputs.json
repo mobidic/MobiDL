@@ -40,7 +40,7 @@
   "PedToVCF.fastaGenome": "/mnt/chu-ngs/refData/genome/hg19/hg19.fa",
   "PedToVCF.phenolyzerExe": "/bioinfo/softs/phenolyzer",
   "PedToVCF.tableAnnovarExe": "/bioinfo/refData/annotations/annovar/2020Jun08/table_annovar.pl",
-  "PedToVCF.achabExe": "/mnt/Bioinfo/Softs/src/Captain-ACHAB/wwwachab.pl",
+  "PedToVCF.achabExe": "/bioinfo/softs/Captain-ACHAB/Captain-ACHAB-1.0.19/wwwachab.pl",
   "PedToVCF.refAnnotateVariation": "/bioinfo/refData/annotations/annovar/2020Jun08/annotate_variation.pl",
   "PedToVCF.refCodingChange": "/bioinfo/refData/annotations/annovar/2020Jun08/coding_change.pl",
   "PedToVCF.refConvert2Annovar": "/bioinfo/refData/annotations/annovar/2020Jun08/convert2annovar.pl",
@@ -63,5 +63,6 @@
   "PedToVCF.addCustomVCFRegex": true,
   "PedToVCF.addCaseAB": true,
   "PedToVCF.skipCaseWT": true,
+  "PedToVCF.penalizeAffected": true,
   "PedToVCF.hideACMG": true
 }

@@ -50,7 +50,7 @@
       # md5sum: Cannot md5 Excel file directly
     # Achab metrix files
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
-      md5sum: 29ff85a9160974703b49f1d22ca4c19c
+      md5sum: c2e3ab05ad582a9a7ccc5a0c6e14855b
     - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
       md5sum: 1a7e2fb61fca54ed6b52f35a37d47870
     # Custom MultiQC files
