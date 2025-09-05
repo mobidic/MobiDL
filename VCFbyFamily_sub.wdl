@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.0"
+        version: "0.5.1"
         date: "2025-03-11"
     }
 
@@ -22,7 +22,7 @@ workflow PedToVCF {
         String? outputPath  # Default = send to 'AnalysisDir/byFamily/casIndex/casIndex.(merged.)vcf'
 
         String wdl = "variant_calling/merge"
-        String suffixVcf = ".vcf"  # VCF merged HC + DV
+        String suffixVcf = ".vcf.gz"  # VCF merged HC + DV
         String wdlBAM = "preprocessing/markduplicates"
         String suffixBAM = ".md.cram"
         String bamExt = ".cram"  # ENH: Guess that
