@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.1"
+        version: "0.5.2"
         date: "2025-03-11"
     }
 
@@ -122,7 +122,7 @@ workflow PedToVCF {
         Int bedToolsSmallInterval = 5  # Value used in exome -> different from MobiDL
         String poorCoverageFileFolder = ""
         ## For custom MultiQC
-        File customMQCconfig = "/home/felix/Exome/scripts/mobiDL_customMQC.yaml"
+        File customMQCconfig = "/mnt/chu-ngs/refData/multiQC_conf/exome_hg38_mqc.yaml"
     }
     String OutDir = if defined(outputPath) then outputPath + "/byFamily/" else analysisDir + "/byFamily/"
 
