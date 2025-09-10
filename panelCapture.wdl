@@ -52,7 +52,7 @@ workflow panelCapture {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.2.4"
+		version: "1.3.1"
 		date: "2025-05-25"
 	}
 	input {
@@ -518,7 +518,7 @@ workflow panelCapture {
 			GatkExe = gatkExe,
 			DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
 	}
-	call runComputePoorCoverage.computePoorCoverage {
+	call runComputePoorCoverage.computeGenomecov {
 		input:
 			Queue = defQueue,
 			CondaBin = condaBin,
@@ -534,8 +534,24 @@ workflow panelCapture {
 			SortExe = sortExe,
 			IntervalBedFile = intervalBedFile,
 			BedtoolsLowCoverage = bedtoolsLowCoverage,
-			BedToolsSmallInterval = bedToolsSmallInterval,
 			BamFile = samtoolsSort.sortedBam
+	}
+	call runComputePoorCoverage.computePoorCoverage {
+		input:
+			Queue = defQueue,
+			CondaBin = condaBin,
+			BedtoolsEnv = bedtoolsEnv,
+			Cpu = cpuLow,
+			Memory = memoryHigh,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			GenomeVersion = genomeVersion,
+			BedToolsExe = bedToolsExe,
+			AwkExe = awkExe,
+			SortExe = sortExe,
+			BedToolsSmallInterval = bedToolsSmallInterval,
+			GenomecovFile = computeGenomecov.genomecovFile
 	}
 	call runSamtoolsBedCov.samtoolsBedCov {
 		input:

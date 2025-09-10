@@ -1,0 +1,115 @@
+## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
+
+- name: VCFbyFamily coriells chr22
+  # With VCFs produced by 'Exome.wdl' pipeline
+  tags:
+    - wf_level
+    - hg19
+    - downsampled
+    - exomeUMAI
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/coriells_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: byFamily/HG002-exomeTwist-chr22/HG002-exomeTwist-chr22.vcf
+      should_exist: true
+    # Somalier files
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22.somalier
+      md5sum: fafadc577bd4635c9211b84525bcc8ec
+    - path: byFamily/somalier_relate/related.pairs.tsv
+      md5sum: 0000d673006f04a9c3645cf0f2fbcc48
+    - path: byFamily/somalier_relate/related.pairs.filtered.tsv
+      md5sum: 973da946bd518d17723f2b5336039303
+    # Coverage files
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_bedcov.bed
+      md5sum: 3afaff806c47aa97cd7e20620e69b6fd
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_coverage.bed
+      md5sum: 10b9dcba3e615cb42c59a4270d55d7d8
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_coverage.tsv
+      md5sum: f124f39086244b2a73c207df17cefee0
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_genomecov.tsv
+      md5sum: 8061343f317f3ad579bfed8ce2895383
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poor_coverage.tsv
+      md5sum: 648723b1809a2ad151c78e98ebe2fcc5
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_poorCoverage_extended.tsv
+      md5sum: bc4e2677f4b86b83c0e96ee978ac5288
+    # MPA files
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/HG002-exomeTwist-chr22.hg19_multianno_MPA.vcf
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    # Achab files
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_newHope_achab.html
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab.html
+      # md5sum: Cannot md5 directly due to cwl-exec dir in file
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab_catch_newHope.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab_catch.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    - path: byFamily/HG002-exomeTwist-chr22/CaptainAchab/achab_excel/HG002-exomeTwist-chr22_poorCoverage.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    # Achab metrix files
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.metrix.tsv
+      md5sum: c2e3ab05ad582a9a7ccc5a0c6e14855b
+    - path: byFamily/HG002-exomeTwist-chr22/coverage/HG002-exomeTwist-chr22_achab_catch_newHope.poorCovMetrix.tsv
+      md5sum: 1a7e2fb61fca54ed6b52f35a37d47870
+    # Custom MultiQC files
+    - path: byFamily/custom_multiqc.html
+
+- name: VCFbyFamily coriells FULL panelCapture
+  # With VCFs produced by 'MobiDL/panelCapture.wdl' pipeline (runtime = 1h)
+  tags:
+    - wf_level
+    - hg19
+    - full
+    - mobidl
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/panelCapture_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: byFamily/HG002-exomeTwist-full/HG002-exomeTwist-full.vcf
+      should_exist: true
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.metrix.tsv
+      md5sum: 1b0583ca4b06ad79148024a08f05f0a4
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.poorCovMetrix.tsv
+      md5sum: d48e466c4f84ed86b9e51b3b3231dd9e
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_coverage.tsv
+      md5sum: 95dc5abbc946cc08a7b074e65084e51d
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_genomecov.tsv
+      md5sum: 0de8e1e9154feeeb5a45f8138df9e75c
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poorCoverage_extended.tsv
+      md5sum: 54fb2fea8917a3992557e43adf21b2db
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poor_coverage.tsv
+      md5sum: c91539781b8f683fbe2938dd044c0671
+
+- name: VCFbyFamily coriells FULL mobiCorail
+  # With VCFs produced by 'MobiCorail_Sarek' pipeline (runtime = 1h)
+  tags:
+    - wf_level
+    - hg19
+    - full
+    - sarek
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL VCFbyFamily_sub.wdl tests/VCFbyFamily/sarek_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: byFamily/HG002-exomeTwist-full/HG002-exomeTwist-full.vcf
+      should_exist: true
+    - path: byFamily/HG002-exomeTwist-full/CaptainAchab/achab_excel/HG002-exomeTwist-full_achab_catch_newHope.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    - path: byFamily/HG002-exomeTwist-full/CaptainAchab/achab_excel/HG002-exomeTwist-full_poorCoverage.xlsx
+      # md5sum: Cannot md5 Excel file directly
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.metrix.tsv
+      md5sum: b878a80d079ed01a0ec5d1812d020c3e
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_achab_catch_newHope.poorCovMetrix.tsv
+      md5sum: 8485c2e7937e94accee3f658847d817a
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_coverage.tsv
+      md5sum: b5ceaac4bb2184c202e4e046c7f8c953
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_genomecov.tsv
+      md5sum: 0ea54d1761bce10a4b3ca458f90549a7
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poorCoverage_extended.tsv
+      md5sum: 10b0bf13e6c72e7621a3c0906d5dee50
+    - path: byFamily/HG002-exomeTwist-full/coverage/HG002-exomeTwist-full_poor_coverage.tsv
+      md5sum: 3d050a7de1bfb7eeeb36bec972c3345d

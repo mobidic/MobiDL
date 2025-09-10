@@ -4,7 +4,7 @@ task multiqc {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
+		version: "0.0.2"
 		date: "2023-09-05"
 	}
 	input {
@@ -13,6 +13,7 @@ task multiqc {
 		String MultiqcEnv
 		# global variables
 		String SampleID
+		String Name = SampleID  # Name of MQC report
 		String OutDir
 		String WorkflowType
 		String MultiqcExe
@@ -20,8 +21,10 @@ task multiqc {
 		String GatkExe
 		Boolean Version = false
 		# task specific variables
-		File Vcf
+		File? Vcf
+		File? configFile  # If provided, run ONLY 'custom' metrix
 		#runtime attributes
+		Array[String]? TaskOut  # To force exec after given tasks
 		String Queue
 		Int Cpu
 		Int Memory
@@ -34,8 +37,8 @@ task multiqc {
 			echo "GATK (Picard): $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
 		source ~{CondaBin}activate ~{MultiqcEnv}
-		~{MultiqcExe} -o "~{OutDir}~{SampleID}/~{WorkflowType}/" -n "~{SampleID}_multiqc" "~{OutDir}~{SampleID}/~{WorkflowType}/" -f
-		~{perlExe} -pi.bak -e 's/NaN/null/g' "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_multiqc_data/multiqc_data.json"
+		~{MultiqcExe} ~{"--module custom_content --config " + configFile} -o "~{OutDir}~{SampleID}/~{WorkflowType}/" -n "~{Name}_multiqc" "~{OutDir}~{SampleID}/~{WorkflowType}/" -f
+		~{perlExe} -pi.bak -e 's/NaN/null/g' "~{OutDir}~{SampleID}/~{WorkflowType}/~{Name}_multiqc_data/multiqc_data.json"
 		if [ ~{Version} = true ];then
 			echo "MultiQC: v$(~{MultiqcExe} --version | grep 'multiqc' | cut -f3 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
@@ -47,6 +50,6 @@ task multiqc {
 		requested_memory_mb_per_core: "~{Memory}"
 	}
 	output {
-		File multiqcHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_multiqc.html"
+		File multiqcHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/~{Name}_multiqc.html"
 	}
 }

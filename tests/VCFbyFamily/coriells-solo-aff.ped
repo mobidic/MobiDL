@@ -1,0 +1,4 @@
+#FAMID	IndivID	PereID	MereID	Sex	Atteint
+trioAshk	HG002-exomeTwist-chr22	HG003-exomeTwist-chr22	0	1	2
+trioAshk	HG003-exomeTwist-chr22	0	0	1	1
+solo	HG004-exomeTwist-chr22	0	0	2	2

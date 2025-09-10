@@ -2,11 +2,12 @@ version 1.0
 
 task achab {
 	meta {
-		author: "David BAUX"
-		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2023-09-08"
+		author: "Felix VANDERMEEREN"
+		email: "felix.vandermeeren(at)chu-montpellier.fr"
+		version: "0.1.2"
+		date: "2025-04-16"
 	}
+
 	input {
 		# env variables	
 		String CondaBin
@@ -18,75 +19,120 @@ task achab {
 		Boolean Version = false
 		# task specific variables
 		String NewHope = ""
-		File AchabExe
+		String AchabExe = "wwwachab.pl"
 		File OutMpa
-		String? OutPhenolyzer
-		String CustomVCF
-		String CnvGeneList
-		String FilterList
-		String GenesOfInterest
-		String FatherSample
-		String CaseSample
-		String MotherSample
-		Float AllelicFrequency
-		Float MozaicRate
-		Float MozaicDP		
+		File? OutPhenolyzer
+		String? CustomVCF
+		String? CnvGeneList
+		String FilterList = "PASS"
+		String? GenesOfInterest
+		String? FatherSample
+		String? CaseSample
+		String? MotherSample
+		Float AllelicFrequency = 0.01
+		Float MozaicRate = 0.2
+		Float MozaicDP = 5
 		String CheckTrio
-		String CustomInfo
+		String? CustomInfo
 		String IdSnp
-		String PerlPath
-		String Affected
+		String PerlPath = "perl"
+		String? Affected
 		String MdApiKey
-		String FavouriteGeneRef
-		String FilterCustomVCF
-		String FilterCustomVCFRegex
-		String GnomadExomeFields
-		String GnomadGenomeFields
+		String? FavouriteGeneRef
+		String? FilterCustomVCF
+		String? FilterCustomVCFRegex
+		String? GnomadExomeFields
+		String? GnomadGenomeFields
+		Boolean AddCustomVCFRegex = false
+		String? PooledSamples
+		File? PoorCoverageFile
+		File? Genemap2File
+		Boolean SkipCaseWT = false
+		Boolean HideACMG = false
 		Boolean CaseAB
 		Boolean CaseDepth
+		Boolean PenalizeAffected
 		# runtime attributes
 		String Queue
 		Int Cpu
 		Int Memory
+		File? taskOuput  # To force this task to run AFTER a given other task
 	}
+
+	String Case = if defined(CaseSample) then CaseSample else SampleID
+	String Dad = if defined(FatherSample) then "--dad \"~{FatherSample}\" " else ""
+	String Mum = if defined(MotherSample) then "--mum \"~{MotherSample}\" " else ""
+	String affected = if defined(Affected) then "--affected ~{Affected}" else ""
+	String candidates = if defined(GenesOfInterest) then "--candidates ~{GenesOfInterest} " else ""
+	String cngGL = if defined(CnvGeneList) then "--cnvGeneList ~{CnvGeneList} " else ""
 	String newHopeSuffix = if NewHope == "" then "" else "_newHope"
+	String customVcf = if defined(CustomVCF) then "--customVCF ~{CustomVCF} " else ""
+	String customInfoList = if defined(CustomInfo) then "--customInfoList ~{CustomInfo} " else ""
+	String favGenRef = if defined(FavouriteGeneRef) then "--favouriteGeneRef ~{FavouriteGeneRef} " else ""
+	String filtCustVcf = if defined(FilterCustomVCF) then "--filterCustomVCF ~{FilterCustomVCF} " else ""
+	String filtCustVcfReg = if defined(FilterCustomVCFRegex) then "--filterCustomVCFRegex ~{FilterCustomVCFRegex} " else ""
+	String addCustVCFRegex = if AddCustomVCFRegex then "--addCustomVCFRegex " else ""
+	String poolSample = if defined(PooledSamples) then "--pooledSamples ~{PooledSamples}" else ""
+	String addCasDep = if CaseDepth then "--addCaseDepth " else ""
+	String addCasab = if CaseAB then "--addCaseAB " else ""
+	String poorCov = if (defined(PoorCoverageFile) && defined(Genemap2File)) then "--poorCoverageFile ~{PoorCoverageFile} --genemap2File ~{Genemap2File} " else ""
+	String SkipCase = if SkipCaseWT then "--skipCaseWT " else ""
+	String Pheno = if defined(OutPhenolyzer) then "--phenolyzerFile ~{OutPhenolyzer} " else ""
+	String HideAcmg = if HideACMG then "--hideACMG " else ""
+	String idSNP = if defined(IdSnp) then "--IDSNP ~{IdSnp}" else ""
+	String PenalAffect = if PenalizeAffected then "--penalizeAffected " else ""  # Requires Achab >= v1.0.19
+
 	command <<<
+		set -e
+
 		source ~{CondaBin}activate ~{AchabEnv}
+
+		set -x
+
+		if [[ ! -d ~{OutDir} ]]; then
+			mkdir -p ~{OutDir}
+		fi
+
 		~{PerlPath} "~{AchabExe}" \
 		--vcf "~{OutMpa}" \
 		--outDir "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/" \
 		--outPrefix "~{SampleID}" \
-		--case "~{CaseSample}" \
-		--dad "~{FatherSample}" \
-		--mum "~{MotherSample}" \
-		~{CheckTrio} \
-		--candidates "~{GenesOfInterest}" \
-		--phenolyzerFile "~{OutPhenolyzer}" \
+		--case "~{Case}" \
+		~{Dad} \
+		~{Mum} \
+		~{candidates} \
+		~{Pheno} \
 		--popFreqThr "~{AllelicFrequency}" \
-		~{NewHope} \
 		--filterList "~{FilterList}" \
-		--cnvGeneList "~{CnvGeneList}" \
-		--customVCF "~{CustomVCF}" \
+		~{NewHope} \
+		~{cngGL} \
+		~{customVcf} \
 		--mozaicRate "~{MozaicRate}" \
 		--mozaicDP "~{MozaicDP}" \
-		--customInfoList "~{CustomInfo}" \
-		--affected "~{Affected}" \
+		~{customInfoList} \
+		~{affected} \
 		--MDAPIkey "~{MdApiKey}" \
-		--favouriteGeneRef "~{FavouriteGeneRef}" \
-		--filterCustomVCF "~{FilterCustomVCF}" \
-		--filterCustomVCFRegex "~{FilterCustomVCFRegex}" \
-		--IDSNP "~{IdSnp}" \
-		--gnomadExome "~{GnomadExomeFields}" \
-		--gnomadGenome "~{GnomadGenomeFields}" \
-		~{ if CaseDepth then "--addCaseDepth" else "" } \
-		~{ if CaseAB    then "--addCaseAB"    else "" } \
-		--addCustomVCFRegex
+		~{favGenRef} \
+		~{filtCustVcf} \
+		~{filtCustVcfReg} \
+		~{idSNP} \
+		~{"--gnomadExome " + GnomadExomeFields} \
+		~{"--gnomadGenome " + GnomadGenomeFields} \
+		~{addCustVCFRegex} \
+		~{poolSample} \
+		~{addCasDep} \
+		~{addCasab} \
+		~{poorCov} \
+		~{SkipCase} \
+		~{HideAcmg} \
+		~{PenalAffect}
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
-			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>  "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
+			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>	"~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
 		fi
 		conda deactivate
 	>>>
+
 	runtime {
 		queue: "~{Queue}"
 		cpu: "~{Cpu}"
@@ -95,5 +141,6 @@ task achab {
 	output {
 		File outAchab = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_achab_catch~{newHopeSuffix}.xlsx"
 		File outAchabHtml = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}~{newHopeSuffix}_achab.html"
+		File? outAchabPoorCov = "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/~{SampleID}_poorCoverage.xlsx"
 	}
 }

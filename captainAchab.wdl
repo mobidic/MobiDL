@@ -18,7 +18,7 @@ workflow captainAchab {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.3.0"
+		version: "1.3.1"
 		date: "2025-04-07"
 	}
 	input {
@@ -61,6 +61,15 @@ workflow captainAchab {
 		File refVariantsReduction
 		String humanDb
 		String genome
+		String gnomadExome
+		String gnomadGenome
+		String dbnsfp
+		String dbscsnv
+		String intervar
+		String popFreqMax
+		String spliceAI
+		String? clinvar
+		String? intronHgvs
 		#String operationSuffix
 		#String comma
 		## For phenolyzer
@@ -88,8 +97,15 @@ workflow captainAchab {
 		String idSnp = ''
 		String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
 		String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
+		Boolean addCustomVCFRegex = false
+		String? pooledSamples
+		File? poorCoverageFile
+		File? genemap2File
+		Boolean skipCaseWT = false
+		Boolean hideACMG = false
 		Boolean caseDepth = false
 		Boolean caseAB = false
+		Boolean penalizeAffected = false  # Requires Achab >= v1.0.19
 		## For BcftoolsSplit 
 		File inputVcf
 		## For BcftoolsLeftAlign 
@@ -201,7 +217,16 @@ workflow captainAchab {
 			OutDir = outTmpDir,
 			Version = true,
 			PerlPath = perlPath,
-			Genome = genome
+			Genome = genome,
+			GnomadExome = gnomadExome,
+			GnomadGenome = gnomadGenome,
+			Intervar = intervar,
+			Dbnsfp = dbnsfp,
+			Dbscsnv = dbscsnv,
+			PopFreqMax = popFreqMax,
+			SpliceAI = spliceAI,
+			Clinvar = clinvar,
+			IntronHgvs = intronHgvs
 	}
 	call runMpa.mpa {
 		input:
@@ -272,8 +297,15 @@ workflow captainAchab {
 			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields,
+			AddCustomVCFRegex = addCustomVCFRegex,
+			PooledSamples = pooledSamples,
+			PoorCoverageFile = poorCoverageFile,
+			Genemap2File = genemap2File,
+			SkipCaseWT = skipCaseWT,
+			HideACMG = hideACMG,
 			CaseDepth = caseDepth,
-			CaseAB = caseAB
+			CaseAB = caseAB,
+			PenalizeAffected = penalizeAffected
 	}
 	call runAchab.achab as achab {
 		input:
@@ -309,8 +341,16 @@ workflow captainAchab {
 			IdSnp = idSnp,
 			GnomadExomeFields = gnomadExomeFields,
 			GnomadGenomeFields = gnomadGenomeFields,
+			AddCustomVCFRegex = addCustomVCFRegex,
+			PooledSamples = pooledSamples,
+			PoorCoverageFile = poorCoverageFile,
+			Genemap2File = genemap2File,
+			SkipCaseWT = skipCaseWT,
+			HideACMG = hideACMG,
 			CaseDepth = false,
-			CaseAB = false
+			CaseAB = false,
+			PenalizeAffected = penalizeAffected,
+			taskOuput = achabNewHope.outAchabHtml
 	}
 	call runAchabFinalCopy.rsyncAchabFiles as rsyncAchabFiles {
 		input:
@@ -330,7 +370,10 @@ workflow captainAchab {
 			OutAchabNewHope = achabNewHope.outAchabHtml
 	}
 	output {
-		File achabHtml = achab.outAchabHtml
-		File achabNewHopeHtml = achabNewHope.outAchabHtml
+		File achabHtml = "~{outDir}/achab_excel/~{sampleID}_achab.html"
+		File achabNewHopeHtml = "~{outDir}/achab_excel/~{sampleID}_newHope_achab.html"
+		File achabExcel = "~{outDir}/achab_excel/~{sampleID}_achab_catch.xlsx"
+		File achabNewHopeExcel = "~{outDir}/achab_excel/~{sampleID}_achab_catch_newHope.xlsx"
+		File? achabPoorCov = "~{outDir}/achab_excel/~{sampleID}_poorCoverage.xlsx"
 	}
 }
