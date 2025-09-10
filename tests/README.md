@@ -52,4 +52,13 @@ pytest \
         --verbose \
         --git-aware \
         tests/test_panelCapture.yaml &
+
+# CaptainAchab workflow:
+pytest \
+        --tag UMAI \
+        --basetemp=/scratch \
+        --keep-workflow-wd \
+        --verbose \
+        --git-aware \
+        tests/test_captainAchab.yaml &
 ```
