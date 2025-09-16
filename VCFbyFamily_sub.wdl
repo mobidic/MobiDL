@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.2"
+        version: "0.5.3"
         date: "2025-03-11"
     }
 
@@ -151,17 +151,7 @@ workflow PedToVCF {
         String aFamily = aStatus[1]
         String OutMetrix = byFamDir + "coverage/"
 
-        # Coverage metrix + 'somalier extract'
-        call findFile as findBAM {
-            input:
-                Family = aFamily,
-                PrefixPath = analysisDir,
-                WDL = wdlBAM,
-                SuffixFile = suffixBAM,
-                Queue = defQueue,
-                Cpu = cpu,
-                Memory = memory
-        }
+        ## Always re-run metrix (coverage + 'somalier extract')
         # Create 'coverage' subdir otherwise error
         call mkdirCov {
             input:
@@ -170,29 +160,30 @@ workflow PedToVCF {
                 Memory = memory,
                 OutDir = byFamDir
         }
-        scatter (aBam in findBAM.filesList) {
-            ## Always re-run metrix
-            call runExomeMetrix.exomeMetrix {
-                input:
-                    sortedBam = aBam,
-                    bamExt = suffixBAM,
-                    intervalBedFile = intervalBedFile,
-                    poorCoverageFileFolder = poorCoverageFileFolder,
-                    outDir = mkdirCov.outDir,
-                    fastaGenome = fastaGenome,
-                    genomeVersion = genomeVersion,
-                    minCovBamQual = minCovBamQual,
-                    bedtoolsLowCoverage = bedtoolsLowCoverage,
-                    bedToolsSmallInterval = bedToolsSmallInterval,
-                    cpuHigh = cpuHigh,
-                    memoryHigh = memoryHigh,
-                    cpuLow = cpu,
-                    memoryLow = memory,
-                    defQueue = defQueue,
-                    workflowType = "",
-                    somalierExe = somalierExe,
-                    condaBin = condaBin
-            }
+        # WARN: Bellow 'bamExt' is rather a 'suffix' to remove ('.md.cram' in 'sample.md.cram')
+        call runExomeMetrix.exomeMetrix {
+            input:
+                samplesList = aFamily,
+                analysisDir = analysisDir,
+                wdlBAM = wdlBAM,
+                suffixBAM = suffixBAM,
+                bamExt = bamExt,
+                intervalBedFile = intervalBedFile,
+                poorCoverageFileFolder = poorCoverageFileFolder,
+                outDir = mkdirCov.outDir,
+                fastaGenome = fastaGenome,
+                genomeVersion = genomeVersion,
+                minCovBamQual = minCovBamQual,
+                bedtoolsLowCoverage = bedtoolsLowCoverage,
+                bedToolsSmallInterval = bedToolsSmallInterval,
+                cpuHigh = cpuHigh,
+                memoryHigh = memoryHigh,
+                cpuLow = cpu,
+                memoryLow = memory,
+                defQueue = defQueue,
+                workflowType = "",
+                somalierExe = somalierExe,
+                condaBin = condaBin
         }
 
         # Gather all VCF of family + Achab
@@ -482,44 +473,6 @@ task mergeVCF {
 
     output {
         File vcfOut = VcfOut
-    }
-
-    runtime {
-        queue: "~{Queue}"
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
-task findFile {
-    input {
-        String Family  # Eg.: 'casIndex,father,mother'
-        String PrefixPath  # Eg: /path/to/runID/MobiDL/
-        String WDL = "panelCapture"
-        String SuffixFile = ".crumble.cram"
-
-        # runtime attributes
-        String Queue
-        Int Cpu
-        Int Memory
-    }
-    command <<<
-        set -e
-        set -x
-        # Should work also if 1 member in family ?
-        for memb in $(echo ~{Family} | tr "," " ") ; do
-            # WARN: No quotes around 'WDL' bellow, to correctly expand possible '*' (a bit dirty)
-            foundFile=$(find "~{PrefixPath}"/~{WDL}/ -type f -name "${memb}~{SuffixFile}")
-            if [ -z "$foundFile" ] || [ "$(echo "$foundFile" | wc -l)" -ne 1 ] ; then
-                echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
-                exit 1
-            fi
-            echo "$foundFile"
-        done
-    >>>
-
-    output {
-        Array[File] filesList = read_lines(stdout())
     }
 
     runtime {
