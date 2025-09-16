@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.0"
+        version: "0.3.1"
         date: "2025-05-26"
     }
 
@@ -24,7 +24,7 @@ workflow exomeMetrix {
         String bamExt = ".cram"
         File intervalBedFile
         File fastaGenome
-        File somalierSites  = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz"
+        File? somalierSites
         ## Params
         Int minCovBamQual
         Int bedtoolsLowCoverage
@@ -104,18 +104,20 @@ workflow exomeMetrix {
                 BamFile = aBam
         }
 
-        # Somalier extract
-        call runSomalier.extract as somalierExtract {
-            input :
-                refFasta = fastaGenome,
-                sites = somalierSites,
-                bamFile = toIndexedBAM.sortedBam,
-                BamIndex = toIndexedBAM.bamIdx,
-                outputPath = outDir + "/coverage/",
-                path_exe = somalierExe,
-                Queue = defQueue,
-                Cpu = cpuLow,
-                Memory = memoryLow
+        if (defined(somalierSites)) {
+            # Somalier extract
+            call runSomalier.extract as somalierExtract {
+                input :
+                    refFasta = fastaGenome,
+                    sites = somalierSites,
+                    bamFile = toIndexedBAM.sortedBam,
+                    BamIndex = toIndexedBAM.bamIdx,
+                    outputPath = outDir + "/coverage/",
+                    path_exe = somalierExe,
+                    Queue = defQueue,
+                    Cpu = cpuLow,
+                    Memory = memoryLow
+            }
         }
 
         # 'samtools bedCov' and derived files
@@ -228,7 +230,7 @@ workflow exomeMetrix {
     }
 
     output {
-        Array[File] somalierExtracted = somalierExtract.file
+        Array[File?] somalierExtracted = somalierExtract.file
         Array[File] outCoverage = computeCoverage.TsvCoverageFile
         Array[File] outBedCov = samtoolsBedCov.BedCovFile
         # Array[File outBedCovClamms = computeCoverageClamms.ClammsCoverageFile

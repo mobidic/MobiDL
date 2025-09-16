@@ -31,7 +31,7 @@ task extract {
 		#       -> Use local file instead
 		# WARN2: Once extracted, '.somalier' files are genome-build-agnostic
 		#       See 'sites files' section of release
-		File sites
+		File? sites
 		String refFasta
 		File bamFile
 		File BamIndex

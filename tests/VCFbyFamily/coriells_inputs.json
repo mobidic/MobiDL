@@ -9,7 +9,7 @@
   "PedToVCF.suffixVcf": ".HC.vcf",
   "PedToVCF.suffixBAM": ".bam",
   "PedToVCF.bamExt": ".bam",
-  "PedToVCF.exomeMetrix.somalierSites": "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.hg19.vcf.gz",
+  "PedToVCF.somalierSites": "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.hg19.vcf.gz",
   "PedToVCF.pedsEnv": "/bioinfo/conda_envs/pedsEnv",
   "PedToVCF.condaBin": "/mnt/Bioinfo/Softs/miniconda/bin/",
   "PedToVCF.withPhenolyzer": true,

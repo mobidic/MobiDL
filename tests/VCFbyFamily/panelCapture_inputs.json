@@ -8,7 +8,7 @@
   "PedToVCF.wdlBAM": "*/panelCapture",
   "PedToVCF.suffixBAM": ".cram",
   "PedToVCF.bamExt": ".cram",
-  "PedToVCF.exomeMetrix.somalierSites": "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz",
+  "PedToVCF.somalierSites": "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz",
   "PedToVCF.pedsEnv": "/home/felix/.conda/envs/felix",
   "PedToVCF.condaBin": "/mnt/Bioinfo/Softs/miniconda/bin/",
   "PedToVCF.withPhenolyzer": true,

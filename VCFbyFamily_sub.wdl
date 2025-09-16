@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.3"
+        version: "0.5.4"
         date: "2025-03-11"
     }
 
@@ -27,6 +27,7 @@ workflow PedToVCF {
         String suffixBAM = ".md.cram"
         String bamExt = ".cram"  # ENH: Guess that
         File intervalBedFile
+        File somalierSites = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz"
 
         # PedToFam task:
         String pedsEnv  # Any python env with 'peds' package installed
@@ -169,6 +170,7 @@ workflow PedToVCF {
                 suffixBAM = suffixBAM,
                 bamExt = bamExt,
                 intervalBedFile = intervalBedFile,
+                somalierSites = somalierSites,
                 poorCoverageFileFolder = poorCoverageFileFolder,
                 outDir = mkdirCov.outDir,
                 fastaGenome = fastaGenome,
@@ -312,7 +314,7 @@ workflow PedToVCF {
         input:
             path_exe = somalierExe,
             ped = preprocessPed.outputFile,
-            somalier_extracted_files = flatten(flatten([exomeMetrix.somalierExtracted])),
+            somalier_extracted_files = select_all(flatten(flatten([exomeMetrix.somalierExtracted]))),
             outputPath = OutDir + "/somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
@@ -349,7 +351,7 @@ workflow PedToVCF {
             Version = true,
             configFile = customMQCconfig,
             TaskOut = flatten([
-                [somalierRelatePostprocess.CustomSamplesFile, somalierRelatePostprocess.RelateFilteredPairs],
+                select_all([somalierRelatePostprocess.CustomSamplesFile, somalierRelatePostprocess.RelateFilteredPairs]),
                 achabCINewHopePost.outAchabMetrix
             ])
     }
