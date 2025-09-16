@@ -11,14 +11,17 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.2.0"
+        version: "0.3.0"
         date: "2025-05-26"
     }
 
     input {
         # Tasks specific
-        File sortedBam
-        String bamExt
+        String samplesList
+        String analysisDir
+        String wdlBAM = "preprocessing/markduplicates"
+        String suffixBAM = ".md.cram"
+        String bamExt = ".cram"
         File intervalBedFile
         File fastaGenome
         File somalierSites  = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz"
@@ -52,173 +55,227 @@ workflow exomeMetrix {
         String genomeVersion
         String workflowType
     }
-    # WARN: 'bamExt' is rather a 'suffix', we want to remove ('.md.cram' in 'sample.md.cram')
-    String sampleID = basename (sortedBam, bamExt)
 
-    # 'somalier and 'samtools bedcov' requires indexed BAM
-    # TODO: Run genomeCov and upstream with 'samtools view --min-MQ 30'
-    call toIndexedBAM {
+    # First find all BAM
+    call findFile as findBAM {
         input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            SamtoolsEnv = samtoolsEnv,
-            Cpu = cpuLow,
-            Memory = memoryLow,
-            SampleID = sampleID,
-            OutDir = outDir,
-            WorkflowType = workflowType,
-            SamtoolsExe = samtoolsExe,
-            FastaGenome = fastaGenome,
-            BamFile = sortedBam
-    }
-
-    call filterBAM {
-        input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            SamtoolsEnv = samtoolsEnv,
-            Cpu = cpuLow,
-            Memory = memoryLow,
-            SampleID = sampleID,
-            OutDir = outDir,
-            WorkflowType = workflowType,
-            SamtoolsExe = samtoolsExe,
-            MinCovBamQual = minCovBamQual,
-            BamFile = sortedBam
-    }
-
-    # Somalier extract
-    call runSomalier.extract as somalierExtract {
-        input :
-            refFasta = fastaGenome,
-            sites = somalierSites,
-            bamFile = toIndexedBAM.sortedBam,
-            BamIndex = toIndexedBAM.bamIdx,
-            outputPath = outDir + "/coverage/",
-            path_exe = somalierExe,
+            Family = samplesList,
+            PrefixPath = analysisDir,
+            WDL = wdlBAM,
+            SuffixFile = suffixBAM,
             Queue = defQueue,
             Cpu = cpuLow,
             Memory = memoryLow
     }
 
-    # 'samtools bedCov' and derived files
-    call runSamtoolsBedCov.samtoolsBedCov {
-        input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            SamtoolsEnv = samtoolsEnv,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            OutDirSampleID = "/",
-            WorkflowType = workflowType,
-            SamtoolsExe = samtoolsExe,
-            IntervalBedFile = intervalBedFile,
-            BamFile = toIndexedBAM.sortedBam,
-            BamIndex = toIndexedBAM.bamIdx,
-            MinCovBamQual = minCovBamQual
-    }
+    # Then process them in parallel
+    scatter (aBam in findBAM.filesList) {
+        # WARN: Bellow 'bamExt' is rather a 'suffix' to remove ('.md.cram' in 'sample.md.cram')
+        String sampleID = basename (aBam, bamExt)
 
-    call runComputeCoverage.computeCoverage {
-        input:
-            Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            OutDirSampleID = "/",
-            WorkflowType = workflowType,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            BedCovFile = samtoolsBedCov.BedCovFile
-    }
+        # 'somalier and 'samtools bedcov' requires indexed BAM
+        call toIndexedBAM {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                SamtoolsEnv = samtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                SamtoolsExe = samtoolsExe,
+                FastaGenome = fastaGenome,
+                BamFile = aBam
+        }
 
-    # call runComputeCoverageClamms.computeCoverageClamms {
-    #     input:
-    #         Queue = defQueue,
-    #         Cpu = cpuLow,
-    #         Memory = memoryHigh,
-    #         SampleID = sampleID,
-    #         OutDir = outDir,
-    #         OutDirSampleID = "/",
-    #         WorkflowType = workflowType,
-    #         AwkExe = awkExe,
-    #         SortExe = sortExe,
-    #         BedCovFile = samtoolsBedCov.BedCovFile
-    # }
+        call filterBAM {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                SamtoolsEnv = samtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                SamtoolsExe = samtoolsExe,
+                MinCovBamQual = minCovBamQual,
+                BamFile = aBam
+        }
 
-    call runComputePoorCoverage.computeGenomecov {
-        input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            BedtoolsEnv = bedtoolsEnv,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            OutDirSampleID = "/",
-            WorkflowType = workflowType,
-            GenomeVersion = genomeVersion,
-            BedToolsExe = bedToolsExe,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            IntervalBedFile = intervalBedFile,
-            BedtoolsLowCoverage = bedtoolsLowCoverage,
-            BamFile = filterBAM.sortedBam
-    }
+        # Somalier extract
+        call runSomalier.extract as somalierExtract {
+            input :
+                refFasta = fastaGenome,
+                sites = somalierSites,
+                bamFile = toIndexedBAM.sortedBam,
+                BamIndex = toIndexedBAM.bamIdx,
+                outputPath = outDir + "/coverage/",
+                path_exe = somalierExe,
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow
+        }
 
-    call runComputePoorCoverage.computePoorCoverage {
-        input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            BedtoolsEnv = bedtoolsEnv,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            OutDirSampleID = "/",
-            WorkflowType = workflowType,
-            GenomeVersion = genomeVersion,
-            BedToolsExe = bedToolsExe,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            BedToolsSmallInterval = bedToolsSmallInterval,
-            GenomecovFile = computeGenomecov.genomecovFile
-    }
+        # 'samtools bedCov' and derived files
+        call runSamtoolsBedCov.samtoolsBedCov {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                SamtoolsEnv = samtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                SampleID = sampleID,
+                OutDir = outDir,
+                OutDirSampleID = "/",
+                WorkflowType = workflowType,
+                SamtoolsExe = samtoolsExe,
+                IntervalBedFile = intervalBedFile,
+                BamFile = toIndexedBAM.sortedBam,
+                BamIndex = toIndexedBAM.bamIdx,
+                MinCovBamQual = minCovBamQual
+        }
 
-    call runComputePoorCoverage.computePoorCovExtended {
-        input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            BedtoolsEnv = bedtoolsEnv,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            Queue = defQueue,
-            SampleID = sampleID,
-            OutDir = outDir,
-            OutDirSampleID = "/",
-            WorkflowType = workflowType,
-            GenomeVersion = genomeVersion,
-            BedToolsExe = bedToolsExe,
-            AwkExe = awkExe,
-            SortExe = sortExe,
-            BedToolsSmallInterval = bedToolsSmallInterval,
-            GenomecovFile = computeGenomecov.genomecovFile,
-            PoorCoverageFileFolder = poorCoverageFileFolder,
-            CoverageFile = computeCoverage.TsvCoverageFile
+        call runComputeCoverage.computeCoverage {
+            input:
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                SampleID = sampleID,
+                OutDir = outDir,
+                OutDirSampleID = "/",
+                WorkflowType = workflowType,
+                AwkExe = awkExe,
+                SortExe = sortExe,
+                BedCovFile = samtoolsBedCov.BedCovFile
+        }
+
+        # call runComputeCoverageClamms.computeCoverageClamms {
+        #     input:
+        #         Queue = defQueue,
+        #         Cpu = cpuLow,
+        #         Memory = memoryHigh,
+        #         SampleID = sampleID,
+        #         OutDir = outDir,
+        #         OutDirSampleID = "/",
+        #         WorkflowType = workflowType,
+        #         AwkExe = awkExe,
+        #         SortExe = sortExe,
+        #         BedCovFile = samtoolsBedCov.BedCovFile
+        # }
+
+        call runComputePoorCoverage.computeGenomecov {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                BedtoolsEnv = bedtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                SampleID = sampleID,
+                OutDir = outDir,
+                OutDirSampleID = "/",
+                WorkflowType = workflowType,
+                GenomeVersion = genomeVersion,
+                BedToolsExe = bedToolsExe,
+                AwkExe = awkExe,
+                SortExe = sortExe,
+                IntervalBedFile = intervalBedFile,
+                BedtoolsLowCoverage = bedtoolsLowCoverage,
+                BamFile = filterBAM.sortedBam
+        }
+
+        call runComputePoorCoverage.computePoorCoverage {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                BedtoolsEnv = bedtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                SampleID = sampleID,
+                OutDir = outDir,
+                OutDirSampleID = "/",
+                WorkflowType = workflowType,
+                GenomeVersion = genomeVersion,
+                BedToolsExe = bedToolsExe,
+                AwkExe = awkExe,
+                SortExe = sortExe,
+                BedToolsSmallInterval = bedToolsSmallInterval,
+                GenomecovFile = computeGenomecov.genomecovFile
+        }
+
+        call runComputePoorCoverage.computePoorCovExtended {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                BedtoolsEnv = bedtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                Queue = defQueue,
+                SampleID = sampleID,
+                OutDir = outDir,
+                OutDirSampleID = "/",
+                WorkflowType = workflowType,
+                GenomeVersion = genomeVersion,
+                BedToolsExe = bedToolsExe,
+                AwkExe = awkExe,
+                SortExe = sortExe,
+                BedToolsSmallInterval = bedToolsSmallInterval,
+                GenomecovFile = computeGenomecov.genomecovFile,
+                PoorCoverageFileFolder = poorCoverageFileFolder,
+                CoverageFile = computeCoverage.TsvCoverageFile
+        }
     }
 
     output {
-        File somalierExtracted = somalierExtract.file
-        File outCoverage = computeCoverage.TsvCoverageFile
-        File outBedCov = samtoolsBedCov.BedCovFile
-        # File outBedCovClamms = computeCoverageClamms.ClammsCoverageFile
-        File outPoorCoverage = computePoorCoverage.poorCoverageFile
-        File? outPoorCovExtended = computePoorCovExtended.poorCoverageFile
+        Array[File] somalierExtracted = somalierExtract.file
+        Array[File] outCoverage = computeCoverage.TsvCoverageFile
+        Array[File] outBedCov = samtoolsBedCov.BedCovFile
+        # Array[File outBedCovClamms = computeCoverageClamms.ClammsCoverageFile
+        Array[File] outPoorCoverage = computePoorCoverage.poorCoverageFile
+        Array[File?] outPoorCovExtended = computePoorCovExtended.poorCoverageFile
     }
 }
 
+
+# TASKS
+task findFile {
+    input {
+        String Family  # Eg.: 'casIndex,father,mother'
+        String PrefixPath  # Eg: /path/to/runID/MobiDL/
+        String WDL = "panelCapture"
+        String SuffixFile = ".crumble.cram"
+
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    command <<<
+        set -e
+        set -x
+        # Should work also if 1 member in family ?
+        for memb in $(echo ~{Family} | tr "," " ") ; do
+            # WARN: No quotes around 'WDL' bellow, to correctly expand possible '*' (a bit dirty)
+            foundFile=$(find "~{PrefixPath}"/~{WDL}/ -type f -name "${memb}~{SuffixFile}")
+            if [ -z "$foundFile" ] || [ "$(echo "$foundFile" | wc -l)" -ne 1 ] ; then
+                echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
+                exit 1
+            fi
+            echo "$foundFile"
+        done
+    >>>
+
+    output {
+        Array[File] filesList = read_lines(stdout())
+    }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
 
 # Take any CRAM/BAM and output a 'sample.bam' (+ index)
 task toIndexedBAM {
