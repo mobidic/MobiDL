@@ -12,7 +12,7 @@ workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.2.2"
+        version: "0.2.3"
         date: "2025-07-15"
     }
 
@@ -71,7 +71,7 @@ workflow normAndMerge {
         File haplotypeCallerVcf = hcDir + sampleID + "/" + sampleID + ".haplotypecaller.filtered.vcf.gz"
 		# DeepVariant VCF produced by Sarek still contains 'refCall' -> remove them
 		# vcftools support only VCF by default -> decompress first
-		call bcftoolsDecompress {
+		call bcftoolsDecompress as bcftoolsDecompressDv {
 			input:
 				Queue = defQueue,
 				CondaBin = condaBin,
@@ -98,7 +98,7 @@ workflow normAndMerge {
 				VcSuffix = ".deepvariant",
 				VcftoolsExe = vcftoolsExe,
 				Version = true,
-				VcfToRefCalled = bcftoolsDecompress.outVcf
+				VcfToRefCalled = bcftoolsDecompressDv.outVcf
 		}
 		#Normalize DeepVariant VCF (+ index)
 		call bcftoolsNorm as bcftoolsNormDv {
@@ -226,14 +226,19 @@ workflow normAndMerge {
 					Cpu = cpuLow,
 					Memory = memoryLow,
 					TaskOuput = [compressIndexMergedVcf.bgZippedVcf],
-					ListToRm = [refCallFiltration.noRefCalledVcf, bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf, anacoreUtilsMergeVCFCallers.mergedVcf, gatkUpdateVCFSequenceDictionary.refUpdatedVcf, gatkUpdateVCFSequenceDictionary.refUpdatedVcfIndex]
+					ListToRm = [
+								refCallFiltration.noRefCalledVcf,
+								bcftoolsNormHc.normVcf,
+								bcftoolsNormDv.normVcf,
+								anacoreUtilsMergeVCFCallers.mergedVcf,
+								gatkUpdateVCFSequenceDictionary.refUpdatedVcf,
+								gatkUpdateVCFSequenceDictionary.refUpdatedVcfIndex
+							]
 			}
 		}
 	}
 
     output {
-        Array[File] normHcVcf = compressIndexVcfHc.bgZippedVcf
-        Array[File] normDvVcf = compressIndexVcfDv.bgZippedVcf
         Array[File] mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
     }
 }
