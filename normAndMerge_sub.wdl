@@ -6,13 +6,14 @@ import "modules/refcallFiltration.wdl" as runRefCallFiltration
 import "modules/compressIndexVcf.wdl" as runCompressIndexVcf
 import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
+import "modules/identito.wdl" as runIdentito
 
 
 workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.2.3"
+        version: "0.3.0"
         date: "2025-07-15"
     }
 
@@ -55,7 +56,10 @@ workflow normAndMerge {
         String outDvDir = outDir + "/variant_calling/deepvariant/"
         String outHcDir = outDir + "/variant_calling/haplotypecaller/"
         String outMergeDir = outDir + "/variant_calling/merge/"
-    }
+        ## Identito (default = SNPXplex. rsIDs order here will be maintained)
+        String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
+		String csvtkExe = "/bioinfo/softs/bin/csvtk"
+	}
 
 	call listToArray {
 		input:
@@ -219,6 +223,23 @@ workflow normAndMerge {
 				VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
 		}
 
+		# Get identito SNP (on HC vcf because rsID properly annotated)
+		call runIdentito.identito as identito {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outHcDir,
+				WorkflowType = "",
+				QualDir = "",
+				CsvtkExe = csvtkExe,
+				VcfFile = compressIndexVcfHc.bgZippedVcf,
+				IDlist = idList
+		}
+
 		if (!keepFiles) {
 			call cleanUp {
 				input:
@@ -240,6 +261,7 @@ workflow normAndMerge {
 
     output {
         Array[File] mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
+        Array[File] identitoFile = identito.outIdent
     }
 }
 
