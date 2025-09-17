@@ -47,3 +47,16 @@
       # md5sum: Cannot md5 Excel file directly
     - path: CaptainAchab/achab_excel/HG002-exomeTwist-chr22_achab_catch.xlsx
       # md5sum: Cannot md5 Excel file directly
+
+- name: CaptainAchab BUG wrong genome
+  # Test to reproduce wrong FASTA issue
+  # Should exit with an error but DO NOT in current version (cuz NO 'set -e')
+  tags:
+    - wf_level
+    - hg19
+    - bug
+    - UMAI
+    - MAI15genes
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL captainAchab.wdl tests/captainAchab/captainAchab-BUG_inputs.json tests/Cluster_noDB-test.conf"
+  exit_code: 1
+
