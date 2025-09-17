@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.4"
+        version: "0.5.5"
         date: "2025-03-11"
     }
 
@@ -25,7 +25,6 @@ workflow PedToVCF {
         String suffixVcf = ".vcf.gz"  # VCF merged HC + DV
         String wdlBAM = "preprocessing/markduplicates"
         String suffixBAM = ".md.cram"
-        String bamExt = ".cram"  # ENH: Guess that
         File intervalBedFile
         File somalierSites = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz"
 
@@ -153,27 +152,18 @@ workflow PedToVCF {
         String OutMetrix = byFamDir + "coverage/"
 
         ## Always re-run metrix (coverage + 'somalier extract')
-        # Create 'coverage' subdir otherwise error
-        call mkdirCov {
-            input:
-                Queue = defQueue,
-                Cpu = cpu,
-                Memory = memory,
-                OutDir = byFamDir
-        }
-        # WARN: Bellow 'bamExt' is rather a 'suffix' to remove ('.md.cram' in 'sample.md.cram')
+
         call runExomeMetrix.exomeMetrix {
             input:
                 samplesList = aFamily,
                 analysisDir = analysisDir,
                 wdlBAM = wdlBAM,
                 suffixBAM = suffixBAM,
-                bamExt = bamExt,
-                intervalBedFile = intervalBedFile,
+                intervals = intervalBedFile,
                 somalierSites = somalierSites,
                 poorCoverageFileFolder = poorCoverageFileFolder,
-                outDir = mkdirCov.outDir,
-                fastaGenome = fastaGenome,
+                outDir = byFamDir,
+                fasta = fastaGenome,
                 genomeVersion = genomeVersion,
                 minCovBamQual = minCovBamQual,
                 bedtoolsLowCoverage = bedtoolsLowCoverage,
@@ -521,31 +511,6 @@ task findRenameVCF {
 
     output {
         Array[File] filesList = read_lines(stdout())
-    }
-
-    runtime {
-        queue: "~{Queue}"
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
-task mkdirCov {
-    input {
-        String OutDir
-
-        # runtime attributes
-        String Queue
-        Int Cpu
-        Int Memory
-    }
-    command <<<
-        set -e
-        mkdir -p ~{OutDir}/coverage
-    >>>
-
-    output {
-        String outDir = OutDir
     }
 
     runtime {

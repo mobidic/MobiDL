@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.1"
+        version: "0.3.2"
         date: "2025-05-26"
     }
 
@@ -19,17 +19,21 @@ workflow exomeMetrix {
         # Tasks specific
         String samplesList
         String analysisDir
+        File intervals
+        File fasta
+        ## Global
+        String outDir
+        String genomeVersion
+        String workflowType = ""
+        ## Optional
         String wdlBAM = "preprocessing/markduplicates"
         String suffixBAM = ".md.cram"
-        String bamExt = ".cram"
-        File intervalBedFile
-        File fastaGenome
         File? somalierSites
         ## Params
-        Int minCovBamQual
-        Int bedtoolsLowCoverage
-        Int bedToolsSmallInterval
-        String poorCoverageFileFolder
+        Int minCovBamQual = 30
+        Int bedtoolsLowCoverage = 20
+        Int bedToolsSmallInterval = 20
+        String poorCoverageFileFolder = ""  # Disabled by default
         ## Standard execs
         String awkExe = "awk"
         String sedExe = "sed"
@@ -37,23 +41,19 @@ workflow exomeMetrix {
         ## Standard execs
         String bedToolsExe = "bedtools"
         String samtoolsExe = "samtools"
-        String somalierExe
+        String somalierExe = "/bioinfo/softs/bin/somalier"
         ## envs
-        String condaBin
+        String condaBin = "/mnt/Bioinfo/Softs/miniconda/bin/"
         String bedtoolsEnv = "/bioinfo/conda_envs/bedtoolsEnv"
         String samtoolsEnv = "/bioinfo/conda_envs/samtoolsEnv"
         ## queues
         String defQueue = "prod"
         ##Resources
-        Int cpuHigh
-        Int cpuLow
+        Int cpuLow = 1
+        Int cpuHigh = 24
         # Int avxCpu
-        Int memoryLow
-        Int memoryHigh
-        ## Global
-        String outDir
-        String genomeVersion
-        String workflowType
+        Int memoryLow = 4000
+        Int memoryHigh = 16000
     }
 
     # First find all BAM
@@ -70,8 +70,17 @@ workflow exomeMetrix {
 
     # Then process them in parallel
     scatter (aBam in findBAM.filesList) {
-        # WARN: Bellow 'bamExt' is rather a 'suffix' to remove ('.md.cram' in 'sample.md.cram')
-        String sampleID = basename (aBam, bamExt)
+        String sampleID = basename(aBam, suffixBAM)
+
+        # WARN: Implicit outDir is 'coverage' subdir
+        #       -> Create it otherwise error
+        call mkdirCov {
+            input:
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                OutDir = outDir
+        }
 
         # 'somalier and 'samtools bedcov' requires indexed BAM
         call toIndexedBAM {
@@ -82,10 +91,10 @@ workflow exomeMetrix {
                 Cpu = cpuLow,
                 Memory = memoryLow,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 WorkflowType = workflowType,
                 SamtoolsExe = samtoolsExe,
-                FastaGenome = fastaGenome,
+                fasta = fasta,
                 BamFile = aBam
         }
 
@@ -97,7 +106,7 @@ workflow exomeMetrix {
                 Cpu = cpuLow,
                 Memory = memoryLow,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 WorkflowType = workflowType,
                 SamtoolsExe = samtoolsExe,
                 MinCovBamQual = minCovBamQual,
@@ -108,11 +117,11 @@ workflow exomeMetrix {
             # Somalier extract
             call runSomalier.extract as somalierExtract {
                 input :
-                    refFasta = fastaGenome,
+                    refFasta = fasta,
                     sites = somalierSites,
                     bamFile = toIndexedBAM.sortedBam,
                     BamIndex = toIndexedBAM.bamIdx,
-                    outputPath = outDir + "/coverage/",
+                    outputPath = mkdirCov.outDir + "/coverage/",
                     path_exe = somalierExe,
                     Queue = defQueue,
                     Cpu = cpuLow,
@@ -129,11 +138,11 @@ workflow exomeMetrix {
                 Cpu = cpuLow,
                 Memory = memoryHigh,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 OutDirSampleID = "/",
                 WorkflowType = workflowType,
                 SamtoolsExe = samtoolsExe,
-                IntervalBedFile = intervalBedFile,
+                IntervalBedFile = intervals,
                 BamFile = toIndexedBAM.sortedBam,
                 BamIndex = toIndexedBAM.bamIdx,
                 MinCovBamQual = minCovBamQual
@@ -145,7 +154,7 @@ workflow exomeMetrix {
                 Cpu = cpuLow,
                 Memory = memoryHigh,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 OutDirSampleID = "/",
                 WorkflowType = workflowType,
                 AwkExe = awkExe,
@@ -159,7 +168,7 @@ workflow exomeMetrix {
         #         Cpu = cpuLow,
         #         Memory = memoryHigh,
         #         SampleID = sampleID,
-        #         OutDir = outDir,
+        #         OutDir = mkdirCov.outDir,
         #         OutDirSampleID = "/",
         #         WorkflowType = workflowType,
         #         AwkExe = awkExe,
@@ -175,14 +184,14 @@ workflow exomeMetrix {
                 Cpu = cpuLow,
                 Memory = memoryHigh,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 OutDirSampleID = "/",
                 WorkflowType = workflowType,
                 GenomeVersion = genomeVersion,
                 BedToolsExe = bedToolsExe,
                 AwkExe = awkExe,
                 SortExe = sortExe,
-                IntervalBedFile = intervalBedFile,
+                IntervalBedFile = intervals,
                 BedtoolsLowCoverage = bedtoolsLowCoverage,
                 BamFile = filterBAM.sortedBam
         }
@@ -195,7 +204,7 @@ workflow exomeMetrix {
                 Cpu = cpuLow,
                 Memory = memoryHigh,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 OutDirSampleID = "/",
                 WorkflowType = workflowType,
                 GenomeVersion = genomeVersion,
@@ -215,7 +224,7 @@ workflow exomeMetrix {
                 Memory = memoryHigh,
                 Queue = defQueue,
                 SampleID = sampleID,
-                OutDir = outDir,
+                OutDir = mkdirCov.outDir,
                 OutDirSampleID = "/",
                 WorkflowType = workflowType,
                 GenomeVersion = genomeVersion,
@@ -241,6 +250,31 @@ workflow exomeMetrix {
 
 
 # TASKS
+task mkdirCov {
+    input {
+        String OutDir
+
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    command <<<
+        set -e
+        mkdir -p ~{OutDir}/coverage
+    >>>
+
+    output {
+        String outDir = OutDir
+    }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
 task findFile {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
@@ -288,7 +322,7 @@ task toIndexedBAM {
         String SamtoolsEnv
         # task specific variables
         File BamFile
-        File FastaGenome
+        File fasta
         # global variables
         String SampleID
         String OutDir
@@ -303,7 +337,7 @@ task toIndexedBAM {
     command <<<
         set -e
         source ~{CondaBin}activate ~{SamtoolsEnv}
-        ~{SamtoolsExe} view -T ~{FastaGenome} -h -O BAM -o ~{outBam} ~{BamFile}
+        ~{SamtoolsExe} view -T ~{fasta} -h -O BAM -o ~{outBam} ~{BamFile}
         ~{SamtoolsExe} index -o ~{outBamIdx} ~{outBam}
         conda deactivate
     >>>
