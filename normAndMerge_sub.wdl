@@ -13,7 +13,7 @@ workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.0"
+        version: "0.4.0"
         date: "2025-07-15"
     }
 
@@ -121,6 +121,18 @@ workflow normAndMerge {
 				SortedVcf = refCallFiltration.noRefCalledVcf,
 				RefFasta = fasta
 		}
+		## MEMO: First have to rename Sarek style 'sample_sample -> sample'
+		call renameVCFsample as renameVcfDv {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = "./",
+				VcfFile = bcftoolsNormDv.normVcf
+		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
 			input:
 				Queue = defQueue,
@@ -135,7 +147,7 @@ workflow normAndMerge {
 				TabixExe = tabixExe,
 				VcSuffix = dvSuffix,
 				Version = true,
-				VcfFile = bcftoolsNormDv.normVcf
+				VcfFile = renameVcfDv.renamedVCF
 		}
 		#Normalize HaplotypeCaller VCF (+ index)
 		call bcftoolsNorm as bcftoolsNormHc {
@@ -153,6 +165,18 @@ workflow normAndMerge {
 				SortedVcf = haplotypeCallerVcf,
 				RefFasta = fasta
 		}
+		## MEMO: First have to rename Sarek style 'sample_sample -> sample'
+		call renameVCFsample as renameVcfHc {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = "./",
+				VcfFile = bcftoolsNormHc.normVcf
+		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
 			input:
 				Queue = defQueue,
@@ -166,7 +190,7 @@ workflow normAndMerge {
 				BgZipExe = bgZipExe,
 				TabixExe = tabixExe,
 				VcSuffix = hcSuffix,
-				VcfFile = bcftoolsNormHc.normVcf
+				VcfFile = renameVcfHc.renamedVCF
 		}
 		#Merge both HC and DV VCFs (+ index)
 		# MEMO: Have to create 'merge' subdir first
@@ -262,6 +286,41 @@ workflow normAndMerge {
     output {
         Array[File] mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
         Array[File] identitoFile = identito.outIdent
+    }
+}
+
+
+# TASKS
+task renameVCFsample {
+	input {
+		File VcfFile
+		String SampleID
+		String OutDir
+
+		String CondaBin
+		String BcftoolsEnv
+		String BcftoolsExe = "bcftools"
+		# runtime attributes
+		String Queue
+		Int Cpu
+		Int Memory
+    }
+	String OutVCF = OutDir + "/" + SampleID + ".renamed.vcf"
+	command <<<
+		set -e
+		source ~{CondaBin}activate ~{BcftoolsEnv}
+		set -x
+		~{BcftoolsExe} reheader -s ~{SampleID} -o ~{OutVCF} ~{VcfFile}
+	>>>
+
+	output {
+		File renamedVCF = read_lines(stdout())
+	}
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
     }
 }
 

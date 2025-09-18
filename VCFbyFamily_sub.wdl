@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.5"
+        version: "0.5.6"
         date: "2025-03-11"
     }
 
@@ -179,7 +179,7 @@ workflow PedToVCF {
         }
 
         # Gather all VCF of family + Achab
-        call findRenameVCF {
+        call findVCF {
             input:
                 Family = aFamily,
                 PrefixPath = analysisDir,
@@ -194,7 +194,7 @@ workflow PedToVCF {
         call mergeVCF {
             input:
                 CasIndex = aCasIndex,
-                VCFlist = findRenameVCF.filesList,
+                VCFlist = findVCF.filesList,
                 VcfOutPath = byFamDir,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
@@ -474,7 +474,7 @@ task mergeVCF {
     }
 }
 
-task findRenameVCF {
+task findVCF {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
@@ -501,11 +501,7 @@ task findRenameVCF {
                 echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
                 exit 1
             fi
-            # Rename VCF samples (for Sarek mostly, as it produce sample_sample)
-            renamedVCF=$PWD/${memb}.vcf.gz
-            ~{BcftoolsExe} reheader -s <(echo "$memb") "$foundFile" -o "$renamedVCF"
-            # ~{BcftoolsExe} index "$renamedVCF"
-            echo "$renamedVCF"
+            echo "$foundFile"
         done
     >>>
 
