@@ -315,7 +315,7 @@ task renameVCFsample {
 	>>>
 
 	output {
-		File renamedVCF = read_lines(stdout())
+		File renamedVCF = OutVCF
 	}
 
     runtime {
