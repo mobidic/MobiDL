@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.3"
+        version: "0.4.0"
         date: "2025-05-26"
     }
 
@@ -35,6 +35,7 @@ workflow exomeMetrix {
         Int bedtoolsLowCoverage = 20
         Int bedToolsSmallInterval = 20
         String poorCoverageFileFolder = ""  # Disabled by default
+        Boolean runMobiCNV = true
         ## Standard execs
         String awkExe = "awk"
         String sedExe = "sed"
@@ -43,10 +44,12 @@ workflow exomeMetrix {
         String bedToolsExe = "bedtools"
         String samtoolsExe = "samtools"
         String somalierExe = "/bioinfo/softs/bin/somalier"
+        String mobicnvExe = "/bioinfo/softs/MobiCNV/MobiCNV.py"
         ## envs
         String condaBin = "/mnt/Bioinfo/Softs/miniconda/bin/"
         String bedtoolsEnv = "/bioinfo/conda_envs/bedtoolsEnv"
         String samtoolsEnv = "/bioinfo/conda_envs/samtoolsEnv"
+        String mobicnvEnv = "/bioinfo/conda_envs/mobicnvEnv"
         ## queues
         String defQueue = "prod"
         ##Resources
@@ -239,6 +242,23 @@ workflow exomeMetrix {
         }
     }
 
+    if (runMobiCNV) {
+        # Run MobiCNV
+        call runMobiCNV {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                MobicnvEnv = mobicnvEnv,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                MobicnvExe = mobicnvExe,
+                IntervalBedFile = intervals,
+                CovTsvFiles = computeCoverage.TsvCoverageFile
+        }
+    }
+
     output {
         Array[File?] somalierExtracted = somalierExtract.file
         Array[File] outCoverage = computeCoverage.TsvCoverageFile
@@ -387,6 +407,58 @@ task filterBAM {
         File sortedBam = outBam
         File bamIdx = outBamIdx
     }
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
+    }
+}
+
+task runMobiCNV {
+    input {
+        # Env variables
+        String CondaBin
+        String MobicnvExe
+        String MobicnvEnv
+        String PythonExe = "python"
+        # task specific variables
+        Array[File] CovTsvFiles  # /path/to/MobiCNVtsvs/${aBED}/
+        File IntervalBedFile
+        # global variables
+        String OutDir
+        String WorkflowType
+        # runtime attributes
+        String Queue
+        Int Cpu
+        Int Memory
+    }
+    String OutMobiCNVxl = OutDir + "/MobiCNV.xlsx"
+    String OutMobiCNVerror = OutDir + "/MobiCNV.skipped.txt"
+    String LIBRARY = basename(IntervalBedFile, ".bed")
+    Int NUMBER_OF_SAMPLE = length(CovTsvFiles)
+    command <<<
+        set -e
+        # check if at least 3 samples / library => otherwise exit without error
+        if [ ~{NUMBER_OF_SAMPLE} -lt 3 ];then
+            echo "Not enough samples for Library ~{LIBRARY} to launch MobiCNV (~{NUMBER_OF_SAMPLE} samples)" > ~{OutMobiCNVerror}
+            exit
+        fi
+        # Create 'MobiCNVtsvs' dir
+        MobiCNVdir=~{OutDir}/MobiCNVtsvs/
+        mkdir -v -p ${MobiCNVdir}
+        for aTsv in ~{sep=" " CovTsvFiles}; do
+            cp -v ${aTsv} ${MobiCNVdir}
+        done
+        # Then run MobiCNV on it
+        source ~{CondaBin}activate ~{MobicnvEnv}
+        "~{PythonExe}" "~{MobicnvExe}" -i "${MobiCNVdir}/" -t tsv -o ~{OutMobiCNVxl}
+        conda deactivate
+    >>>
+
+    # Simpler to NOT define output:
+    # output {
+    # }
 
     runtime {
         queue: "~{Queue}"
