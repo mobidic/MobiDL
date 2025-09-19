@@ -13,7 +13,7 @@ workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.0"
+        version: "0.4.1"
         date: "2025-07-15"
     }
 
@@ -310,7 +310,8 @@ task renameVCFsample {
 		set -e
 		source ~{CondaBin}activate ~{BcftoolsEnv}
 		set -x
-		~{BcftoolsExe} reheader -s ~{SampleID} -o ~{OutVCF} ~{VcfFile}
+		# MEMO: '-s' expect a FILE
+		~{BcftoolsExe} reheader -s <(echo ~{SampleID}) -o ~{OutVCF} ~{VcfFile}
 	>>>
 
 	output {
