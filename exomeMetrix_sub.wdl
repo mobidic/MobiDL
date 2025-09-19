@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.3.2"
+        version: "0.3.3"
         date: "2025-05-26"
     }
 
@@ -31,6 +31,7 @@ workflow exomeMetrix {
         File? somalierSites
         ## Params
         Int minCovBamQual = 30
+        Int genomeCovMinMAPQ = 0  # Default = do not filter
         Int bedtoolsLowCoverage = 20
         Int bedToolsSmallInterval = 20
         String poorCoverageFileFolder = ""  # Disabled by default
@@ -109,7 +110,7 @@ workflow exomeMetrix {
                 OutDir = mkdirCov.outDir,
                 WorkflowType = workflowType,
                 SamtoolsExe = samtoolsExe,
-                MinCovBamQual = minCovBamQual,
+                MinCovBamQual = genomeCovMinMAPQ,
                 BamFile = aBam
         }
 

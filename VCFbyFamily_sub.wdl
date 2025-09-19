@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.6"
+        version: "0.5.7"
         date: "2025-03-11"
     }
 
@@ -166,6 +166,7 @@ workflow PedToVCF {
                 fasta = fastaGenome,
                 genomeVersion = genomeVersion,
                 minCovBamQual = minCovBamQual,
+                genomeCovMinMAPQ = minCovBamQual,
                 bedtoolsLowCoverage = bedtoolsLowCoverage,
                 bedToolsSmallInterval = bedToolsSmallInterval,
                 cpuHigh = cpuHigh,
