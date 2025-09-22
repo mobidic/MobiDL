@@ -1,8 +1,8 @@
 version 1.0
 
 
-# import "modules/bcftoolsNorm.wdl" as runBcftoolsNorm  # -> Cannot use, cuz does not use fasta to normalize... (-> NO inDels left alignement)
 import "modules/refcallFiltration.wdl" as runRefCallFiltration
+import "modules/bcftoolsNorm.wdl" as runBcftoolsNorm
 import "modules/compressIndexVcf.wdl" as runCompressIndexVcf
 import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
@@ -13,7 +13,7 @@ workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.1"
+        version: "0.4.2"
         date: "2025-07-15"
     }
 
@@ -105,7 +105,7 @@ workflow normAndMerge {
 				VcfToRefCalled = bcftoolsDecompressDv.outVcf
 		}
 		#Normalize DeepVariant VCF (+ index)
-		call bcftoolsNorm as bcftoolsNormDv {
+		call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDv {
 			input:
 				Queue = defQueue,
 				CondaBin = condaBin,
@@ -118,8 +118,7 @@ workflow normAndMerge {
 				BcftoolsExe = bcftoolsExe,
 				VcSuffix = dvSuffix,
 				Version = true,
-				SortedVcf = refCallFiltration.noRefCalledVcf,
-				RefFasta = fasta
+				SortedVcf = refCallFiltration.noRefCalledVcf
 		}
 		## MEMO: First have to rename Sarek style 'sample_sample -> sample'
 		call renameVCFsample as renameVcfDv {
@@ -150,7 +149,7 @@ workflow normAndMerge {
 				VcfFile = renameVcfDv.renamedVCF
 		}
 		#Normalize HaplotypeCaller VCF (+ index)
-		call bcftoolsNorm as bcftoolsNormHc {
+		call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormHc {
 			input:
 				Queue = defQueue,
 				CondaBin = condaBin,
@@ -162,8 +161,7 @@ workflow normAndMerge {
 				WorkflowType = workflowType,
 				BcftoolsExe = bcftoolsExe,
 				VcSuffix = hcSuffix,
-				SortedVcf = haplotypeCallerVcf,
-				RefFasta = fasta
+				SortedVcf = haplotypeCallerVcf
 		}
 		## MEMO: First have to rename Sarek style 'sample_sample -> sample'
 		call renameVCFsample as renameVcfHc {
@@ -403,57 +401,6 @@ task bcftoolsDecompress {
 	}
 	output {
 		File outVcf = OutVcf
-	}
-}
-
-task bcftoolsNorm {
-	meta {
-		author: "Felix VANDERMEEREN"
-		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2025-07-01"
-	}
-	input {
-		# env variables	
-		String CondaBin
-		String BcftoolsEnv
-		# global variables
-		String SampleID
-		String OutDir
-		String WorkflowType
-		String BcftoolsExe
-		Boolean Version = false
-		# task specific variables
-		File SortedVcf
-		File RefFasta
-		String VcSuffix
-		String VcfExtension = "vcf"
-		# runtime attributes
-		String Queue
-		Int Cpu
-		Int Memory
-	}
-	command <<<
-		set -e  # To make task stop at 1st error
-		source ~{CondaBin}activate ~{BcftoolsEnv}
-		#-f ~{RefFasta}  # Not used by MobiDL
-		~{BcftoolsExe} norm \
-			-m -both \
-			-O v -o "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}" \
-			~{SortedVcf}
-		if [ ~{Version} = true ];then
-			# fill-in tools version file
-			echo "Bcftools: v$(~{BcftoolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
-		fi
-		conda deactivate
-	>>>
-	runtime {
-		queue: "~{Queue}"
-		cpu: "~{Cpu}"
-		requested_memory_mb_per_core: "~{Memory}"
-	}
-	output {
-		File normVcf = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}"
 	}
 }
 
