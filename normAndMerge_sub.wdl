@@ -13,7 +13,7 @@ workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.2"
+        version: "0.4.3"
         date: "2025-07-15"
     }
 
@@ -212,7 +212,7 @@ workflow normAndMerge {
 				OutDir = outMergeDir,
 				WorkflowType = workflowType,
 				MergeVCFMobiDL = mergeVCFMobiDL,
-				Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
+				Vcfs = [renameVcfHc.renamedVCF, renameVcfDv.renamedVCF],
 				Callers = ["HaplotypeCaller", "DeepVariant"]
 		}
 		call runGatkUpdateVCFSequenceDictionary.gatkUpdateVCFSequenceDictionary {
