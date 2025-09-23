@@ -129,9 +129,9 @@ task achab {
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "captainAchab: v$(~{PerlPath} ~{AchabExe} -v | cut -f2 -d ':')" >>	"~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
+			mkdir -p "~{OutDir}~{SampleID}/~{WorkflowType}/admin"
+			cp "~{GenesOfInterest}" "~{OutDir}~{SampleID}/~{WorkflowType}/admin/"
 		fi
-		mkdir -p "~{OutDir}~{SampleID}/~{WorkflowType}/admin"
-		cp "~{GenesOfInterest}" "~{OutDir}~{SampleID}/~{WorkflowType}/admin/"
 		conda deactivate
 	>>>
 
