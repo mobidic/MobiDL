@@ -57,9 +57,9 @@
   "PedToVCF.mdApiKey": "/bioinfo/softs/MobiDL_conf/MDAPIKEYS/umai.txt",
   "PedToVCF.pooledParents": true,
   "PedToVCF.genemap2File": "/mnt/Bioinfo/Softs/src/OMIM/genemap2.txt",
-  "PedToVCF.addCaseDepth": true,
+  "PedToVCF.caseDepth": true,
   "PedToVCF.addCustomVCFRegex": true,
-  "PedToVCF.addCaseAB": true,
+  "PedToVCF.caseAB": true,
   "PedToVCF.skipCaseWT": true,
   "PedToVCF.hideACMG": true
 }

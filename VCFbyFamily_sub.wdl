@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.8"
+        version: "0.5.9"
         date: "2025-03-11"
     }
 
@@ -106,8 +106,8 @@ workflow PedToVCF {
         String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
         Boolean addCustomVCFRegex = false
         Boolean pooledParents = false
-        Boolean addCaseDepth = false
-        Boolean addCaseAB = false
+        Boolean caseDepth = false
+        Boolean caseAB = false
         File? genemap2File
         Boolean skipCaseWT = false
         Boolean hideACMG = false
@@ -274,8 +274,8 @@ workflow PedToVCF {
                 gnomadGenomeFields = gnomadGenomeFields,
                 addCustomVCFRegex = addCustomVCFRegex,
                 pooledSamples = pooledSamples,
-                caseDepth = addCaseDepth,
-                caseAB = addCaseAB,
+                caseDepth = caseDepth,
+                caseAB = caseAB,
                 poorCoverageFile = exomeMetrix.outPoorCovExtended[0],
                 genemap2File = genemap2File,
                 skipCaseWT = skipCaseWT,
