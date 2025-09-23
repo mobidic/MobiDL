@@ -11,7 +11,7 @@ workflow exomeMetrix {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.4.0"
+        version: "0.4.1"
         date: "2025-05-26"
     }
 
@@ -114,7 +114,7 @@ workflow exomeMetrix {
                 WorkflowType = workflowType,
                 SamtoolsExe = samtoolsExe,
                 MinCovBamQual = genomeCovMinMAPQ,
-                BamFile = aBam
+                BamFile = toIndexedBAM.sortedBam
         }
 
         if (defined(somalierSites)) {
