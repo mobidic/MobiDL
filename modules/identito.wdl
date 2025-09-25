@@ -4,7 +4,7 @@ task identito {
 	meta {
 		author: "Felix VANDERMEEREN"
 		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.1.1"
+		version: "0.1.2"
 		date: "2025-05-21"
 	}
 	input {
@@ -15,6 +15,7 @@ task identito {
 		String SampleID
 		String OutDir
 		String WorkflowType
+		String QualDir = "PicardQualityDir"
 		String CsvtkExe
 		Boolean Version = false
 		# task specific variables
@@ -26,7 +27,7 @@ task identito {
 		Int Memory
 	}
 	# MEMO: If 'sampleName' in filename, MultiQC create separate tables, instead of 1 gathered
-	String OutputFile = "~{OutDir}~{SampleID}/~{WorkflowType}/PicardQualityDir/Identito_mqc.tsv"
+	String OutputFile = "~{OutDir}~{SampleID}/~{WorkflowType}/~{QualDir}/Identito_mqc.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BcftoolsEnv}

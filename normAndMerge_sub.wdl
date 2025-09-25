@@ -1,18 +1,19 @@
 version 1.0
 
 
-# import "modules/bcftoolsNorm.wdl" as runBcftoolsNorm  # -> Cannot use, cuz does not use fasta to normalize... (-> NO inDels left alignement)
 import "modules/refcallFiltration.wdl" as runRefCallFiltration
+import "modules/bcftoolsNorm.wdl" as runBcftoolsNorm
 import "modules/compressIndexVcf.wdl" as runCompressIndexVcf
 import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
+import "modules/identito.wdl" as runIdentito
 
 
 workflow normAndMerge {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.2.2"
+        version: "0.4.3"
         date: "2025-07-15"
     }
 
@@ -55,7 +56,10 @@ workflow normAndMerge {
         String outDvDir = outDir + "/variant_calling/deepvariant/"
         String outHcDir = outDir + "/variant_calling/haplotypecaller/"
         String outMergeDir = outDir + "/variant_calling/merge/"
-    }
+        ## Identito (default = SNPXplex. rsIDs order here will be maintained)
+        String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
+		String csvtkExe = "/bioinfo/softs/bin/csvtk"
+	}
 
 	call listToArray {
 		input:
@@ -71,7 +75,7 @@ workflow normAndMerge {
         File haplotypeCallerVcf = hcDir + sampleID + "/" + sampleID + ".haplotypecaller.filtered.vcf.gz"
 		# DeepVariant VCF produced by Sarek still contains 'refCall' -> remove them
 		# vcftools support only VCF by default -> decompress first
-		call bcftoolsDecompress {
+		call bcftoolsDecompress as bcftoolsDecompressDv {
 			input:
 				Queue = defQueue,
 				CondaBin = condaBin,
@@ -98,10 +102,10 @@ workflow normAndMerge {
 				VcSuffix = ".deepvariant",
 				VcftoolsExe = vcftoolsExe,
 				Version = true,
-				VcfToRefCalled = bcftoolsDecompress.outVcf
+				VcfToRefCalled = bcftoolsDecompressDv.outVcf
 		}
 		#Normalize DeepVariant VCF (+ index)
-		call bcftoolsNorm as bcftoolsNormDv {
+		call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDv {
 			input:
 				Queue = defQueue,
 				CondaBin = condaBin,
@@ -114,8 +118,19 @@ workflow normAndMerge {
 				BcftoolsExe = bcftoolsExe,
 				VcSuffix = dvSuffix,
 				Version = true,
-				SortedVcf = refCallFiltration.noRefCalledVcf,
-				RefFasta = fasta
+				SortedVcf = refCallFiltration.noRefCalledVcf
+		}
+		## MEMO: First have to rename Sarek style 'sample_sample -> sample'
+		call renameVCFsample as renameVcfDv {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = "./",
+				VcfFile = bcftoolsNormDv.normVcf
 		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
 			input:
@@ -131,10 +146,10 @@ workflow normAndMerge {
 				TabixExe = tabixExe,
 				VcSuffix = dvSuffix,
 				Version = true,
-				VcfFile = bcftoolsNormDv.normVcf
+				VcfFile = renameVcfDv.renamedVCF
 		}
 		#Normalize HaplotypeCaller VCF (+ index)
-		call bcftoolsNorm as bcftoolsNormHc {
+		call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormHc {
 			input:
 				Queue = defQueue,
 				CondaBin = condaBin,
@@ -146,8 +161,19 @@ workflow normAndMerge {
 				WorkflowType = workflowType,
 				BcftoolsExe = bcftoolsExe,
 				VcSuffix = hcSuffix,
-				SortedVcf = haplotypeCallerVcf,
-				RefFasta = fasta
+				SortedVcf = haplotypeCallerVcf
+		}
+		## MEMO: First have to rename Sarek style 'sample_sample -> sample'
+		call renameVCFsample as renameVcfHc {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = "./",
+				VcfFile = bcftoolsNormHc.normVcf
 		}
 		call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
 			input:
@@ -162,7 +188,7 @@ workflow normAndMerge {
 				BgZipExe = bgZipExe,
 				TabixExe = tabixExe,
 				VcSuffix = hcSuffix,
-				VcfFile = bcftoolsNormHc.normVcf
+				VcfFile = renameVcfHc.renamedVCF
 		}
 		#Merge both HC and DV VCFs (+ index)
 		# MEMO: Have to create 'merge' subdir first
@@ -186,7 +212,7 @@ workflow normAndMerge {
 				OutDir = outMergeDir,
 				WorkflowType = workflowType,
 				MergeVCFMobiDL = mergeVCFMobiDL,
-				Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
+				Vcfs = [renameVcfHc.renamedVCF, renameVcfDv.renamedVCF],
 				Callers = ["HaplotypeCaller", "DeepVariant"]
 		}
 		call runGatkUpdateVCFSequenceDictionary.gatkUpdateVCFSequenceDictionary {
@@ -219,6 +245,23 @@ workflow normAndMerge {
 				VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
 		}
 
+		# Get identito SNP (on HC vcf because rsID properly annotated)
+		call runIdentito.identito as identito {
+			input:
+				Queue = defQueue,
+				CondaBin = condaBin,
+				BcftoolsEnv = bcftoolsEnv,
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outHcDir,
+				WorkflowType = "",
+				QualDir = "",
+				CsvtkExe = csvtkExe,
+				VcfFile = compressIndexVcfHc.bgZippedVcf,
+				IDlist = idList
+		}
+
 		if (!keepFiles) {
 			call cleanUp {
 				input:
@@ -226,15 +269,57 @@ workflow normAndMerge {
 					Cpu = cpuLow,
 					Memory = memoryLow,
 					TaskOuput = [compressIndexMergedVcf.bgZippedVcf],
-					ListToRm = [refCallFiltration.noRefCalledVcf, bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf, anacoreUtilsMergeVCFCallers.mergedVcf, gatkUpdateVCFSequenceDictionary.refUpdatedVcf, gatkUpdateVCFSequenceDictionary.refUpdatedVcfIndex]
+					ListToRm = [
+								refCallFiltration.noRefCalledVcf,
+								bcftoolsNormHc.normVcf,
+								bcftoolsNormDv.normVcf,
+								anacoreUtilsMergeVCFCallers.mergedVcf,
+								gatkUpdateVCFSequenceDictionary.refUpdatedVcf,
+								gatkUpdateVCFSequenceDictionary.refUpdatedVcfIndex
+							]
 			}
 		}
 	}
 
     output {
-        Array[File] normHcVcf = compressIndexVcfHc.bgZippedVcf
-        Array[File] normDvVcf = compressIndexVcfDv.bgZippedVcf
         Array[File] mergedVcf = compressIndexMergedVcf.bgZippedVcf  # Merged VCF (HC + DV)
+        Array[File] identitoFile = identito.outIdent
+    }
+}
+
+
+# TASKS
+task renameVCFsample {
+	input {
+		File VcfFile
+		String SampleID
+		String OutDir
+
+		String CondaBin
+		String BcftoolsEnv
+		String BcftoolsExe = "bcftools"
+		# runtime attributes
+		String Queue
+		Int Cpu
+		Int Memory
+    }
+	String OutVCF = OutDir + "/" + SampleID + ".renamed.vcf"
+	command <<<
+		set -e
+		source ~{CondaBin}activate ~{BcftoolsEnv}
+		set -x
+		# MEMO: '-s' expect a FILE
+		~{BcftoolsExe} reheader -s <(echo ~{SampleID}) -o ~{OutVCF} ~{VcfFile}
+	>>>
+
+	output {
+		File renamedVCF = OutVCF
+	}
+
+    runtime {
+        queue: "~{Queue}"
+        cpu: "~{Cpu}"
+        requested_memory_mb_per_core: "~{Memory}"
     }
 }
 
@@ -316,57 +401,6 @@ task bcftoolsDecompress {
 	}
 	output {
 		File outVcf = OutVcf
-	}
-}
-
-task bcftoolsNorm {
-	meta {
-		author: "Felix VANDERMEEREN"
-		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2025-07-01"
-	}
-	input {
-		# env variables	
-		String CondaBin
-		String BcftoolsEnv
-		# global variables
-		String SampleID
-		String OutDir
-		String WorkflowType
-		String BcftoolsExe
-		Boolean Version = false
-		# task specific variables
-		File SortedVcf
-		File RefFasta
-		String VcSuffix
-		String VcfExtension = "vcf"
-		# runtime attributes
-		String Queue
-		Int Cpu
-		Int Memory
-	}
-	command <<<
-		set -e  # To make task stop at 1st error
-		source ~{CondaBin}activate ~{BcftoolsEnv}
-		#-f ~{RefFasta}  # Not used by MobiDL
-		~{BcftoolsExe} norm \
-			-m -both \
-			-O v -o "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}" \
-			~{SortedVcf}
-		if [ ~{Version} = true ];then
-			# fill-in tools version file
-			echo "Bcftools: v$(~{BcftoolsExe} --version | grep bcftools | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt";
-		fi
-		conda deactivate
-	>>>
-	runtime {
-		queue: "~{Queue}"
-		cpu: "~{Cpu}"
-		requested_memory_mb_per_core: "~{Memory}"
-	}
-	output {
-		File normVcf = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.~{VcfExtension}"
 	}
 }
 

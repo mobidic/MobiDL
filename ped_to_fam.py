@@ -22,6 +22,9 @@ for fam in families:
 
     else:
         casIndex = fam.get_proband()
+        if casIndex is None:  # = NO affected person in fam
+            print(f"WARN: No proband found in family {fam.id} -> Take 1st member instead")
+            casIndex = [indiv for indiv in fam][0]  # -> Take 1st sample instead
 
         # Father and Mother can be 'None' -> check it:
         father = fam.get_father(casIndex)

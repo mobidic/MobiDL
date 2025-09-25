@@ -12,7 +12,7 @@ workflow PedToVCF {
     meta {
         author: "Felix VANDERMEEREN"
         email: "felix.vandermeeren(at)chu-montpellier.fr"
-        version: "0.5.2"
+        version: "0.5.9"
         date: "2025-03-11"
     }
 
@@ -25,8 +25,8 @@ workflow PedToVCF {
         String suffixVcf = ".vcf.gz"  # VCF merged HC + DV
         String wdlBAM = "preprocessing/markduplicates"
         String suffixBAM = ".md.cram"
-        String bamExt = ".cram"  # ENH: Guess that
         File intervalBedFile
+        File somalierSites = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz"
 
         # PedToFam task:
         String pedsEnv  # Any python env with 'peds' package installed
@@ -106,8 +106,8 @@ workflow PedToVCF {
         String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
         Boolean addCustomVCFRegex = false
         Boolean pooledParents = false
-        Boolean addCaseDepth = false
-        Boolean addCaseAB = false
+        Boolean caseDepth = false
+        Boolean caseAB = false
         File? genemap2File
         Boolean skipCaseWT = false
         Boolean hideACMG = false
@@ -151,52 +151,37 @@ workflow PedToVCF {
         String aFamily = aStatus[1]
         String OutMetrix = byFamDir + "coverage/"
 
-        # Coverage metrix + 'somalier extract'
-        call findFile as findBAM {
+        ## Always re-run metrix (coverage + 'somalier extract')
+
+        call runExomeMetrix.exomeMetrix {
             input:
-                Family = aFamily,
-                PrefixPath = analysisDir,
-                WDL = wdlBAM,
-                SuffixFile = suffixBAM,
-                Queue = defQueue,
-                Cpu = cpu,
-                Memory = memory
-        }
-        # Create 'coverage' subdir otherwise error
-        call mkdirCov {
-            input:
-                Queue = defQueue,
-                Cpu = cpu,
-                Memory = memory,
-                OutDir = byFamDir
-        }
-        scatter (aBam in findBAM.filesList) {
-            ## Always re-run metrix
-            call runExomeMetrix.exomeMetrix {
-                input:
-                    sortedBam = aBam,
-                    bamExt = suffixBAM,
-                    intervalBedFile = intervalBedFile,
-                    poorCoverageFileFolder = poorCoverageFileFolder,
-                    outDir = mkdirCov.outDir,
-                    fastaGenome = fastaGenome,
-                    genomeVersion = genomeVersion,
-                    minCovBamQual = minCovBamQual,
-                    bedtoolsLowCoverage = bedtoolsLowCoverage,
-                    bedToolsSmallInterval = bedToolsSmallInterval,
-                    cpuHigh = cpuHigh,
-                    memoryHigh = memoryHigh,
-                    cpuLow = cpu,
-                    memoryLow = memory,
-                    defQueue = defQueue,
-                    workflowType = "",
-                    somalierExe = somalierExe,
-                    condaBin = condaBin
-            }
+                samplesList = aFamily,
+                analysisDir = analysisDir,
+                wdlBAM = wdlBAM,
+                suffixBAM = suffixBAM,
+                intervals = intervalBedFile,
+                somalierSites = somalierSites,
+                poorCoverageFileFolder = poorCoverageFileFolder,
+                runMobiCNV = false,
+                outDir = byFamDir,
+                fasta = fastaGenome,
+                genomeVersion = genomeVersion,
+                minCovBamQual = minCovBamQual,
+                genomeCovMinMAPQ = minCovBamQual,
+                bedtoolsLowCoverage = bedtoolsLowCoverage,
+                bedToolsSmallInterval = bedToolsSmallInterval,
+                cpuHigh = cpuHigh,
+                memoryHigh = memoryHigh,
+                cpuLow = cpu,
+                memoryLow = memory,
+                defQueue = defQueue,
+                workflowType = "",
+                somalierExe = somalierExe,
+                condaBin = condaBin
         }
 
         # Gather all VCF of family + Achab
-        call findRenameVCF {
+        call findVCF {
             input:
                 Family = aFamily,
                 PrefixPath = analysisDir,
@@ -211,7 +196,7 @@ workflow PedToVCF {
         call mergeVCF {
             input:
                 CasIndex = aCasIndex,
-                VCFlist = findRenameVCF.filesList,
+                VCFlist = findVCF.filesList,
                 VcfOutPath = byFamDir,
                 CondaBin = condaBin,
                 BcftoolsEnv = bcftoolsEnv,
@@ -289,8 +274,8 @@ workflow PedToVCF {
                 gnomadGenomeFields = gnomadGenomeFields,
                 addCustomVCFRegex = addCustomVCFRegex,
                 pooledSamples = pooledSamples,
-                caseDepth = addCaseDepth,
-                caseAB = addCaseAB,
+                caseDepth = caseDepth,
+                caseAB = caseAB,
                 poorCoverageFile = exomeMetrix.outPoorCovExtended[0],
                 genemap2File = genemap2File,
                 skipCaseWT = skipCaseWT,
@@ -321,7 +306,7 @@ workflow PedToVCF {
         input:
             path_exe = somalierExe,
             ped = preprocessPed.outputFile,
-            somalier_extracted_files = flatten(flatten([exomeMetrix.somalierExtracted])),
+            somalier_extracted_files = select_all(flatten(flatten([exomeMetrix.somalierExtracted]))),
             outputPath = OutDir + "/somalier_relate/",
             csvtkExe = csvtkExe,
             Queue = defQueue,
@@ -358,7 +343,7 @@ workflow PedToVCF {
             Version = true,
             configFile = customMQCconfig,
             TaskOut = flatten([
-                [somalierRelatePostprocess.CustomSamplesFile, somalierRelatePostprocess.RelateFilteredPairs],
+                select_all([somalierRelatePostprocess.CustomSamplesFile, somalierRelatePostprocess.RelateFilteredPairs]),
                 achabCINewHopePost.outAchabMetrix
             ])
     }
@@ -491,45 +476,7 @@ task mergeVCF {
     }
 }
 
-task findFile {
-    input {
-        String Family  # Eg.: 'casIndex,father,mother'
-        String PrefixPath  # Eg: /path/to/runID/MobiDL/
-        String WDL = "panelCapture"
-        String SuffixFile = ".crumble.cram"
-
-        # runtime attributes
-        String Queue
-        Int Cpu
-        Int Memory
-    }
-    command <<<
-        set -e
-        set -x
-        # Should work also if 1 member in family ?
-        for memb in $(echo ~{Family} | tr "," " ") ; do
-            # WARN: No quotes around 'WDL' bellow, to correctly expand possible '*' (a bit dirty)
-            foundFile=$(find "~{PrefixPath}"/~{WDL}/ -type f -name "${memb}~{SuffixFile}")
-            if [ -z "$foundFile" ] || [ "$(echo "$foundFile" | wc -l)" -ne 1 ] ; then
-                echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
-                exit 1
-            fi
-            echo "$foundFile"
-        done
-    >>>
-
-    output {
-        Array[File] filesList = read_lines(stdout())
-    }
-
-    runtime {
-        queue: "~{Queue}"
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
-task findRenameVCF {
+task findVCF {
     input {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
@@ -556,41 +503,12 @@ task findRenameVCF {
                 echo "ERROR: 1 file by sample is expected (found 0 or more than 1 for '$memb')"
                 exit 1
             fi
-            # Rename VCF samples (for Sarek mostly, as it produce sample_sample)
-            renamedVCF=$PWD/${memb}.vcf.gz
-            ~{BcftoolsExe} reheader -s <(echo "$memb") "$foundFile" -o "$renamedVCF"
-            # ~{BcftoolsExe} index "$renamedVCF"
-            echo "$renamedVCF"
+            echo "$foundFile"
         done
     >>>
 
     output {
         Array[File] filesList = read_lines(stdout())
-    }
-
-    runtime {
-        queue: "~{Queue}"
-        cpu: "~{Cpu}"
-        requested_memory_mb_per_core: "~{Memory}"
-    }
-}
-
-task mkdirCov {
-    input {
-        String OutDir
-
-        # runtime attributes
-        String Queue
-        Int Cpu
-        Int Memory
-    }
-    command <<<
-        set -e
-        mkdir -p ~{OutDir}/coverage
-    >>>
-
-    output {
-        String outDir = OutDir
     }
 
     runtime {
