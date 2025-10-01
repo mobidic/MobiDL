@@ -97,7 +97,7 @@ workflow captainAchab {
 		String idSnp = ''
 		String gnomadExomeFields = "gnomAD_exome_ALL,gnomAD_exome_AFR,gnomAD_exome_AMR,gnomAD_exome_ASJ,gnomAD_exome_EAS,gnomAD_exome_FIN,gnomAD_exome_NFE,gnomAD_exome_OTH,gnomAD_exome_SAS"
 		String gnomadGenomeFields = "gnomAD_genome_ALL,gnomAD_genome_AFR,gnomAD_genome_AMR,gnomAD_genome_ASJ,gnomAD_genome_EAS,gnomAD_genome_FIN,gnomAD_genome_NFE,gnomAD_genome_OTH"
-		Boolean addCustomVCFRegex = false
+		Boolean addCustomVCFRegex = true
 		String? pooledSamples
 		File? poorCoverageFile
 		File? genemap2File
