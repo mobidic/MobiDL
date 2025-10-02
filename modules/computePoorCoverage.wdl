@@ -4,7 +4,7 @@ task computeGenomecov {
 	meta {
 		author: "Felix VANDERMEEREN"
 		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.1.0"
+		version: "0.1.1"
 		date: "2023-09-04"
 	}
 	input {
@@ -34,10 +34,11 @@ task computeGenomecov {
 	String OutputFile = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_genomecov.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
+		cut -f 1-4 ~{IntervalBedFile} > fourColumns.bed
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{BedToolsExe} genomecov -ibam ~{BamFile} -bga \
 		| ~{AwkExe} -v low_coverage="~{BedtoolsLowCoverage}" '$4<low_coverage' \
-		| ~{BedToolsExe} intersect -wb -a ~{IntervalBedFile} -b - \
+		| ~{BedToolsExe} intersect -wb -a fourColumns.bed -b - \
 		> "~{OutputFile}"
 		conda deactivate
 	>>>
@@ -105,7 +106,7 @@ task computePoorCovExtended {
 	meta {
 		author: "Felix VANDERMEEREN"
 		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.0.1"
+		version: "0.0.2"
 		date: "2025-05-26"
 	}
 	input {
@@ -142,7 +143,7 @@ task computePoorCovExtended {
 		fi
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{SortExe} -k1,1 -k2,2n -k3,3n "~{GenomecovFile}" \
-		| ~{BedToolsExe} merge -d 1 -c 4,10,10 -o distinct,min,max -i - \
+		| ~{BedToolsExe} merge -d 1 -c 4,8,8 -o distinct,min,max -i - \
 		| ~{BedToolsExe} intersect -loj -c -a - -b ~{PoorCoverageFileFolder}/*.tsv  \
 		| ~{BedToolsExe} intersect -wb -loj -a - -b ~{CoverageFile}  \
 		| awk -v small_intervall="~{BedToolsSmallInterval}" -v GenomeVersion="~{GenomeVersion}" \
