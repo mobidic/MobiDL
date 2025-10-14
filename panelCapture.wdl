@@ -174,7 +174,7 @@ workflow panelCapture {
 		## Identito (default = SNPXplex. rsIDs order here will be maintained)
 		String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
 		## covreport
-		String CovReportDir
+		String covReportDir
 		File covReportJar
 		File geneFile
 	}
