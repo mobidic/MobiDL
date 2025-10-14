@@ -162,8 +162,8 @@ debug "CONFIG FILE: ${CONFIG_FILE}"
 # 2 => run treated - ignore directory
 # the file is stored in an array and modified by the script
 
-if [ ! -f "${RUNS_FILE}" ]; then
-    error "Runs file ${RUNS_FILE} not found!"
+if [ ! -s "${RUNS_FILE}" ]; then
+    error "Runs file ${RUNS_FILE} not found or is empty!"
 	exit 1
 fi
 
@@ -269,6 +269,13 @@ modifyJson() {
 			mkdir "${TMP_OUTPUT_DIR2}"
 		fi
 		TMP_OUTPUT_SED=${TMP_OUTPUT_DIR2////\\/}
+		# gene file for covreport
+		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
+			COVREPORT_GENE_FILE="${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/$(basename $(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3))"
+		else
+			COVREPORT_GENE_FILE="${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/$(basename $(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2))"
+		fi
+		COVREPORT_GENE_FILE_SED=${COVREPORT_GENE_FILE////\\/}
 		sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 			-e "s/\(  \"${WDL}\.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
 			-e "s/\(  \"${WDL}\.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
@@ -276,11 +283,13 @@ modifyJson() {
 			-e "s/\(  \"${WDL}\.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}\.fastq\.gz\",/" \
 			-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
-			-e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-			-e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}"
+			-e "s/\(  \"${WDL}\.geneFile\": \"\).*/\1${COVREPORT_GENE_FILE_SED}\",/" \
+			"${JSON}"
 		rm "${JSON}.bak"
-		#debug "$(cat ${JSON})"
+		# -e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
+		# -e "s/\(  \"${WDL}\.dvOut\": \"\).*/\1\/scratch\/tmp_output\/${RUN}\",/" "${JSON}" \
+		debug "$(cat ${JSON})"
 		# For MetaPanelCapture:
 		# Build a JSON list by genome
 		metaWDL="metaPanelCapture"

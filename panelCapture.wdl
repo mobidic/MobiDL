@@ -44,7 +44,7 @@ import "modules/gatkMergeVcfs.wdl" as runGatkMergeVcfs
 import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
 import "modules/identito.wdl" as runIdentito
-# import "modules/covreport2.wdl" as runCovReport
+import "modules/covreport2.wdl" as runCovReport
 import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
 
@@ -174,9 +174,9 @@ workflow panelCapture {
 		## Identito (default = SNPXplex. rsIDs order here will be maintained)
 		String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
 		## covreport
-		# String covReportDir
-		# File covReportJar
-		# File geneFile 
+		String CovReportDir
+		File covReportJar
+		File geneFile
 	}
 
 	# Tasks calls
@@ -1014,22 +1014,22 @@ workflow panelCapture {
 			VcfFile = compressIndexVcfHc.bgZippedVcf,
 			IDlist = idList
 	}
-	# call runCovReport.covReport as covreport {
-	# 	input:
-	# 		Queue = defQueue,
-	# 		Cpu = cpuLow,
-	# 		Memory = memoryLow,
-	# 		SampleID = sampleID,
-	# 		OutDir = outDir,
-	# 		WorkflowType = workflowType,
-	# 		CovReportDir = covReportDir,
-	# 		CovReportJar = covReportJar,
-	# 		JavaExe = javaExe,
-	# 		BamFile = sambambaMarkDup.markedBam,
-	# 		BamIndex = sambambaMarkDup.markedBamIndex,
-	# 		GenomeVersion = genomeVersion,
-	# 		GeneFile = geneFile
-	# }
+	call runCovReport.covReport as covreport {
+		input:
+			Queue = defQueue,
+			Cpu = cpuLow,
+			Memory = memoryLow,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,
+			CovReportDir = covReportDir,
+			CovReportJar = covReportJar,
+			JavaExe = javaExe,
+			BamFile = sambambaMarkDup.markedBam,
+			BamIndex = sambambaMarkDup.markedBamIndex,
+			GenomeVersion = genomeVersion,
+			GeneFile = geneFile
+	}
 	if (!debug) {
 		String dataPath = "~{outDir}~{sampleID}/~{workflowType}/"
 		if (doCrumble) {
