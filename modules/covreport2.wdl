@@ -16,8 +16,8 @@ task covReport {
         Boolean Version = true
         # task specific variables
         String CovReportDir
-        File CovReportJar
-        File JavaExe
+        String CovReportJar
+        String JavaExe
         File BamFile
         File BamIndex
         String GenomeVersion

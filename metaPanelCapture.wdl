@@ -124,7 +124,7 @@ workflow metaPanelCapture {
 		String hcSuffix = ".hc"
 		## covreport
 		String covReportDir
-		File covReportJar
+		String covReportJar
 		File geneFile
 	}
 
