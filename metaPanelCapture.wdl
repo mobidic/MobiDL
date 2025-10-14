@@ -122,6 +122,10 @@ workflow metaPanelCapture {
 		## VcSuffix
 		String dvSuffix = ".dv"
 		String hcSuffix = ".hc"
+		## covreport
+		String covReportDir
+		File covReportJar
+		File geneFile
 	}
 
 	scatter (inputs in inputsLists) {
@@ -211,7 +215,11 @@ workflow metaPanelCapture {
 				singularityExe = singularityExe,
 				dvSimg = dvSimg,
 				dvSuffix = dvSuffix,
-				hcSuffix = hcSuffix
+				hcSuffix = hcSuffix,
+				## covreport
+				covReportDir = covReportDir
+				covReportJar = covReportJar
+				geneFile = geneFile
 		}
 	} 
 }
