@@ -216,9 +216,8 @@ workflow metaPanelCapture {
 				dvSimg = dvSimg,
 				dvSuffix = dvSuffix,
 				hcSuffix = hcSuffix,
-				## covreport
-				covReportDir = covReportDir
-				covReportJar = covReportJar
+				covReportDir = covReportDir,
+				covReportJar = covReportJar,
 				geneFile = geneFile
 		}
 	} 
