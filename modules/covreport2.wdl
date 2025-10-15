@@ -23,7 +23,7 @@ task covReport {
         String GenomeVersion
         File GeneFile        
         # runtime attributes
-        String Queue
+        String Queue = "hpc
         Int Cpu
         Int Memory
     }
