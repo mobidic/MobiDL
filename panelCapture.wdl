@@ -52,8 +52,8 @@ workflow panelCapture {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.3.1"
-		date: "2025-05-25"
+		version: "1.3.2"
+		date: "2025-10-15"
 	}
 	input {
 		# variables declarations

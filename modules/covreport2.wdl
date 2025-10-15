@@ -5,7 +5,7 @@ task covReport {
         author: "David BAUX"
         email: "d-baux(at)chu-montpellier.fr"
         version: "0.0.1"
-        date: "2025-09-05"
+        date: "2025-10-15"
     }
     input {
         # global variables
