@@ -1016,7 +1016,6 @@ workflow panelCapture {
 	}
 	call runCovReport.covReport as covreport {
 		input:
-			Queue = defQueue,
 			Cpu = cpuLow,
 			Memory = memoryLow,
 			SampleID = sampleID,
