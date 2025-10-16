@@ -1024,8 +1024,8 @@ workflow panelCapture {
 			CovReportDir = covReportDir,
 			CovReportJar = covReportJar,
 			JavaExe = javaExe,
-			BamFile = sambambaMarkDup.markedBam,
-			BamIndex = sambambaMarkDup.markedBamIndex,
+			BamFile = samtoolsSort.sortedBam,
+			BamIndex = finalIndexing.bamIndex,
 			GenomeVersion = genomeVersion,
 			GeneFile = geneFile
 	}
