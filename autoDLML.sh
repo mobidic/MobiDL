@@ -204,13 +204,12 @@ assignVariables() {
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
 dos2unixIfPossible() {
-	#  if [[ "${RUN_PATH}" =~ "MiniSeq" ||  "${RUN_PATH}" =~ "MiSeq" ]];then
-	 if [[ "${RUN_PATH}" =~ "MINISEQ" ||  "${RUN_PATH}" =~ "MISEQ" ]];then
-	 	debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
-		"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
-		# debug "dos2unix for ${SAMPLESHEET_PATH}"
-		"${DOS2UNIX}" -q "${SAMPLESHEET_PATH}"
-	fi
+	# if [[ "${RUN_PATH}" =~ "MINISEQ" ||  "${RUN_PATH}" =~ "MISEQ" ]];then
+	debug "dos2unix for ${RUN_PATH}${RUN}/${SAMPLESHEET}"
+	"${DOS2UNIX}" -q "${RUN_PATH}${RUN}/${SAMPLESHEET}"
+	# debug "dos2unix for ${SAMPLESHEET_PATH}"
+	"${DOS2UNIX}" -q "${SAMPLESHEET_PATH}"
+	# fi
 }
 #moveRunIfNecessary() {
 #	if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
