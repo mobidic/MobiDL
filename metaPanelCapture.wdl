@@ -218,7 +218,7 @@ workflow metaPanelCapture {
 				hcSuffix = hcSuffix,
 				covReportDir = covReportDir,
 				covReportJar = covReportJar,
-				geneFile = geneFile
+				geneFile = geneFile + "/" + inputs[4]
 		}
 	} 
 }

@@ -271,11 +271,13 @@ modifyJson() {
 		TMP_OUTPUT_SED=${TMP_OUTPUT_DIR2////\\/}
 		# gene file for covreport
 		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
-			COVREPORT_GENE_FILE="${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/$(basename $(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3))"
+			COVREPORT_GENE_FILE="$(basename $(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3))"
+			COVREPORT_GENE_FILE_PATH="${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/${COVREPORT_GENE_FILE}"
 		else
-			COVREPORT_GENE_FILE="${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/$(basename $(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2))"
+			COVREPORT_GENE_FILE="$(basename $(grep ${BED} ${FASTQ_WORKFLOWS_FILE} | cut -d ',' -f 2))"
+			COVREPORT_GENE_FILE_PATH="${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/${COVREPORT_GENE_FILE}"
 		fi
-		COVREPORT_GENE_FILE_SED=${COVREPORT_GENE_FILE////\\/}
+		COVREPORT_GENE_FILE_PATH_SED=${COVREPORT_GENE_FILE_PATH////\\/}
 		sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 			-e "s/\(  \"${WDL}\.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
 			-e "s/\(  \"${WDL}\.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
@@ -284,7 +286,7 @@ modifyJson() {
 			-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
 			-e "s/\(  \"${WDL}\.intervalBedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
 			-e "s/\(  \"${WDL}\.outDir\": \"\).*/\1${TMP_OUTPUT_SED}\",/" \
-			-e "s/\(  \"${WDL}\.geneFile\": \"\).*/\1${COVREPORT_GENE_FILE_SED}\",/" \
+			-e "s/\(  \"${WDL}\.geneFile\": \"\).*/\1${COVREPORT_GENE_FILE_PATH_SED}\",/" \
 			"${JSON}"
 		rm "${JSON}.bak"
 		# -e "s/\(  \"${WDL}\.bedFile\": \"\).*/\1${ROI_SED}${BED}\",/" \
@@ -293,7 +295,7 @@ modifyJson() {
 		# For MetaPanelCapture:
 		# Build a JSON list by genome
 		metaWDL="metaPanelCapture"
-		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\"]," >> "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
+		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\", \"${COVREPORT_GENE_FILE}\"]," >> "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
 	fi
 }
 
@@ -318,8 +320,9 @@ gatherJsonsAndLaunch() {
 			printf "  \"${metaWDL}.roiDir\": \"${ROI_DIR}\",\n" >> "${JSON}"
 			printf "  \"${metaWDL}.fastqDirname\": \"${FASTQ_DIR}\",\n" >> "${JSON}"
 			printf "  \"${metaWDL}.outDir\": \"${TMP_OUTPUT_DIR2}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.geneFile\": \"${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/\",\n" >> "${JSON}"
 			# Add rest of params, extracted from 'panelCapture_JSON':
-			grep -vE "\{|\.fastqR1|\.fastqR2|\.suffix1|\.suffix2|\.intervalBedFile|\.sampleID" "${MOBIDL_JSON_TEMPLATE}" |
+			grep -vE "\{|\.fastqR1|\.fastqR2|\.suffix1|\.suffix2|\.intervalBedFile|\.sampleID|\.geneFile" "${MOBIDL_JSON_TEMPLATE}" |
 				sed "s/${WDL}\./${metaWDL}\./" >> "${JSON}"
 			debug "$(cat ${JSON})"
 			info "Launching:"
