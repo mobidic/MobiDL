@@ -200,6 +200,11 @@ assignVariables() {
 		#TRIGGER_EXPR="${2} ${NEXTSEQ_TRIGGER_EXPR}"
 		TRIGGER_EXPR="${NEXTSEQ_TRIGGER_EXPR}"
 		SAMPLESHEET="${NEXTSEQ_SAMPLESHEET_PATH}"
+	elif [[ "${1}" =~ "AVITI" ]];then
+		MAX_DEPTH="${AVITI_MAX_DEPTH}"
+		TRIGGER_FILE="${AVITI_TRIGGER_FILE}"
+		TRIGGER_EXPR="${AVITI_TRIGGER_EXPR}"
+		SAMPLESHEET="${AVITI_SAMPLESHEET_PATH}"
 	fi
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
@@ -496,7 +501,7 @@ prepareGatkCnv() {
 
 # http://moinne.com/blog/ronald/bash/list-directory-names-in-bash-shell
 # --time-style is used here to ensure awk $8 will return the right thing (dir name)
-RUN_PATHS="${MINISEQ_RUNS_DIR} ${MISEQ_RUNS_DIR} ${NEXTSEQ_RUNS_DIR}"
+RUN_PATHS="${MINISEQ_RUNS_DIR} ${MISEQ_RUNS_DIR} ${NEXTSEQ_RUNS_DIR} ${AVITI_RUNS_DIR}"
 for RUN_PATH in ${RUN_PATHS}
 do
 	debug "RUN_PATH:${RUN_PATH}"
@@ -666,7 +671,8 @@ do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
-								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
+								# REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
+								REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
 									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then

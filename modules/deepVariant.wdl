@@ -40,6 +40,11 @@ task deepVariant {
 	command <<<
 		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SingularityEnv}
+		TMPDIR=/scratch/tmp
+		APPTAINER_TMPDIR=/scratch/tmp
+		APPTAINER_CACHEDIR=/scratch/tmp
+		SINGULARITY_TMPDIR=/scratch/tmp
+		SINGULARITY_CACHEDIR=/scratch/tmp
 		~{SingularityExe} run \
 		--bind ~{Output} \
 		--bind ~{RefData} \
