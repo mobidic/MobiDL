@@ -11,7 +11,7 @@
   "metaPanelCapture.cpuHigh": 24,
   "metaPanelCapture.memoryLow": 2400,
   "metaPanelCapture.memoryHigh": 16000,
-  "metaPanelCapture.condaBin": "/bioinfo/softs/miniconda3/bin/conda",
+  "metaPanelCapture.condaBin": "/bioinfo/softs/miniconda3/bin/",
   "metaPanelCapture.fastpEnv": "/bioinfo/conda_envs/fastpEnv",
   "metaPanelCapture.bwaEnv": "/bioinfo/conda_envs/bwaEnv",
   "metaPanelCapture.samtoolsEnv": "/bioinfo/conda_envs/samtoolsEnv",
