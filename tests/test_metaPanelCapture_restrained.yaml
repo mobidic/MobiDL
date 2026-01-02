@@ -1,0 +1,109 @@
+## WARNING: md5 of EMPTY file = d41d8cd98f00b204e9800998ecf8427e
+
+- name: MetaPanelCapture solo
+  # Overall runtime : ~ 20 min
+  tags:
+    - wf_level
+    - hg38
+    - SU9550
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/solo_hg38_inputs.json tests/Cluster_noDB-test.conf"
+  stdout:
+    contains:
+      - "workflow finished with status 'Succeeded'"
+  files:
+    - path: MobiDL/*/SU9550/panelCapture/SU9550.vcf
+      should_exist: true
+
+# - name: MetaPanelCapture different BED
+#   # Overall runtime : ~ 20 min
+#   tags:
+#     - wf_level
+#     - hg19
+#     - duo
+#     - diffBED
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/different-BED_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"
+#   files:
+#     - path: MobiDL/A161161/panelCapture/A161161.vcf
+#       should_exist: true
+#     - path: MobiDL/HG002/panelCapture/HG002.vcf
+#       should_exist: true
+# - name: MetaPanelCapture intermediate UMAI
+#   # 36 'MAI_19genes' samples
+#   # Overall runtime : ~ 2.5h (with max_CWL_jobs=12 & cpuHigh=8)
+#   tags:
+#     - wf_level
+#     - hg19
+#     - intermediate
+#     - UMAI
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/intermediate-UMAI_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"
+# 
+# - name: MetaPanelCapture full UMAI
+#   # Full run of UMAI team
+#   # Overall runtime : ~ 9h (with max_CWL_jobs=12 & cpuHigh=8)
+#   tags:
+#     - wf_level
+#     - hg19
+#     - full
+#     - UMAI
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-UMAI_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"
+# 
+# - name: MetaPanelCapture full NS
+#   # Full run of NeuroSensoriel team
+#   # Overall runtime : ~ 3h (with max_CWL_jobs=12 & cpuHigh=8)
+#   tags:
+#     - wf_level
+#     - hg38
+#     - full
+#     - NS
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-NS_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"
+# 
+# - name: MetaPanelCapture full DSD
+#   # Full run of DSD team
+#   # Overall runtime : ~ 2.5h (with max_CWL_jobs=12 & cpuHigh=8)
+#   tags:
+#     - wf_level
+#     - hg38
+#     - full
+#     - DSD
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-DSD_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"
+# 
+# - name: MetaPanelCapture full CF
+#   # Full run of CFTR team
+#   # Overall runtime : ~ 1.5h (with max_CWL_jobs=12 & cpuHigh=8)
+#   tags:
+#     - wf_level
+#     - hg38
+#     - full
+#     - CF
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-CF_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"
+# 
+# - name: MetaPanelCapture full MYO
+#   # Full run of MYO team
+#   # Overall runtime : ~ 2h (with max_CWL_jobs=12 & cpuHigh=8)
+#   tags:
+#     - wf_level
+#     - hg38
+#     - full
+#     - MYO
+#   command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/full-MYO_inputs.json tests/Cluster_noDB-test.conf"
+#   stdout:
+#     contains:
+#       - "workflow finished with status 'Succeeded'"

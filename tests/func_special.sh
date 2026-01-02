@@ -41,7 +41,7 @@ run_wdl_MobiDL() {
 
 	# Activate Conda env:
 	source /etc/profile.d/conda.sh && conda activate /bioinfo/conda_envs/gatk4.6Env
-	local cwl_jar=/bioinfo/softs/cromwell/cromwell.jar
+	local cwl_jar=/scratch/david/MobiDL/cromwell-90.jar
 	echo "$PWD"
 
 	# Actually run pipeline:
