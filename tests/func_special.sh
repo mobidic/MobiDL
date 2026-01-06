@@ -54,6 +54,25 @@ run_wdl_MobiDL() {
 }
 export -f run_wdl_MobiDL
 
+happy() {
+	local VCFTEST=$1  # Path to VCF produced by pipeline
+	local REGIONS=$2 # bed intersect
+	local GENOME=$3 # genome fasta
+	local VCFREF=$4 # coriell vcf
+	local HAPPYDIR=happy_dir && mkdir --parents "$HAPPYDIR"
+
+	source /etc/profile.d/conda.sh && conda activate /bioinfo/conda_envs/hap.py
+
+	# Run hap.py:
+	# MEMO: hap.py will match 'chr' name itself (even if not the same between all files)
+	srun hap.py \
+		--target-regions "$REGIONS" \
+		--reference "$GENOME" \
+		--report-prefix "$HAPPYDIR"/"$(basename "$VCFTEST" .vcf)" \
+		"$VCFREF" \
+		"$VCFTEST"
+
+}
 
 happy_exomeTwist() {
 	# Function to run hap.py on a corriel VCF sequenced on exomeTwist
