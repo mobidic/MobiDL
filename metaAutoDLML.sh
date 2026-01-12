@@ -188,6 +188,7 @@ MAX_DEPTH=''
 TRIGGER_FILE=''
 TRIGGER_EXPR=''
 SAMPLESHEET=''
+PROVIDER="ILLUMINA"
 
 DATE=`date +%Y%m%d`
 
@@ -215,6 +216,7 @@ assignVariables() {
 		TRIGGER_FILE="${AVITI_TRIGGER_FILE}"
 		TRIGGER_EXPR="${AVITI_TRIGGER_EXPR}"
 		SAMPLESHEET="${AVITI_SAMPLESHEET_PATH}"
+		PROVIDER="ELEMENT"
 	fi
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
@@ -579,7 +581,7 @@ do
 			# get finished run
 			# if TRIGGER_EXPR is sthg OR (TRIGGER_EXPR is "" AND TRIGGER_FILE exists)
 			# if TRIGGER_EXPR is "" typically TRIGGER_FILE is CopyComplete.txt which is empty
-			if [[ -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}" -exec egrep "${TRIGGER_EXPR}" "{}" \; -quit) || (${TRIGGER_EXPR} == "" && -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}"))]]; then
+			if [[ -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}" -exec egrep "${TRIGGER_EXPR}" "{}" \; -quit) || (${TRIGGER_EXPR} == "" && -n $(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth ${MAX_DEPTH} -type f -name "${TRIGGER_FILE}")) ]]; then
 				# need to determine BED ROI from samplesheet
 				SAMPLESHEET_PATH="${RUN_PATH}${RUN}/${SAMPLESHEET}"
 				# if [ -e ${RUN_PATH}${RUN}/${SAMPLESHEET} ];then
@@ -615,6 +617,9 @@ do
 						BED=$(grep "${MANIFEST%?}" "${ROI_FILE}" | cut -d '=' -f 2 | cut -d ',' -f 1)
 						# Multiple library types in one single run
 						# Description,MultiLibraries,,,,,,,,,
+						# AVITI
+						# [RunValues],
+						# Description,MultiLibraries
 						MULTIPLE=$(grep "MultiLibraries" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 						debug "MANIFEST: ${MANIFEST}"
 						debug "BED: ${BED}"
@@ -636,9 +641,11 @@ do
 							# WDL=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
 							# dos2unix fails on 140 for weird permission issue
 							WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep -m1 'Description,' | cut -d ',' -f 2 | cut -d '#' -f 2)
+							# if [ "${PROVIDER}" = "AVITI" ];then
+							# if we need something particular for AVITI
 							debug "BED: ${BED} - WDL: ${WDL}"
 							# check if BED and WDL exist otherwise continue
-							if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL}.wdl" ]];then
+							if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${WDL}.wdl" ]];then
 								# Create a file with non treated samples:
 								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
 								echo "${RUN} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
@@ -798,7 +805,7 @@ do
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 
 									# check if BED and WDL exist otherwise continue
-									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL}.wdl" ]];then
+									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${WDL}.wdl" ]];then
 										# Create a file with non treated FASTQ:
 										echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
 										continue
