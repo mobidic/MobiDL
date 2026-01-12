@@ -5,7 +5,7 @@
   "metaPanelCapture.platform": "ILLUMINA",
   "metaPanelCapture.genomeVersion": "hg38",
   "metaPanelCapture.workflowType": "panelCapture",
-  "metaPanelCapture.outDir": "/scratch/MetaPanelCapture_solo/",
+  "metaPanelCapture.outDir": "/scratch/tmp_output/MetaPanelCapture_solo/",
   "metaPanelCapture.geneFile": "/bioinfo/softs/MobiDL_conf/achabGenesOfInterest/covreport_gene_dir/",
   "metaPanelCapture.cpuLow": 1,
   "metaPanelCapture.cpuHigh": 24,
