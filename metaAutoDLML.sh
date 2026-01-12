@@ -759,8 +759,9 @@ do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
-								# REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
-								REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
+								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
+								# if [ "${PROVIDER}" = "AVITI" ];then => modify regexp if necessary
+								# REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
 									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then
