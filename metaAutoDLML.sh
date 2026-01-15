@@ -642,7 +642,7 @@ do
 							# WDL=$(grep -m1 'Description,' ${SAMPLESHEET_PATH} | cut -d ',' -f 2 | cut -d '#' -f 2)
 							# dos2unix fails on 140 for weird permission issue
 							WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep -m1 'Description,' | cut -d ',' -f 2 | cut -d '#' -f 2)
-							# if [ "${PROVIDER}" = "AVITI" ];then
+							# if [ "${PROVIDER}" = "ELEMENT" ];then
 							# if we need something particular for AVITI
 							debug "BED: ${BED} - WDL: ${WDL}"
 							# check if BED and WDL exist otherwise continue
@@ -739,10 +739,10 @@ do
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
 								fi
 								# get Illumina InterOp
-								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/" ] && [ "${PROVIDER}" = 'ILLUMINA' ];then
+								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/" ] && [ "${PROVIDER}" = "ILLUMINA" ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop"
 								fi
-								if  [ "${PROVIDER}" = 'ILLUMINA' ];then
+								if  [ "${PROVIDER}" = "ILLUMINA" ];then
 									# for some reason SRUN should be called without quotes
 									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
 									/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
@@ -763,7 +763,7 @@ do
 								debug "SAMPLE FILENAME:${FILENAME}"
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
-								# if [ "${PROVIDER}" = "AVITI" ];then => modify regexp if necessary
+								# if [ "${PROVIDER}" = "ELEMENT" ];then => modify regexp if necessary
 								# REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
@@ -793,7 +793,7 @@ do
 										DESCRIPTION_FIELD=10
 									elif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 										DESCRIPTION_FIELD=3
-									elif [[ "${PROVIDER}" = "AVITI" ]];then
+									elif [[ "${PROVIDER}" = "ELEMENT" ]];then
 										DESCRIPTION_FIELD=5
 									fi
 									# if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
