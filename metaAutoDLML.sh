@@ -218,6 +218,7 @@ assignVariables() {
 		SAMPLESHEET="${AVITI_SAMPLESHEET_PATH}"
 		PROVIDER="ELEMENT"
 	fi
+	debug "PROVIDER: ${PROVIDER}"
 	TMP_OUTPUT_DIR2="${TMP_OUTPUT_DIR}${RUN}/"
 }
 dos2unixIfPossible() {
