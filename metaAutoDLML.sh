@@ -739,14 +739,16 @@ do
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
 								fi
 								# get Illumina InterOp
-								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/" ];then
+								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/" ] && [ "${PROVIDER}" = 'ILLUMINA' ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop"
 								fi
-								# for some reason SRUN should be called without quotes
-								debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
-								debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi ${ILLUMINAINTEROP}index-summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
+								if  [ "${PROVIDER}" = 'ILLUMINA' ];then
+									# for some reason SRUN should be called without quotes
+									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
+									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi ${ILLUMINAINTEROP}index-summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi "${ILLUMINAINTEROP}index-summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
+								fi
 							fi
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
@@ -791,6 +793,8 @@ do
 										DESCRIPTION_FIELD=10
 									elif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 										DESCRIPTION_FIELD=3
+									elif [[ "${PROVIDER}" = "AVITI" ]];then
+										DESCRIPTION_FIELD=5
 									fi
 									# if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
 									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1)
