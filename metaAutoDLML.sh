@@ -242,7 +242,7 @@ dos2unixIfPossible() {
 #}
 
 modifyJson() {
-	# debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
+	debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN}"
 	if [[ ${BED} =~ (hg[0-9]{2}).*\.bed$ ]];then
 		debug "BED: ${BED} - BASH_REMATCH: ${BASH_REMATCH[1]}"
 		GENOME=${BASH_REMATCH[1]}
