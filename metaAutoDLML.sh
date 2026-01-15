@@ -568,7 +568,7 @@ do
 	debug "RUN_PATH:${RUN_PATH}"
 	# assignVariables "${RUN_PATH}"
 	OUTPUT_PATH=${RUN_PATH}
-	RUNS=$(ls -l --time-style="long-iso" ${RUN_PATH} | egrep '^d' | awk '{print $8}' |  egrep '^[0-9]{6}_')
+	RUNS=$(ls -l --time-style="long-iso" ${RUN_PATH} | egrep '^d' | awk '{print $8}' |  egrep '^[0-9]{6}([0-9]{2})?_')
 	for RUN in ${RUNS}
 	do
 		###### do not look at runs set to 2 in the runs.txt file
@@ -619,6 +619,7 @@ do
 						# Description,MultiLibraries,,,,,,,,,
 						# AVITI
 						# [RunValues],
+						# KeyName,Value
 						# Description,MultiLibraries
 						MULTIPLE=$(grep "MultiLibraries" ${SAMPLESHEET_PATH} | cut -d ',' -f 2)
 						debug "MANIFEST: ${MANIFEST}"
