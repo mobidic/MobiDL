@@ -764,7 +764,9 @@ do
 								debug "SAMPLE FILENAME:${FILENAME}"
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
-								# if [ "${PROVIDER}" = "ELEMENT" ];then => modify regexp if necessary
+								# if [ "${PROVIDER}" = "ELEMENT" ];then
+								# 	REGEXP='^([a-zA-Z0-9_-]+_S[0-9]+_L?[0-9]*)_?(R[0-9]_[0-9]{3})$'
+								# fi
 								# REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
@@ -850,6 +852,8 @@ do
 										DESCRIPTION_FIELD=10
 									elif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 										DESCRIPTION_FIELD=3
+									elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+										DESCRIPTION_FIELD=5
 									fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
