@@ -764,9 +764,9 @@ do
 								debug "SAMPLE FILENAME:${FILENAME}"
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
-								# if [ "${PROVIDER}" = "ELEMENT" ];then
-								# 	REGEXP='^([a-zA-Z0-9_-]+_S[0-9]+_L?[0-9]*)_?(R[0-9]_[0-9]{3})$'
-								# fi
+								if [ "${PROVIDER}" = "ELEMENT" ];then
+									REGEXP='^([a-zA-Z0-9_-]+)_(R[12])$'
+								fi
 								# REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
@@ -857,16 +857,18 @@ do
 									fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
-									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1 | cut -d "." -f 1)
+									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
-									ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
-									if [ "${DRY_RUN}" = false ];then
-										if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
-											mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
-										fi
-										if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
-											mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
+									if [ -n "${SAMPLE_ROI_TYPE}" ]; then
+										ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
+										if [ "${DRY_RUN}" = false ];then
+											if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
+												mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
+											fi
+											if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
+												mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
+											fi
 										fi
 									fi
 								fi
@@ -886,7 +888,7 @@ do
 								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE}.crumble.cram.crai"
 								# fi
 								# LED specific block
-								if [ "${DRY_RUN}" = false ];then
+								if [ "${DRY_RUN}" = false ]&& [ -n "${SAMPLE_ROI_TYPE}" ];then
 									LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
 									DISEASE=''
 									TEAM=''
@@ -1024,8 +1026,9 @@ do
 							info "RUN ${RUN} treated"
 							if [ "${DRY_RUN}" = false ];then
 								touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
+								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
 							fi
-							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
+							# echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
 							#Temp outDir already removed by 'workflowPostTreatment':
 							# chmod -R 777 "${TMP_OUTPUT_DIR2}"
 							# rm -r "${TMP_OUTPUT_DIR2}"
