@@ -765,7 +765,9 @@ do
 								# REGEXP='^([a-zA-Z0-9-]+)_(.+)$'
 								REGEXP='^([a-zA-Z0-9_-]+)_(S[0-9]+_L?[0-9]*_*R[0-9]_[0-9]{3})$'
 								if [ "${PROVIDER}" = "ELEMENT" ];then
-									REGEXP='^([a-zA-Z0-9_-]+)_(R[12])$'
+									# REGEXP='^([a-zA-Z0-9_-]+)_(R[12])\.?([a-zA-Z0-9_-]*)$'
+									REGEXP='^([a-zA-Z0-9_-]+)_(R[12])(\.([a-zA-Z0-9_-]+))?$'
+									# project => BASH_REMATCH[4]
 								fi
 								# REGEXP='^([a-zA-Z0-9_-]+)_(S?[0-9]*_?L?[0-9]*_?R[0-9]_?[0-9]*)$'
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
