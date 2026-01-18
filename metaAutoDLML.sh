@@ -890,8 +890,11 @@ do
 								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE}.crumble.cram.crai"
 								# fi
 								# LED specific block
-								if [ "${DRY_RUN}" = false ]&& [ -n "${SAMPLE_ROI_TYPE}" ];then
-									LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
+								if [ "${DRY_RUN}" = false ];then
+									LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE}.txt"
+									if [ -n "${SAMPLE_ROI_TYPE}" ];then
+										LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
+									fi
 									DISEASE=''
 									TEAM=''
 									EXPERIMENT=''
@@ -936,8 +939,14 @@ do
 									echo "visibility:1" >> "${LED_FILE}"
 									echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
 									# end led specific block
-									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
+									if [ -n "${SAMPLE_ROI_TYPE}" ];then
+										MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+									fi
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${MOBICNVTSV_DIR}"
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${MOBICNVTSV_DIR}"
+									# /usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									# /usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
 									debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 								fi
 							done
