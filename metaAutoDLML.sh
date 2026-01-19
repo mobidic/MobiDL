@@ -746,7 +746,7 @@ do
 							# 	FAMILY_FILE_CREATED=0
 							# fi
 							if [ "${DRY_RUN}" = false ];then
-								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
+								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}" ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
 								fi
 								# if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/" ];then
