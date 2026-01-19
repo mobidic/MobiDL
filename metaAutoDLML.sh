@@ -269,6 +269,9 @@ modifyJson() {
 		PROJECT=''
 		if [[ "${PROVIDER}" = "ELEMENT" ]];then
 			PROJECT=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+			if [ "${PROJECT}" = "DefaultProject" ];then
+				PROJECT=''
+			fi
 		fi
 		debug "FASTQ_DIR: ${FASTQ_DIR}"
 		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
@@ -870,21 +873,22 @@ do
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
-									# AVITI replace SAMPLE_ROI_TYPE with Project?
+									# AVITI replace SAMPLE_ROI_TYPE with Project
 									if [[ "${PROVIDER}" = "ELEMENT" ]];then
-										SAMPLE_ROI_TYPE=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+										# SAMPLE_ROI_TYPE=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+										SAMPLE_ROI_TYPE=${PROJECT}
 									fi
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									if [ -n "${SAMPLE_ROI_TYPE}" ]; then
 										ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
-										if [ "${DRY_RUN}" = false ];then
-											if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
-												mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
-											fi
-											if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
-												mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
-											fi
-										fi
+										# if [ "${DRY_RUN}" = false ];then
+										# 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/" ];then
+										# 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}/"
+										# 	fi
+										# 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/" ];then
+										# 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/"
+										# 	fi
+										# fi
 									fi
 								fi
 								if [ "${DRY_RUN}" = false ];then
@@ -903,11 +907,31 @@ do
 								# 	ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${SAMPLE}.crumble.cram.crai"
 								# fi
 								# LED specific block
-								if [ "${DRY_RUN}" = false ]&& [ -n "${SAMPLE_ROI_TYPE}" ];then
-									LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
-									if [[ "${PROVIDER}" = "ELEMENT" ]];then
-										LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs/${SAMPLE}.txt"
+								if [ "${DRY_RUN}" = false ];then
+									MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
+									MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs"
+									SAMPLE_WDL_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}"
+									if [ -n "${SAMPLE_ROI_TYPE}" ];then
+										if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+											MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+											MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+										elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+											MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs"
+											MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVtsvs"
+											SAMPLE_WDL_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}"
+										fi
 									fi
+									if [ ! -d "${MOBICNVTSV_DIR}/" ];then
+										mkdir -p "${MOBICNVTSV_DIR}/"
+									fi
+									if [ ! -d "${MOBICNVVCF_DIR}/" ];then
+										mkdir -p "${MOBICNVVCF_DIR}/"
+									fi
+									# LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE}.txt"
+									LED_FILE="${MOBICNVVCF_DIR}/${SAMPLE}.txt"
+									# if [ -n "${SAMPLE_ROI_TYPE}" ];then
+									# 	LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
+									# fi
 									DISEASE=''
 									TEAM=''
 									EXPERIMENT=''
@@ -952,13 +976,35 @@ do
 									echo "visibility:1" >> "${LED_FILE}"
 									echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
 									# end led specific block
-									if [[ "${PROVIDER}" = "ILLUMINA" ]];then
-										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
-									elif [[ "${PROVIDER}" = "ELEMENT" ]];then
-										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}$/{SAMPLE_ROI_TYPE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
-									fi
+									# if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+									# 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+									# 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									# elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+									# 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+									# 	/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}$/{SAMPLE_ROI_TYPE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									# fi
+									# MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
+									# MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs"
+									# if [ -n "${SAMPLE_ROI_TYPE}" ];then
+									# 	if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+									# 		MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+									# 		MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									# 	elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+									# 		MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs"
+									# 		MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVtsvs"
+									# 	fi
+									# fi
+									# if [ ! -d "${MOBICNVTSV_DIR}/" ];then
+									# 	mkdir -p "${MOBICNVTSV_DIR}/"
+									# fi
+									# if [ ! -d "${MOBICNVVCF_DIR}/" ];then
+									# 	mkdir -p "${MOBICNVVCF_DIR}/"
+									# fi
+
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${SAMPLE_WDL_DIR}/${SAMPLE}.vcf" "${MOBICNVVCF_DIR}"
+									# /usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${SAMPLE_WDL_DIR}/coverage/${SAMPLE}_coverage.tsv" "${MOBICNVTSV_DIR}"
+									# /usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
 									debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 								fi
 							done
