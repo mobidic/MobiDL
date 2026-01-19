@@ -266,17 +266,23 @@ modifyJson() {
 		SUFFIX1=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 1)
 		SUFFIX2=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 2)
 		FASTQ_DIR=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 3)
+		PROJECT=''
+		if [[ "${PROVIDER}" = "ELEMENT" ]];then
+			PROJECT=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+		fi
 		debug "FASTQ_DIR: ${FASTQ_DIR}"
 		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
 		# bash native character replacement
 		FASTQ_SED=${FASTQ_DIR////\\/}
 		debug "FASTQ_SED: ${FASTQ_SED}"
+		debug "PROJECT: ${PROJECT}"
 		ROI_SED=${ROI_DIR////\\/}
 		# RUN_SED=${RUN_PATH////\\/}
 		if [ ! -d "${TMP_OUTPUT_DIR2}" ];then
 			mkdir "${TMP_OUTPUT_DIR2}"
 		fi
-		TMP_OUTPUT_SED=${TMP_OUTPUT_DIR2////\\/}
+		TMP_OUTPUT_SED="${TMP_OUTPUT_DIR2////\\/}$PROJECT"
+		debug "TMP_OUTPUT_SED+PROJECT: '${TMP_OUTPUT_SED}'"
 		# gene file for covreport
 		if [ "${MANIFEST}" != "GenerateFastQWorkflow" ] && [ "${MANIFEST}" != "GenerateFASTQ" ]; then
 			COVREPORT_GENE_FILE="$(basename $(grep ${MANIFEST%?} ${ROI_FILE} | cut -d '=' -f 2 | cut -d ',' -f 3))"
@@ -289,6 +295,7 @@ modifyJson() {
 		sed -i.bak -e "s/\(  \"${WDL}.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 			-e "s/\(  \"${WDL}\.suffix1\": \"\).*/\1_${SUFFIX1}\",/" \
 			-e "s/\(  \"${WDL}\.suffix2\": \"\).*/\1_${SUFFIX2}\",/" \
+			-e "s/\(  \"${WDL}\.platform\": \"\).*/\1${PROVIDER}\",/" \
 			-e "s/\(  \"${WDL}\.fastqR1\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX1}\.fastq\.gz\",/" \
 			-e "s/\(  \"${WDL}\.fastqR2\": \"\).*/\1${FASTQ_SED}\/${SAMPLE}_${SUFFIX2}\.fastq\.gz\",/" \
 			-e "s/\(  \"${WDL}\.workflowType\": \"\).*/\1${WDL}\",/" \
@@ -438,13 +445,15 @@ modifyAchabJson() {
 	if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
-	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
-	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
+	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 	if [ "${DRY_RUN}" = true ];then
-		info "Moving achab dir commad: cp -R ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/ ${BASE_DIR}${ACHAB_TODO_DIR}"
+		info "Moving achab dir commad: cp -R ${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/ ${BASE_DIR}${ACHAB_TODO_DIR}"
 	else
-		# move achab input folder in todo folder for autoachab
-		cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
+		if [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ] && [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/disease.txt" ] && [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json" ];then
+			# move achab input folder in todo folder for autoachab
+			cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
+		fi
 	fi
 	ACHAB_DIR=CaptainAchab
 }
@@ -452,8 +461,12 @@ modifyAchabJson() {
 
 prepareAchab() {
 	# function to prepare dirs for autoachab execution
-	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/" ];then
-		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
+	SUBPATH="${DATE}"
+	if [[ "${PROVIDER}" = "ELEMENT" ]];then
+		SUBPATH="${DATE}/${SAMPLE_ROI_TYPE}"
+	fi
+	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/" ];then
+		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
 	fi
 
 	# disease and genes of interest files
@@ -507,16 +520,16 @@ prepareAchab() {
 		# bedtools intersect -a myfile.vcf.gz -b myref.bed -header > output.vcf
 		source "${CONDA_ACTIVATE}" "${BEDTOOLS_ENV}"
 		if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
-			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_hg38.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		else
-			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
+			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		fi
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
 	fi
-	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
+	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF
-		cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
 	fi
 
 
@@ -524,22 +537,22 @@ prepareAchab() {
 	debug "Genes file: ${GENE_FILE}"
 	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ] && [ "${DRY_RUN}" = false ]; then
 		# cp disease file in achab input dir
-		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/disease.txt"
+		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/disease.txt"
 		# cp json file in achab input dir and modify it
-		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis
 		if ([ "${MANIFEST}" = "GenerateFastQWorkflow" ] || [ "${MANIFEST}" = "GenerateFASTQ" ]) && ([ "${JSON_SUFFIX}" == "CFScreening_hg38" ] || [ "${JSON_SUFFIX}" == "CFScreening" ]); then
-			cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/"
+			cp "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
 			if [ "${JSON_SUFFIX}" == "CFScreening_hg38" ];then
-				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel_hg38.json" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel_hg38.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			else
-				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+				cp "${MOBIDL_JSON_DIR}captainAchab_inputs_CFPanel.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			fi
 			ACHAB_DIR_OLD="${ACHAB_DIR}"
 			ACHAB_DIR=CaptainAchabCFPanel
-			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+			setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
 			ACHAB_DIR="${ACHAB_DIR_OLD}"
 		fi
 	fi
@@ -773,8 +786,13 @@ do
 								if [[ ${FILENAME} =~ ${REGEXP} ]];then
 									debug "BASH_REMATCH[1]: ${BASH_REMATCH[1]}"
 									if [ ${SAMPLES[${BASH_REMATCH[1]}]} ];then
-										SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
-										debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+										if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+											SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+										elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+											SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*};${BASH_REMATCH[4]}"
+											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+										fi
 									else
 										SAMPLES[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
 									fi
@@ -801,17 +819,6 @@ do
 									elif [[ "${PROVIDER}" = "ELEMENT" ]];then
 										DESCRIPTION_FIELD=5
 									fi
-									# if [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
-									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 1)
-									# 	WDL=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 11 | cut -d "#" -f 2)
-									# elsif [[ "${RUN_PATH}" =~ "MISEQ" ]];then
-									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 10 | cut -d "#" -f 1)
-									# 	WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f 103 | cut -d "#" -f 2)
-									# fi
-									# elsif [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
-									# 	BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f 3 | cut -d "#" -f 1)
-									# 	WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f 3 | cut -d "#" -f 2)
-									# fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 
@@ -819,6 +826,8 @@ do
 									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${WDL}.wdl" ]];then
 										# Create a file with non treated FASTQ:
 										echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
+										# remove from SAMPLES[]
+										unset SAMPLES[${SAMPLE}]
 										continue
 									fi
 									# exit 0
@@ -861,6 +870,10 @@ do
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
+									# AVITI replace SAMPLE_ROI_TYPE with Project?
+									if [[ "${PROVIDER}" = "ELEMENT" ]];then
+										SAMPLE_ROI_TYPE=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+									fi
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									if [ -n "${SAMPLE_ROI_TYPE}" ]; then
 										ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1
@@ -892,6 +905,9 @@ do
 								# LED specific block
 								if [ "${DRY_RUN}" = false ]&& [ -n "${SAMPLE_ROI_TYPE}" ];then
 									LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
+									if [[ "${PROVIDER}" = "ELEMENT" ]];then
+										LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs/${SAMPLE}.txt"
+									fi
 									DISEASE=''
 									TEAM=''
 									EXPERIMENT=''
@@ -936,8 +952,13 @@ do
 									echo "visibility:1" >> "${LED_FILE}"
 									echo "experiment_type:${EXPERIMENT}" >> "${LED_FILE}"
 									# end led specific block
-									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
-									/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_vcf cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}"
+										/usr/bin/srun -N1 -c1 -pprod -JautoDL_cp_cov cp "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}/coverage/${SAMPLE}_coverage.tsv" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}$/{SAMPLE_ROI_TYPE}/MobiCNVtsvs/${SAMPLE_ROI_TYPE}"
+									fi
 									debug "SAMPLE(SUFFIXES):${SAMPLE}(${SAMPLES[${SAMPLE}]})"
 								fi
 							done
@@ -951,17 +972,23 @@ do
 								# for LIBRARY in "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/*"
 								for LIBRARY in ${!ROI_TYPES[@]}
 								do
+									MOBICNVTSV_PATH="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/"
+									PROJECT_PATH="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+									if [[ "${PROVIDER}" = "ELEMENT" ]];then
+										MOBICNVTSV_PATH="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${LIBRARY}/MobiCNVtsvs/"
+										PROJECT_PATH="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${LIBRARY}/"
+									fi
 									if [ "${DRY_RUN}" = true ];then
 										info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
-										info "MobiCNV launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/ -t tsv -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+										info "MobiCNV launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${MOBICNVTSV_PATH} -t tsv -o ${PROJECT_PATH}${RUN}_${LIBRARY}_MobiCNV.xlsx"
 									else
 										# check if at least 3 samples  / library => count number of tsv file in the folder
-										NUMBER_OF_SAMPLE=$(ls -l ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/*.tsv | wc -l)
+										NUMBER_OF_SAMPLE=$(ls -l ${MOBICNVTSV_PATH}*.tsv | wc -l)
 										if [ ${NUMBER_OF_SAMPLE} -gt 2 ];then
 											info "Launching MobiCNV on run ${RUN}, library ${LIBRARY}"
 											source "${CONDA_ACTIVATE}" "${MOBICNV_ENV}"
-											/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/" -t tsv -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
-											debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/${LIBRARY}/ -t tsv  -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_${LIBRARY}_MobiCNV.xlsx"
+											/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv "${PYTHON}" "${MOBICNV}" -i "${MOBICNVTSV_PATH}" -t tsv -o "${PROJECT_PATH}${RUN}_${LIBRARY}_MobiCNV.xlsx"
+											debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_mobicnv ${PYTHON} ${MOBICNV} -i ${MOBICNVTSV_PATH} -t tsv  -o ${PROJECT_PATH}${RUN}_${LIBRARY}_MobiCNV.xlsx"
 											conda deactivate
 											# here prepare and launch gatk_cnv
 											# sed a gatk_cnv.yaml located in ${AUTODL_DIR} file with proper paths, loads the conda env and launches snakemake
@@ -969,6 +996,19 @@ do
 											# prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
 											# ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
 											# info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
+											if [[ "${PROVIDER}" = "ELEMENT" ]];then
+												info "Launching MultiQC on run ${RUN}/${LIBRARY}"
+												source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
+												if [ "${DRY_RUN}" = true ];then
+													info "MultiQC launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${PROJECT_PATH} -n ${RUN}_multiqc.html -o ${PROJECT_PATH}"
+													info "MultiQC modif command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc ${PERL} -pi.bak -e 's/NaN/null/g' ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}/${LIBRARY}/${LIBRARY}_multiqc_data/multiqc_data.json"
+												else
+													/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${PROJECT_PATH}" -n "${LIBRARY}_multiqc.html" -o "${PROJECT_PATH}"
+													debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${PROJECT_PATH} -n ${LIBRARY}_multiqc.html -o ${PROJECT_PATH}"
+													/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${PROJECT_PATH}${LIBRARY}_multiqc_data/multiqc_data.json"
+												fi
+												conda deactivate
+											fi
 										else
 											info "Not enough samples for Library ${LIBRARY} to launch MobiCNV (${NUMBER_OF_SAMPLE} samples)"
 										fi
@@ -1008,17 +1048,19 @@ do
 								# 	conda deactivate
 								# fi
 							fi
-							info "Launching MultiQC on run ${RUN}"
-							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
-							if [ "${DRY_RUN}" = true ];then
-								info "MultiQC launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-								info "MultiQC modif command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc ${PERL} -pi.bak -e 's/NaN/null/g' ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
-							else
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-								debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-								/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
+							if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+								info "Launching MultiQC on run ${RUN}"
+								source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
+								if [ "${DRY_RUN}" = true ];then
+									info "MultiQC launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+									info "MultiQC modif command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc ${PERL} -pi.bak -e 's/NaN/null/g' ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
+								else
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+									/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
+								fi
+								conda deactivate
 							fi
-							conda deactivate
 							# may not be needed anymore with NFS share TEST ME
 							if [ "${DRY_RUN}" = false ];then
 								chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
