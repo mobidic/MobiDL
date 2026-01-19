@@ -770,11 +770,14 @@ do
 							# now we have to identifiy samples in fastqdir (identify fastqdir,which may change depending on the Illumina workflow) then sed on json model, then launch wdl workflow
 							declare -A SAMPLES
 							# MEMO: If FASTQ is a symlink, 'du -L' to follow it and get original FASTQ size (and not symlink size)
-							FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f -name *.fastq.gz | grep -v 'Undetermined' | sort | xargs du -bL)
+							# we exclude symlinks for the time
+							FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f ! -type l -name *.fastq.gz | grep -v 'Undetermined' | grep -v 'PhiX' | grep -v 'Unassigned' | sort | xargs du -bL)
 							CUTOFF_SIZE_FQ=204800  # FASTQ.GZ below this size (in bytes) are excluded (=~ 200 Ko)
 							FASTQS=$(echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1>cutoff_fq_size {print $2}')
-							# Create a file with excluded FASTQ:
-							echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
+							if [ "${DRY_RUN}" = false ];then
+								# Create a file with excluded FASTQ:
+								echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "{OUTPUT_PATH}${RUN}/MobiDL/${DATE}/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
+							fi
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
 								debug "SAMPLE FILENAME:${FILENAME}"
@@ -823,15 +826,19 @@ do
 										DESCRIPTION_FIELD=5
 									fi
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
-									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
+									NEW_WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 
 									# check if BED and WDL exist otherwise continue
-									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${WDL}.wdl" ]];then
-										# Create a file with non treated FASTQ:
-										echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
+									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${NEW_WDL}.wdl" ]];then
+										if [ "${DRY_RUN}" = false ];then
+											# Create a file with non treated FASTQ:
+											echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${NEW_WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
+										fi
 										# remove from SAMPLES[]
 										unset SAMPLES[${SAMPLE}]
 										continue
+									elif [ -f "${WDL_PATH}${NEW_WDL}.wdl" ];then
+										WDL="${NEW_WDL}"
 									fi
 									# exit 0
 									# check custom output PATH
