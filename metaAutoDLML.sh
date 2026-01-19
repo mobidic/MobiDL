@@ -749,12 +749,12 @@ do
 								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL" ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
 								fi
-								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs"
-								fi
-								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/" ];then
-									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
-								fi
+								# if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs/" ];then
+								# 	mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVtsvs"
+								# fi
+								# if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/" ];then
+								# 	mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs"
+								# fi
 								# get Illumina InterOp
 								if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/" ] && [ "${PROVIDER}" = "ILLUMINA" ];then
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop"
@@ -881,7 +881,7 @@ do
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1 | cut -d "." -f 1)
 									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# AVITI replace SAMPLE_ROI_TYPE with Project
-									if [[ "${PROVIDER}" = "ELEMENT" ]];then
+									if [[ "${PROVIDER}" = "ELEMENT" && -n "${PROJECT}" ]];then
 										# SAMPLE_ROI_TYPE=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
 										SAMPLE_ROI_TYPE=${PROJECT}
 									fi
