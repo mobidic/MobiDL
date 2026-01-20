@@ -269,9 +269,9 @@ modifyJson() {
 		PROJECT=''
 		if [[ "${PROVIDER}" = "ELEMENT" ]];then
 			PROJECT=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
-			if [ "${PROJECT}" = "DefaultProject" ];then
-				PROJECT=''
-			fi
+			# if [ "${PROJECT}" = "DefaultProject" ];then
+			# 	PROJECT=''
+			# fi
 		fi
 		debug "FASTQ_DIR: ${FASTQ_DIR}"
 		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
@@ -771,7 +771,12 @@ do
 							declare -A SAMPLES
 							# MEMO: If FASTQ is a symlink, 'du -L' to follow it and get original FASTQ size (and not symlink size)
 							# we exclude symlinks for the time
-							FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f ! -type l -name *.fastq.gz | grep -v 'Undetermined' | grep -v 'PhiX' | grep -v 'Unassigned' | sort | xargs du -bL)
+							if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+								FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 5 -type f ! -type l -name *.fastq.gz | grep -v 'Undetermined' | sort | xargs du -bL)
+							elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+								FASTQS_WITH_SIZE=$(find "${RUN_PATH}${RUN}" -mindepth 1 -maxdepth 2 -type f -name *.fastq.gz | grep -v 'PhiX' | grep -v 'Unassigned' | sort | xargs du -bL)
+							fi
+							# debug "FASTQS_WITH_SIZE: ${FASTQS_WITH_SIZE}"
 							CUTOFF_SIZE_FQ=204800  # FASTQ.GZ below this size (in bytes) are excluded (=~ 200 Ko)
 							FASTQS=$(echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1>cutoff_fq_size {print $2}')
 							if [ "${DRY_RUN}" = false ];then
@@ -796,10 +801,14 @@ do
 											SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 										elif [[ "${PROVIDER}" = "ELEMENT" ]];then
-											SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*};${BASH_REMATCH[4]}"
+											if [ "${BASH_REMATCH[4]}" = "DefaultProject" ];then
+												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+											else
+												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*};${BASH_REMATCH[4]}"
+											fi
 											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 										fi
-									else
+									elif [ $(grep -c "${BASH_REMATCH[1]}" "${SAMPLESHEET_PATH}") -eq 1 ];then
 										SAMPLES[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
 									fi
 								else
