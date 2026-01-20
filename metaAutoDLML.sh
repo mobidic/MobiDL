@@ -801,15 +801,22 @@ do
 											SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 										elif [[ "${PROVIDER}" = "ELEMENT" ]];then
+											# we have a symlink but we want real path
+											REAL_PATH=$(realpath "${FASTQ}")
+											debug "REAL_PATH: ${REAL_PATH}"
 											if [ "${BASH_REMATCH[4]}" = "DefaultProject" ];then
-												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*}"
+												# SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 											else
-												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*};${BASH_REMATCH[4]}"
+												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*};${BASH_REMATCH[4]}"
+												# SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*};${BASH_REMATCH[4]}"
 											fi
-											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
+											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*}"
 										fi
 									elif [ $(grep -c "${BASH_REMATCH[1]}" "${SAMPLESHEET_PATH}") -eq 1 ];then
 										SAMPLES[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
+									else
+										echo "${BASH_REMATCH[1]} not treated because this sample is absent from the sample sheet" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
 									fi
 								else
 									warning "SAMPLE DOES NOT MATCH REGEXP ${REGEXP}: ${FILENAME} ${RUN_PATH}${RUN}"
