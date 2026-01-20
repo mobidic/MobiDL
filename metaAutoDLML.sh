@@ -815,8 +815,8 @@ do
 										fi
 									elif [ $(grep -c "${BASH_REMATCH[1]}" "${SAMPLESHEET_PATH}") -eq 1 ];then
 										SAMPLES[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
-									else
-										echo "${BASH_REMATCH[1]} not treated because this sample is absent from the sample sheet" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
+									elif [ "${DRY_RUN}" = false ];then
+										echo "${BASH_REMATCH[1]} not treated because this sample is absent from the sample sheet" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
 									fi
 								else
 									warning "SAMPLE DOES NOT MATCH REGEXP ${REGEXP}: ${FILENAME} ${RUN_PATH}${RUN}"
