@@ -427,6 +427,7 @@ setvariables() {
 	OUTPUT_PATH_SED=${OUTPUT_PATH_SED_TMP////\\/}
 	ROI_DIR_SED=${ROI_DIR////\\/}
 	BASE_DIR_CLUSTER_SED=${BASE_DIR_CLUSTER////\\/}
+	SUBPATH_SED=${SUBPATH////\\/}
 }
 
 
@@ -437,7 +438,7 @@ setjsonvariables() {
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
-		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SUBPATH}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SUBPATH_SED}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
 }
 
