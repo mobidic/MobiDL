@@ -313,7 +313,7 @@ modifyJson() {
 		# For MetaPanelCapture:
 		# Build a JSON list by genome
 		metaWDL="metaPanelCapture"
-		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\", \"${COVREPORT_GENE_FILE}\", \"${PROJECT}\"]," >> "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
+		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\", \"${COVREPORT_GENE_FILE}\", \"${PROJECT}\"]," > "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
 	fi
 }
 
@@ -437,7 +437,7 @@ setjsonvariables() {
 		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
 		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
-		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
+		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SUBPATH}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
 }
 
@@ -470,7 +470,7 @@ prepareAchab() {
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/" ];then
 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
 	fi
-
+	debug "SUBPATH: ${SUBPATH}"
 	# disease and genes of interest files
 	debug "Manifest file: ${MANIFEST}"
 	debug "BED file: ${BED}"
@@ -537,7 +537,7 @@ prepareAchab() {
 
 	debug "Disease file: ${DISEASE_FILE}"
 	debug "Genes file: ${GENE_FILE}"
-	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ] && [ "${DRY_RUN}" = false ]; then
+	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
 		# cp disease file in achab input dir
 		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/disease.txt"
 		# cp json file in achab input dir and modify it
@@ -894,12 +894,21 @@ do
 									BED=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1)
 									WDL=$(cat ${SAMPLESHEET_PATH} | sed $'s/\r//' | grep "${SAMPLE}," | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 2)
 									SAMPLE_ROI_TYPE=$(grep "${SAMPLE}," "${SAMPLESHEET_PATH}" | cut -d "," -f ${DESCRIPTION_FIELD} | cut -d "#" -f 1 | cut -d "." -f 1)
-									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
+									debug "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# AVITI replace SAMPLE_ROI_TYPE with Project
+									# need to redefine PROJECT in this loop
+									PROJECT=''
+									if [[ "${PROVIDER}" = "ELEMENT" ]];then
+										PROJECT=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+										if [ "${PROJECT}" = "DefaultProject" ];then
+											PROJECT=''
+										fi
+									fi
 									if [[ "${PROVIDER}" = "ELEMENT" && -n "${PROJECT}" ]];then
 										# SAMPLE_ROI_TYPE=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
 										SAMPLE_ROI_TYPE=${PROJECT}
 									fi
+									info "MULTIPLE SAMPLE:${SAMPLE} - BED:${BED} - WDL:${WDL} - SAMPLE_ROI_TYPE:${SAMPLE_ROI_TYPE}"
 									# put ROI in a hash table with ROI as keys then loop on the hash and launch mobiCNV and multiqc
 									if [ -n "${SAMPLE_ROI_TYPE}" ]; then
 										ROI_TYPES["${SAMPLE_ROI_TYPE}"]=1

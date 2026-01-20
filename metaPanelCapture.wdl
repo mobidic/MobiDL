@@ -127,8 +127,8 @@ workflow metaPanelCapture {
 		String covReportJar
 		File geneFile
 	}
-
 	scatter (inputs in inputsLists) {
+		String modifiedOutDir = if defined(inputs[5]) then "~{outDir}/~inputs[5]/" else "~{outDir}"
 		call runPanelCapture.panelCapture {
 			input:
 				sampleID = inputs[1],
@@ -143,7 +143,8 @@ workflow metaPanelCapture {
 				intervalBedFile = roiDir + "/" + inputs[0],
 				intervalBaitBed = intervalBaitBed,
 				workflowType = workflowType,
-				outDir = outDir + "/" + inputs[5] + "/",
+				# outDir = outDir + "/" + inputs[5] + "/",
+				outDir = modifiedOutDir,
 				debug = debug,
 				condaBin = condaBin,
 				fastpEnv = fastpEnv,
