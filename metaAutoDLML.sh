@@ -313,7 +313,7 @@ modifyJson() {
 		# For MetaPanelCapture:
 		# Build a JSON list by genome
 		metaWDL="metaPanelCapture"
-		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\", \"${COVREPORT_GENE_FILE}\", \"${PROJECT}\"]," > "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
+		printf "[\"${BED}\",\"${SAMPLE}\",\"${SAMPLE}_${SUFFIX1}.fastq.gz\",\"${SAMPLE}_${SUFFIX2}.fastq.gz\", \"${COVREPORT_GENE_FILE}\", \"${PROJECT}\"]," >> "${AUTODL_DIR}${RUN}/samplesInfos_${metaWDL}.${GENOME}"
 	fi
 }
 
