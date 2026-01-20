@@ -143,7 +143,7 @@ workflow metaPanelCapture {
 				intervalBedFile = roiDir + "/" + inputs[0],
 				intervalBaitBed = intervalBaitBed,
 				workflowType = workflowType,
-				outDir = outDir,
+				outDir = outDir + "/" + inputs[5] + "/",
 				debug = debug,
 				condaBin = condaBin,
 				fastpEnv = fastpEnv,
