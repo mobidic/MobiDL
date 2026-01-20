@@ -128,7 +128,7 @@ workflow metaPanelCapture {
 		File geneFile
 	}
 	scatter (inputs in inputsLists) {
-		String modifiedOutDir = if defined(inputs[5]) then "~{outDir}/~inputs[5]/" else "~{outDir}"
+		String modifiedOutDir = if defined(inputs[5]) then "~{outDir}/~{inputs[5]}/" else "~{outDir}"
 		call runPanelCapture.panelCapture {
 			input:
 				sampleID = inputs[1],
