@@ -7,7 +7,7 @@ workflow metaPanelCapture {
 		author: "Felix VANDERMEEREN"
 		email: "felix.vandermeeren(at)chu-montpellier.fr"
 		version: "0.3.1"
-		date: "2025-10-15"
+		date: "2026-01-19"
 	}
 	input {
 		# variables declarations
