@@ -465,7 +465,7 @@ modifyAchabJson() {
 prepareAchab() {
 	# function to prepare dirs for autoachab execution
 	SUBPATH="${DATE}"
-	if [[ "${PROVIDER}" = "ELEMENT" ]];then
+	if [[ "${PROVIDER}" = "ELEMENT" && -n "${PROJECT}" ]];then
 		SUBPATH="${DATE}/${SAMPLE_ROI_TYPE}"
 	fi
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/" ];then
@@ -950,7 +950,9 @@ do
 										elif [[ "${PROVIDER}" = "ELEMENT" ]];then
 											MOBICNVVCF_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVvcfs"
 											MOBICNVTSV_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/MobiCNVtsvs"
-											SAMPLE_WDL_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}"
+											if [[ -n "${PROJECT}" ]];then
+												SAMPLE_WDL_DIR="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${SAMPLE_ROI_TYPE}/${SAMPLE}/${WDL}"
+											fi
 										fi
 									fi
 									if [ ! -d "${MOBICNVTSV_DIR}/" ];then
