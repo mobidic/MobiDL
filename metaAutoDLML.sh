@@ -1128,19 +1128,19 @@ do
 								# 	conda deactivate
 								# fi
 							fi
-							if [[ "${PROVIDER}" = "ILLUMINA" ]];then
-								info "Launching MultiQC on run ${RUN}"
-								source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
-								if [ "${DRY_RUN}" = true ];then
-									info "MultiQC launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-									info "MultiQC modif command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc ${PERL} -pi.bak -e 's/NaN/null/g' ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
-								else
-									/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-									/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
-								fi
-								conda deactivate
+							# if [[ "${PROVIDER}" = "ILLUMINA" ]];then
+							info "Launching MultiQC on run ${RUN}"
+							source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
+							if [ "${DRY_RUN}" = true ];then
+								info "MultiQC launch command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+								info "MultiQC modif command: /usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc ${PERL} -pi.bak -e 's/NaN/null/g' ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
+							else
+								/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc "${MULTIQC}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" -n "${RUN}_multiqc.html" -o "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+								debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_multiqc ${MULTIQC} ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/ -n ${RUN}_multiqc.html -o ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+								/usr/bin/srun -N1 -c1 -pprod -JautoDL_perl_multiqc "${PERL}" -pi.bak -e 's/NaN/null/g' "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${RUN}_multiqc_data/multiqc_data.json"
 							fi
+							conda deactivate
+							# fi
 							# may not be needed anymore with NFS share TEST ME
 							if [ "${DRY_RUN}" = false ];then
 								chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
