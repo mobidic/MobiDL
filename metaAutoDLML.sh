@@ -781,7 +781,7 @@ do
 							FASTQS=$(echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1>cutoff_fq_size {print $2}')
 							if [ "${DRY_RUN}" = false ];then
 								# Create a file with excluded FASTQ:
-								echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "{OUTPUT_PATH}${RUN}/MobiDL/${DATE}/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
+								echo "$FASTQS_WITH_SIZE" | awk -v cutoff_fq_size=$CUTOFF_SIZE_FQ -F"\t" '$1<=cutoff_fq_size {print $2}' > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/excluded_below_${CUTOFF_SIZE_FQ}bytes.txt"
 							fi
 							for FASTQ in ${FASTQS[@]};do
 								FILENAME=$(basename "${FASTQ}" ".fastq.gz")
