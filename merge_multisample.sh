@@ -153,7 +153,7 @@ fi
 # -- get variables from conf file
 source ${FAMILY_FILE}
 
-if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "${RUN_ID}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || "${GENES_OF_INTEREST}" == '' || ! -d "${ACHAB_TODO}" ]]; then
+if [[ ! -d "${RUN_PATH}" || ! -f "${BASE_JSON}" || ! "${RUN_ID}" || ! "${DATE}" || ! "${NUM_FAM}" || ! "${TRIO}"  || ! -f "${DISEASE_FILE}"  || "${GENES_OF_INTEREST}" == '' || ! -d "${ACHAB_TODO}" ]]; then
 	error "There is an error with one of the params of the Family file."
 	usage
 	exit 1
@@ -184,6 +184,7 @@ debug "BASE_JSON:${BASE_JSON}"
 debug "DISEASE_FILE:${DISEASE_FILE}"
 debug "GENES_OF_INTEREST:${GENES_OF_INTEREST}"
 debug "RUN_ID:${RUN_ID}"
+debug "SUBPATH:${SUBPATH}
 debug "NUM_FAM:${NUM_FAM}"
 debug "TRIO:${TRIO}"
 debug "AFFECTED:${AFFECTED}"
@@ -193,9 +194,9 @@ debug "MOTHER:${MOTHER}"
 
 # -- build the VCF list
 if [[ "${TRIO}" == 1 ]]; then
-	VCFS="${RUN_PATH}/${RUN_ID}/MobiDL/${CI}/panelCapture/${CI}.vcf.gz,"
-	VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${FATHER}/panelCapture/${FATHER}.vcf.gz,"
-	VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${MOTHER}/panelCapture/${MOTHER}.vcf.gz"
+	VCFS="${RUN_PATH}/${RUN_ID}/MobiDL/${SUBPATH}/${CI}/panelCapture/${CI}.vcf.gz,"
+	VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${SUBPATH}/${FATHER}/panelCapture/${FATHER}.vcf.gz,"
+	VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${SUBPATH}/${MOTHER}/panelCapture/${MOTHER}.vcf.gz"
 else
 	# -- build the list from the list of affected and HEALTHY
 	# first split the sample list and rebuild the VCF list (with path)
@@ -204,44 +205,46 @@ else
 	IFS="," read -a VCF_HEALTHY <<< "${HEALTHY}"
 	VCFS=""
 	for VCF_AFF in "${VCF_AFFECTED[@]}"; do
-		VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${VCF_AFF}/panelCapture/${VCF_AFF}.vcf.gz,"
+		VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${SUBPATH}/${VCF_AFF}/panelCapture/${VCF_AFF}.vcf.gz,"
 	done
 	for VCF_HEA in "${VCF_HEALTHY[@]}"; do
-		VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${VCF_HEA}/panelCapture/${VCF_HEA}.vcf.gz,"
+		VCFS+="${RUN_PATH}/${RUN_ID}/MobiDL/${SUBPATH}/${VCF_HEA}/panelCapture/${VCF_HEA}.vcf.gz,"
 	done
 fi
 IFS="," read -a VCF_ARRAY <<< "${VCFS}"
 
 # -- prepare output
-mkdir -p "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}"
-cp "${BASE_JSON}" "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
-cp "${DISEASE_FILE}" "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/disease.txt"
+FAMILY_PATH="${RUN_PATH}/${RUN_ID}/MobiDL/${SUBPATH}/${NUM_FAM}"
+mkdir -p "${FAMILY_PATH}"
+cp "${BASE_JSON}" "${FAMILY_PATH}/captainAchab_inputs.json"
+cp "${DISEASE_FILE}" "${FAMILY_PATH}/disease.txt"
 
 # -- merge VCF
 MERGE_CMD="${BCFTOOLS} merge --threads ${THREADS} "
 for VCF in "${VCF_ARRAY[@]}"; do
 	MERGE_CMD+="${VCF} "
 done
-# MERGE_CMD+="> ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+# MERGE_CMD+="> ${FAMILY_PATH}/${NUM_FAM}.vcf"
 SLURM_CMD=" "
 if [ "${SLURM}" -eq 1 ];then
 	SLURM_CMD="srun -N1 -c${THREADS} "
 fi
 info "launching bcftools"
-debug "${SLURM_CMD}${MERGE_CMD} > ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+debug "${SLURM_CMD}${MERGE_CMD} > ${FAMILY_PATH}/${NUM_FAM}.vcf"
 
-${SLURM_CMD}${MERGE_CMD} > "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/${NUM_FAM}.vcf"
+${SLURM_CMD}${MERGE_CMD} > "${FAMILY_PATH}/${NUM_FAM}.vcf"
 
 if [ $? -eq 0 ]; then
 	# -- temp modif between monster and cluster
-	MONSTER_PREFIX="/RS_IURC/data"
-	CLUSTER_PREFIX="/mnt/data140"
-	JSON_RUN_PATH="${CLUSTER_PREFIX}${RUN_PATH#$MONSTER_PREFIX}"
-	JSON_DISEASE_FILE="${CLUSTER_PREFIX}${DISEASE_FILE#$MONSTER_PREFIX}"
-	info "${JSON_RUN_PATH}"
-	info "${JSON_DISEASE_FILE}"
+	# MONSTER_PREFIX="/RS_IURC/data"
+	# CLUSTER_PREFIX="/mnt/data140"
+	# JSON_RUN_PATH="${CLUSTER_PREFIX}${RUN_PATH#$MONSTER_PREFIX}"
+	# JSON_DISEASE_FILE="${CLUSTER_PREFIX}${DISEASE_FILE#$MONSTER_PREFIX}"
+	# info "${JSON_RUN_PATH}"
+	# info "${JSON_DISEASE_FILE}"
 	# -- prepare vars by escaping "/"
-	RUN_SED=${JSON_RUN_PATH////\\/}
+	# RUN_SED=${JSON_RUN_PATH////\\/}
+	RUN_SED=${RUN_PATH////\\/}
 	DISEASE_SED=${JSON_DISEASE_FILE////\\/}
 	GENES_SED=${GENES_OF_INTEREST////\\/}
 	# -- sed the JSON
@@ -252,7 +255,7 @@ if [ $? -eq 0 ]; then
 			-e "s/\(  \"captainAchab\.diseaseFile\": \"\).*/\1${DISEASE_SED}\",/" \
 			-e "s/\(  \"captainAchab\.genesOfInterest\": \"\).*/\1${GENES_SED}\",/" \
 			-e "s/\(  \"captainAchab\.outDir\": \"\).*/\1${RUN_SED}\/${RUN_ID}\/MobiDL\/${NUM_FAM}\/\",/" \
-			"${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
+			"${FAMILY_PATH}/captainAchab_inputs.json"
 	else
 		sed -i -e "s/\(  \"captainAchab\.sampleID\": \"\).*/\1${NUM_FAM}\",/" \
 			-e "s/\(  \"captainAchab\.affected\": \"\).*/\1${AFFECTED}\",/" \
@@ -264,12 +267,12 @@ if [ $? -eq 0 ]; then
 			-e "s/\(  \"captainAchab\.motherSample\": \"\).*/\1${MOTHER}\",/" \
 			-e "s/\(  \"captainAchab\.genesOfInterest\": \"\).*/\1${GENES_SED}\",/" \
 			-e "s/\(  \"captainAchab\.outDir\": \"\).*/\1${RUN_SED}\/${RUN_ID}\/MobiDL\/${NUM_FAM}\/\",/" \
-			"${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json"
+			"${FAMILY_PATH}/captainAchab_inputs.json"
 	fi
 
-	info "JSON ${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}/captainAchab_inputs.json seded"
+	info "JSON ${FAMILY_PATH}/captainAchab_inputs.json seded"
 
-	rsync -az "${RUN_PATH}/${RUN_ID}/MobiDL/${NUM_FAM}" "${ACHAB_TODO}"
+	rsync -az "${FAMILY_PATH}" "${ACHAB_TODO}"
 
 	info "FAM ${NUM_FAM} sent to Achab"
 else
