@@ -128,8 +128,8 @@ workflow metaPanelCapture {
 		File geneFile
 	}
 	scatter (inputs in inputsLists) {
-		String fastqLocR1 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/inputs[2]" else "~{fastqDirname}/~{inputs[2]}"
-		String fastqLocR2 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/inputs[3]" else "~{fastqDirname}/~{inputs[3]}"
+		String fastqLocR1 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/~{inputs[2]}" else "~{fastqDirname}/~{inputs[2]}"
+		String fastqLocR2 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/~{inputs[3]}" else "~{fastqDirname}/~{inputs[3]}"
 		String modifiedOutDir = if defined(inputs[5]) then "~{outDir}/~{inputs[5]}/" else "~{outDir}"
 		call runPanelCapture.panelCapture {
 			input:
