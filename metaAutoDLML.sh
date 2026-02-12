@@ -806,12 +806,15 @@ do
 											debug "REAL_PATH: ${REAL_PATH}"
 											if [ "${BASH_REMATCH[4]}" = "DefaultProject" ];then
 												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*}"
+												debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*}"
 												# SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*}"
 											else
-												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*};${BASH_REMATCH[4]}"
+												SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%%/Samples/*}/Samples/;${BASH_REMATCH[4]}"
+												# SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*};${BASH_REMATCH[4]}"
+												debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%%/Samples/*}/Samples/"
 												# SAMPLES[${BASH_REMATCH[1]}]="${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${FASTQ%/*};${BASH_REMATCH[4]}"
 											fi
-											debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*}"
+											# debug "SAMPLE:${SAMPLES[${BASH_REMATCH[1]}]};${BASH_REMATCH[2]};${REAL_PATH%/*}"
 										fi
 									elif [ $(grep -c "${BASH_REMATCH[1]}" "${SAMPLESHEET_PATH}") -eq 1 ];then
 										SAMPLES[${BASH_REMATCH[1]}]=${BASH_REMATCH[2]}
