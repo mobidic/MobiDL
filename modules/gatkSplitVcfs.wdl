@@ -25,6 +25,9 @@ task gatkSplitVcfs {
 	}
 	command <<<
 		set -e  # To make task stop at 1st error
+		export LANG=en_US.UTF-8
+		export LC_ALL=en_US.UTF-8
+		export LC_TIME=en_US.UTF-8     # ensure english date format
 		~{GatkExe} SplitVcfs \
 		-I ~{Vcf} \
 		--SNP_OUTPUT "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}~{VcSuffix}.snp.vcf" \
