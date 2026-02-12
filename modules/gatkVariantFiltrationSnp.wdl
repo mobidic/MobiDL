@@ -31,6 +31,9 @@ task gatkVariantFiltrationSnp {
 	}
 	command <<<
 		set -e  # To make task stop at 1st error
+		export LANG=en_US.UTF-8
+		export LC_ALL=en_US.UTF-8
+		export LC_TIME=en_US.UTF-8     # ensure english date format
 		~{GatkExe} VariantFiltration \
 		-R ~{RefFasta} \
 		-V ~{Vcf} \

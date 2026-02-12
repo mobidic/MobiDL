@@ -12,7 +12,7 @@ workflow metaPanelCapture {
 	input {
 		# variables declarations
 		## Global
-		Array[Array[String]] inputsLists  # [["BEDbasename_A","sample1","FASTQbasename_R1","FASTQbasename_R2"],["BEDbasename_B", "sample2","FASTQbasename_R1","FASTQbasename_R2"]]
+		Array[Array[String]] inputsLists  # [["BEDbasename_A","sample1","FASTQbasename_R1","FASTQbasename_R2","ListeGenes_A.txt","group_A"],["BEDbasename_B", "sample2","FASTQbasename_R1","FASTQbasename_R2","ListeGenes_A.txt","group_A"]] groups are optional
 		String roiDir  # WARN: Assume all BEDs are in same dir
 		String fastqDirname  # WARN: Assume all FASTQ are in same dir
 		String suffix1 = "_S1_R1_001"
@@ -129,13 +129,17 @@ workflow metaPanelCapture {
 	}
 	scatter (inputs in inputsLists) {
 		String modifiedOutDir = if defined(inputs[5]) then "~{outDir}/~{inputs[5]}/" else "~{outDir}"
+		String fastqLocR1 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/inputs[2]" else "~{fastqDirname}~{inputs[2]}"
+		String fastqLocR2 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/inputs[3]" else "~{fastqDirname}~{inputs[3]}"
 		call runPanelCapture.panelCapture {
 			input:
 				sampleID = inputs[1],
 				suffix1 = suffix1,
 				suffix2 = suffix2,
-				fastqR1 = fastqDirname + "/" + inputs[2],
-				fastqR2 = fastqDirname + "/" + inputs[3],
+				# fastqR2 = fastqDirname + "/" + inputs[3],
+				# fastqR1 = fastqDirname + "/" + inputs[2],
+				fastqR1 = fastqLocR1,
+				fastqR2 = fastqLocR2,
 				genomeVersion = genomeVersion,
 				refFasta = refFasta,
 				refFai = refFai,
