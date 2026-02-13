@@ -340,6 +340,8 @@ gatherJsonsAndLaunch() {
 			# Then add parms specific to 'metaPanelCapture' workflow:
 			printf "  \"${metaWDL}.roiDir\": \"${ROI_DIR}\",\n" >> "${JSON}"
 			printf "  \"${metaWDL}.fastqDirname\": \"${FASTQ_DIR}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.suffix1\": \"_${SUFFIX1}\",\n" >> "${JSON}"
+			printf "  \"${metaWDL}.suffix2\": \"_${SUFFIX2}\",\n" >> "${JSON}"
 			printf "  \"${metaWDL}.outDir\": \"${TMP_OUTPUT_DIR2}\",\n" >> "${JSON}"
 			printf "  \"${metaWDL}.geneFile\": \"${CONF_DIR}achabGenesOfInterest/covreport_gene_dir/\",\n" >> "${JSON}"
 			# Add rest of params, extracted from 'panelCapture_JSON':
