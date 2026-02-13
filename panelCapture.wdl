@@ -1014,20 +1014,22 @@ workflow panelCapture {
 			VcfFile = compressIndexVcfHc.bgZippedVcf,
 			IDlist = idList
 	}
-	call runCovReport.covReport as covreport {
-		input:
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			CovReportDir = covReportDir,
-			CovReportJar = covReportJar,
-			JavaExe = javaExe,
-			BamFile = samtoolsSort.sortedBam,
-			BamIndex = finalIndexing.bamIndex,
-			GenomeVersion = genomeVersion,
-			GeneFile = geneFile
+	if (intervalBedFile != "/bioinfo/refData/intervals/bedFiles/Twist-Exome-2-0_20250820_hg38_40bp.bed") {
+		call runCovReport.covReport as covreport {
+			input:
+				Cpu = cpuLow,
+				Memory = memoryLow,
+				SampleID = sampleID,
+				OutDir = outDir,
+				WorkflowType = workflowType,
+				CovReportDir = covReportDir,
+				CovReportJar = covReportJar,
+				JavaExe = javaExe,
+				BamFile = samtoolsSort.sortedBam,
+				BamIndex = finalIndexing.bamIndex,
+				GenomeVersion = genomeVersion,
+				GeneFile = geneFile
+		}
 	}
 	if (!debug) {
 		String dataPath = "~{outDir}~{sampleID}/~{workflowType}/"

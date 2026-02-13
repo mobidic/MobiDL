@@ -272,6 +272,7 @@ modifyJson() {
 			# if [ "${PROJECT}" = "DefaultProject" ];then
 			# 	PROJECT=''
 			# fi
+			FASTQ_DIR=${FASTQ_DIR}${PROJECT}
 		fi
 		debug "FASTQ_DIR: ${FASTQ_DIR}"
 		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
@@ -398,7 +399,12 @@ workflowPostTreatment() {
 		/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR2}Logs/${1}_${2}.log" "${TMP_OUTPUT_DIR2}"
 		rm -r "${TMP_OUTPUT_DIR2}Logs/"  # Remove, otherwise 'Logs' dir copied to FINAL_DIR
 		info "Moving MobiDL results to ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
-		/usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+		# /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+		# parallel -j 3 --eta rsync -a {} destination/ ::: Downloads/*
+		# TEST ME to paralellize datat transfer
+		source "${CONDA_ACTIVATE}" "${PARALLEL_ENV}"
+		parallel -j 8 /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX {} "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" ::: "${TMP_OUTPUT_DIR2}"/*
+		conda deactivate
 		if [ $? -eq 0 ];then
 			chmod -R 777 "${TMP_OUTPUT_DIR2}"
 			rm -r "${TMP_OUTPUT_DIR2}"
