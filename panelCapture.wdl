@@ -44,6 +44,7 @@ import "modules/gatkMergeVcfs.wdl" as runGatkMergeVcfs
 import "modules/anacoreUtilsMergeVCFCallers.wdl" as runAnacoreUtilsMergeVCFCallers
 import "modules/gatkUpdateVCFSequenceDictionary.wdl" as runGatkUpdateVCFSequenceDictionary
 import "modules/identito.wdl" as runIdentito
+import "modules/isExome.wdl" as runIsexome
 import "modules/covreport2.wdl" as runCovReport
 import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
@@ -1014,7 +1015,15 @@ workflow panelCapture {
 			VcfFile = compressIndexVcfHc.bgZippedVcf,
 			IDlist = idList
 	}
-	if (intervalBedFile != "/bioinfo/refData/intervals/bedFiles/Twist-Exome-2-0_20250820_hg38_40bp.bed") {
+	call runIsexome.isExome as isExome {
+		input:
+			Queue = defQueue,
+			Cpu = cpuLow,
+			Memory = memoryLow,
+			IntervalBedFile = intervalBedFile
+	}
+	# if (intervalBedFile != "/bioinfo/refData/intervals/bedFiles/Twist-Exome-2-0_20250820_hg38_40bp.bed") {
+	if (! isExome.isExomeBool) {
 		call runCovReport.covReport as covreport {
 			input:
 				Cpu = cpuLow,
