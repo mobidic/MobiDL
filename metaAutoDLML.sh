@@ -267,17 +267,19 @@ modifyJson() {
 		SUFFIX2=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 2)
 		FASTQ_DIR=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 3)
 		PROJECT=''
+		INDIV_FASTQ_DIR=${FASTQ_DIR}
 		if [[ "${PROVIDER}" = "ELEMENT" ]];then
 			PROJECT=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
 			# if [ "${PROJECT}" = "DefaultProject" ];then
 			# 	PROJECT=''
 			# fi
-			FASTQ_DIR=${FASTQ_DIR}${PROJECT}
+			INDIV_FASTQ_DIR=${FASTQ_DIR}${PROJECT}
 		fi
 		debug "FASTQ_DIR: ${FASTQ_DIR}"
+		debug "INDIV_FASTQ_DIR: ${INDIV_FASTQ_DIR}"
 		# https://stackoverflow.com/questions/6744006/can-i-use-sed-to-manipulate-a-variable-in-bash
 		# bash native character replacement
-		FASTQ_SED=${FASTQ_DIR////\\/}
+		FASTQ_SED=${INDIV_FASTQ_DIR////\\/}
 		debug "FASTQ_SED: ${FASTQ_SED}"
 		debug "PROJECT: ${PROJECT}"
 		ROI_SED=${ROI_DIR////\\/}
