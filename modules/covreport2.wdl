@@ -30,7 +30,7 @@ task covReport {
     String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
     File RefSeqFile = CovReportDir + "/RefSeqExons/RefSeqExon_" + GenomeVersion + ".only_NM.20.txt"
     command <<<
-        set -e  # To make task stop at 1st error
+        # set -e  # To make task stop at 1st error
         # requires xvfb up and runnning
         xvfb-run "~{JavaExe}" -jar "~{CovReportDir}~{CovReportJar}" -i "~{BamFile}" -r "~{RefSeqFile}" -g "~{GeneFile}" -p "~{SampleID}" -d  "~{OutDir}~{SampleID}/~{WorkflowType}/" -f "~{SampleID}_covreport.pdf" -comments "Exons are assessed including 20bp surrounding the coding sequence based on file ~{GeneFile}"
         # mv "~{CovReportDir}/pdf-results/~{SampleID}_coverage_~{GeneFile}" "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_covreport.pdf"
