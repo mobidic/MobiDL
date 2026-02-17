@@ -33,7 +33,7 @@ task samtoolsSort {
 		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \
 		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		"~{BamFile}" \
-		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam.bai"
+		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bai"
 		# mv "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		# "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 		if [ ~{Version} = true ];then
