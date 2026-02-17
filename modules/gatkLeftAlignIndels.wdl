@@ -38,7 +38,7 @@ task gatkLeftAlignIndels {
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
 		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam" \
-		&& rm ~{BamFile}
+		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam.bai"
 		# if [ $? -eq 0 ];then
 		# 	rm ~{BamFile}
 		# fi

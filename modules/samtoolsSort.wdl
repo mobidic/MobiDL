@@ -33,7 +33,7 @@ task samtoolsSort {
 		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \
 		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		"~{BamFile}" \
-		&& rm ~{BamFile}
+		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam.bai"
 		# if [ $? -eq 0 ];then
 		# 	rm ~{BamFile}
 		# fi

@@ -39,7 +39,7 @@ task gatkApplyBQSR {
 		-I ~{BamFile} \
 		--bqsr-recal-file ~{GatheredRecaltable} \
 		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam" \
-		&& rm ~{BamFile} ~{BamIndex}
+		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.bam.bai"
 		# if [ $? -eq 0 ];then
 		# 	rm ~{BamFile}
 		# fi

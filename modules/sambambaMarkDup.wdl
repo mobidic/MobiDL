@@ -32,7 +32,7 @@ task sambambaMarkDup {
 		~{SambambaExe} markdup -t ~{Cpu} -l 1 \
 		~{BamFile} \
 		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.bam" \
-		&& rm ~{BamFile}
+		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 		# if [ $? -eq 0 ];then
 		# 	rm ~{BamFile}
 		# fi
