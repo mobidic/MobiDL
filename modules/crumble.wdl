@@ -4,8 +4,8 @@ task crumble {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2023-09-04"
+		version: "0.0.2"
+		date: "2026-02-17"
 	}
 	input {
 		# env variables	

@@ -4,8 +4,8 @@ task samtoolsSort {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.2"
-		date: "2023-09-04"
+		version: "0.0.3"
+		date: "2026-02-17"
 	}
 	input {
 		# env variables	
@@ -34,9 +34,6 @@ task samtoolsSort {
 		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		"~{BamFile}" \
 		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam.bai"
-		# if [ $? -eq 0 ];then
-		# 	rm ~{BamFile}
-		# fi
 		# mv "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		# "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 		if [ ~{Version} = true ];then

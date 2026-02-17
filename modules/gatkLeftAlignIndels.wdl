@@ -4,8 +4,8 @@ task gatkLeftAlignIndels {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2023-09-01"
+		version: "0.0.2"
+		date: "2026-02-17"
 	}
 	input {
 		# global variables
@@ -39,9 +39,6 @@ task gatkLeftAlignIndels {
 		-I ~{BamFile} \
 		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam" \
 		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam.bai"
-		# if [ $? -eq 0 ];then
-		# 	rm ~{BamFile}
-		# fi
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"

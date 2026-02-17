@@ -4,8 +4,8 @@ task sambambaMarkDup {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2023-09-01"
+		version: "0.0.2"
+		date: "2026-02-17"
 	}
 	input {
 		# env variables	
@@ -33,9 +33,6 @@ task sambambaMarkDup {
 		~{BamFile} \
 		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.bam" \
 		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
-		# if [ $? -eq 0 ];then
-		# 	rm ~{BamFile}
-		# fi
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "Sambamba: v$(~{SambambaExe} --version 2>&1 | grep 'sambamba' | cut -f2 -d ' ' | uniq)" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
