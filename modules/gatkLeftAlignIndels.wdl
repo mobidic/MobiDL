@@ -38,6 +38,9 @@ task gatkLeftAlignIndels {
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
 		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.laligned.bam"
+		if [ $? -eq 0 ];then
+			rm ~{BamFile}
+		fi
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"

@@ -32,6 +32,9 @@ task sambambaMarkDup {
 		~{SambambaExe} markdup -t ~{Cpu} -l 1 \
 		~{BamFile} \
 		"~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.bam"
+		if [ $? -eq 0 ];then
+			rm ~{BamFile}
+		fi
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "Sambamba: v$(~{SambambaExe} --version 2>&1 | grep 'sambamba' | cut -f2 -d ' ' | uniq)" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
