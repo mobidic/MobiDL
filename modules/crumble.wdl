@@ -34,7 +34,8 @@ task crumble {
 		source ~{CondaBin}activate ~{CrumbleEnv}
 		export LD_LIBRARY_PATH="~{LdLibraryPath}"
 		~{CrumbleExe} \
-		-O ~{FileType},nthreads=~{Cpu} ~{InputFile} "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.crumble.~{FileType}"
+		-O ~{FileType},nthreads=~{Cpu} ~{InputFile} "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.crumble.~{FileType}" \
+		&& rm ~{InputFile} ~{InputFileIndex}
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "----- Compression -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"

@@ -32,10 +32,11 @@ task samtoolsSort {
 		source ~{CondaBin}activate ~{SamtoolsEnv}
 		~{SamtoolsExe} sort -@ ~{Cpu} -l 6 \
 		-o "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
-		"~{BamFile}"
-		if [ $? -eq 0 ];then
-			rm ~{BamFile}
-		fi
+		"~{BamFile}" \
+		&& rm ~{BamFile}
+		# if [ $? -eq 0 ];then
+		# 	rm ~{BamFile}
+		# fi
 		# mv "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.sorted.bam" \
 		# "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
 		if [ ~{Version} = true ];then

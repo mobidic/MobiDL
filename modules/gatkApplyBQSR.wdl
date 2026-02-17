@@ -38,10 +38,11 @@ task gatkApplyBQSR {
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
 		--bqsr-recal-file ~{GatheredRecaltable} \
-		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam"
-		if [ $? -eq 0 ];then
-			rm ~{BamFile}
-		fi
+		-O "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.dupmarked.recal.bam" \
+		&& rm ~{BamFile} ~{BamIndex}
+		# if [ $? -eq 0 ];then
+		# 	rm ~{BamFile}
+		# fi
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "GATK: $(~{GatkExe} -version | grep 'GATK' | cut -f6 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
