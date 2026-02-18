@@ -35,7 +35,7 @@ task crumble {
 		export LD_LIBRARY_PATH="~{LdLibraryPath}"
 		~{CrumbleExe} \
 		-O ~{FileType},nthreads=~{Cpu} ~{InputFile} "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.crumble.~{FileType}" \
-		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.crumble.~{FileType}" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.crumble.~{FileType}.crai"
+		&& rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.~{FileType}" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.~{FileType}.crai"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "----- Compression -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
