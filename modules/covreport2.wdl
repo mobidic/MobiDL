@@ -45,6 +45,6 @@ task covReport {
         requested_memory_mb_per_core: "~{Memory}"
     }
     output {
-        File crumbled = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_covreport.pdf"
+        File? covreport = "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}_covreport.pdf"
     }
 }
