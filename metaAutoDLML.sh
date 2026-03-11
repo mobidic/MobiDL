@@ -979,34 +979,34 @@ do
 									# if [ -n "${SAMPLE_ROI_TYPE}" ];then
 									# 	LED_FILE="${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/MobiCNVvcfs/${SAMPLE_ROI_TYPE}/${SAMPLE}.txt"
 									# fi
-									DISEASE=''
-									TEAM=''
-									EXPERIMENT=''
-									if [[ "${SAMPLE}" =~ ^[Aa][0-9]+$ ]];then
-										DISEASE="ATAXIA"
-										TEAM="ATAXIA"
-										EXPERIMENT="trusight_one_exp"
-									elif [[ "${SAMPLE}" =~ ^[Hh][Oo][Rr]-[0-9]+$ ]];then
-										DISEASE="DSD"
-										TEAM="DSD"
-										EXPERIMENT="twist_custom"
-									elif [[ "${SAMPLE}" =~ ^[Cc][SsAa][GgDd][0-9]+$ ]];then
-										DISEASE="CF"
-										TEAM="MUCO"
-										EXPERIMENT="agilent_custom"
-									elif [[ "${SAMPLE}" =~ ^[DdIi][0-9]+-.*$ ]];then
-										DISEASE="MYOPATHY"
-										TEAM="NEUROMUSCULAR"
-										EXPERIMENT="nimblegen_custom"
-									elif [[ "${SAMPLE}" =~ ^[Ss][Uu][0-9]+$ ]];then
-										DISEASE="DFNB"
-										TEAM="SENSORINEURAL"
-										EXPERIMENT="twist_custom"
-									elif [[ "${SAMPLE}" =~ ^[Rr][0-9]+$ ]];then
-										DISEASE="RP"
-										TEAM="SENSORINEURAL"
-										EXPERIMENT="twist_custom"
-									fi
+									DISEASE="DSD"
+									TEAM="DSD"
+									EXPERIMENT="twist_custom"
+									# if [[ "${SAMPLE}" =~ ^[Aa][0-9]+$ ]];then
+									# 	DISEASE="ATAXIA"
+									# 	TEAM="ATAXIA"
+									# 	EXPERIMENT="trusight_one_exp"
+									# elif [[ "${SAMPLE}" =~ ^[Hh][Oo][Rr]-[0-9]+$ ]];then
+									# 	DISEASE="DSD"
+									# 	TEAM="DSD"
+									# 	EXPERIMENT="twist_custom"
+									# elif [[ "${SAMPLE}" =~ ^[Cc][SsAa][GgDd][0-9]+$ ]];then
+									# 	DISEASE="CF"
+									# 	TEAM="MUCO"
+									# 	EXPERIMENT="agilent_custom"
+									# elif [[ "${SAMPLE}" =~ ^[DdIi][0-9]+-.*$ ]];then
+									# 	DISEASE="MYOPATHY"
+									# 	TEAM="NEUROMUSCULAR"
+									# 	EXPERIMENT="nimblegen_custom"
+									# elif [[ "${SAMPLE}" =~ ^[Ss][Uu][0-9]+$ ]];then
+									# 	DISEASE="DFNB"
+									# 	TEAM="SENSORINEURAL"
+									# 	EXPERIMENT="twist_custom"
+									# elif [[ "${SAMPLE}" =~ ^[Rr][0-9]+$ ]];then
+									# 	DISEASE="RP"
+									# 	TEAM="SENSORINEURAL"
+									# 	EXPERIMENT="twist_custom"
+									# fi
 									touch "${LED_FILE}"
 									echo "#patient_id	less than 15 chars" >> "${LED_FILE}"
 									echo "#family_id	less than 10 chars" >> "${LED_FILE}"
