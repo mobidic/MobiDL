@@ -31,6 +31,7 @@ task gatkSplitIntervals {
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
 		set -e  # To make task stop at 1st error
+		mkdir -p "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/splitted_intervals"
 		~{GatkExe} SplitIntervals \
 		-R ~{RefFasta} \
 		-L ~{GatkInterval} \

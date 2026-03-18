@@ -37,6 +37,7 @@ task gatkBaseRecalibrator {
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
 		set -e  # To make task stop at 1st error
+		mkdir -p "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/recal_tables"
 		~{GatkExe} BaseRecalibrator \
 		-R ~{RefFasta} \
 		-I ~{BamFile} \
