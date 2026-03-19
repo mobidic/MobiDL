@@ -13,8 +13,8 @@
   files:
     - path: SU9550/panelCapture/SU9550.vcf.gz
       should_exist: true
-    - path:
-      should_exist: true
+      # - path:
+      # should_exist: true
 
 # - name: MetaPanelCapture different BED
 #   # Overall runtime : ~ 20 min

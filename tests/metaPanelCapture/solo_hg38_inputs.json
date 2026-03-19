@@ -1,5 +1,5 @@
 {
-  "metaPanelCapture.inputsLists": [["NS_157_hg38_twist.bed","SU9550","SU9550_S7_L001_R1_001.fastq.gz","SU9550_S7_L001_R1_001.fastq.gz","ns.txt"]],
+  "metaPanelCapture.inputsLists": [["NS_157_hg38_twist.bed","SU9550","SU9550_S7_L001_R1_001.fastq.gz","SU9550_S7_L001_R1_001.fastq.gz","ns.txt","NS-157"]],
   "metaPanelCapture.roiDir": "/bioinfo/refData/intervals/bedFiles/",
   "metaPanelCapture.fastqDirname": "/mnt/chu-ngs/RUNS/MINISEQ/250418_MN00265_0786_A000H7TNVT/Alignment_1/20250419_124335/Fastq/",
   "metaPanelCapture.platform": "ILLUMINA",
