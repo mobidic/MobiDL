@@ -16,7 +16,7 @@
       # - path:
       # should_exist: true
 
-- name: MetaPanelCapture solo
+- name: MetaPanelCapture solo aviti
   # Overall runtime : ~ 20 min - runs a panelCapture n a coriell NS157twist sample + happy
   tags:
     - wf_level
