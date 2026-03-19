@@ -65,7 +65,9 @@ happy() {
 
 	# Run hap.py:
 	# MEMO: hap.py will match 'chr' name itself (even if not the same between all files)
-	srun hap.py \
+	srun  -c 4 hap.py \
+		--bcftools-norm --decompose --leftshift \
+		--threads 4 \
 		--target-regions "$REGIONS" \
 		--reference "$GENOME" \
 		--report-prefix "$HAPPYDIR"/"$(basename "$VCFTEST" .vcf)" \
