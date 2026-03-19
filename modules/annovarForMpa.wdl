@@ -37,6 +37,7 @@ task annovarForMpa {
 		String PopFreqMax
 		String Intervar
 		String SpliceAI
+		String MobiDeep = 'mobideep_20251205'
 		# runtime attributes
 		String Queue
 		Int Cpu
@@ -51,6 +52,9 @@ task annovarForMpa {
 			OPERATION_SUFFIX=''
 			COMMA=''
 			POPFREQMAX=''
+			MOBIDEEP=',~{MobiDeep}'
+			MOBIDEEP_COMMA=','
+			MOBIDEEP_OPERATION_SUFFIX=',f'
 			#REFGENE='refGene'
 		fi
 		if [[ "~{Clinvar}" == 'clinvar_latest' ]] && [[ -f "~{HumanDb}/~{Genome}_clinvar_latest.ver" ]]; then
@@ -67,12 +71,12 @@ task annovarForMpa {
 		-out "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}" \
 		-remove \
 		-intronhgvs "~{IntronHgvs}" \
-		-protocol refGeneWithVer,refGeneWithVer,refGeneWithVer,"~{Clinvar}","~{Dbnsfp}","~{Dbscsnv}","~{GnomadExome}","~{GnomadGenome}","~{Intervar}",regsnpintron,"~{SpliceAI}""${POPFREQMAX}" \
-		-operation gx,g,g,f,f,f,f,f,f,f,f"${OPERATION_SUFFIX}" \
+		-protocol refGeneWithVer,refGeneWithVer,refGeneWithVer,"~{Clinvar}","~{Dbnsfp}","~{Dbscsnv}","~{GnomadExome}","~{GnomadGenome}","~{Intervar}",regsnpintron,"~{SpliceAI}""${POPFREQMAX}""${MOBIDEEP}" \
+		-operation gx,g,g,f,f,f,f,f,f,f,f"${OPERATION_SUFFIX}""${MOBIDEEP_OPERATION_SUFFIX}" \
 		-nastring . \
 		-vcfinput \
 		-otherinfo \
-		-arg '-splicing 5','-hgvs','-memtotal ~{Memory}000',,,,,,,,"${COMMA}" \
+		-arg '-splicing 5','-hgvs','-memtotal ~{Memory}000',,,,,,,,"${COMMA}""${MOBIDEEP_COMMA}" \
 		-xref "~{CustomXref}"
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
