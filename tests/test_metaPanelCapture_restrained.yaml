@@ -6,12 +6,12 @@
     - wf_level
     - hg38
     - SU9550
-  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/solo_hg38_inputs.json tests/Cluster_noDB-test.conf && happy SU9550/panelCapture/SU9550.dv.vcf /bioinfo/refData/annotations/Coriell/NA24385/hg38/bed_intersects/NA24385_noinconsistent_NS_157_twist_20250515.bed /bioinfo/refData/genomes/GRCh38/no_alt/hg38.fa /bioinfo/refData/annotations/Coriell/NA24385/hg38/HG002_GRCh38_1_22_v4.2.1_benchmark.decomposed.vcf.gz"
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/solo_hg38_inputs.json tests/Cluster_noDB-test.conf && happy SU9550/panelCapture/SU9550.dv.vcf.gz /bioinfo/refData/annotations/Coriell/NA24385/hg38/bed_intersects/NA24385_noinconsistent_NS_157_twist_20250515.bed /bioinfo/refData/genomes/GRCh38/no_alt/hg38.fa /bioinfo/refData/annotations/Coriell/NA24385/hg38/HG002_GRCh38_1_22_v4.2.1_benchmark.decomposed.vcf.gz"
   stdout:
     contains:
       - "workflow finished with status 'Succeeded'"
   files:
-    - path: SU9550/panelCapture/SU9550.vcf
+    - path: SU9550/panelCapture/SU9550.vcf.gz
       should_exist: true
     - path:
       should_exist: true
