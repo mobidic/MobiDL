@@ -59,5 +59,6 @@
   "metaPanelCapture.avxQueue": "avx",
   "metaPanelCapture.covReportDir": "/bioinfo/softs/CovReport2/",
   "metaPanelCapture.covReportJar": "CovReport2.jar",
+  "metaPanelCapture.cromwellJar": "/bioinfo/softs/cromwell/cromwell-90.jar",
   "metaPanelCapture.debug": false
 }
