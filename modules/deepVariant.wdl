@@ -36,6 +36,7 @@ task deepVariant {
 		# String? Node
 		Int Cpu
 		Int Memory
+		String? Exclude
 	}
 	command <<<
 		set -e  # To make task stop at 1st error
@@ -71,6 +72,7 @@ task deepVariant {
 		queue: "~{Queue}"
 		cpu: "~{Cpu}"
 		requested_memory_mb_per_core: "~{Memory}"
+		exclude: "~{exclude}"
 		# node: "~{Node}"
 	}
 	output{
