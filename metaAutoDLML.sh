@@ -370,7 +370,7 @@ gatherJsonsAndLaunch() {
 				info "WDL launching command: ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${metaWDL}.wdl -i ${JSON}"
 				info "Log in ${LOG_FILE}"
 			else
-				echo "[`date +'%Y-%m-%d %H:%M:%S'`] [ERROR] - metaAutoDLML version : ${VERSION} - MobiDL ${metaWDL} launched for ${GENOME}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+				echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${metaWDL} launched for ${GENOME}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${metaWDL}.wdl" -i "${JSON}" >> "${LOG_FILE}"
 			fi
 			if [ $? -eq 0 ];then
