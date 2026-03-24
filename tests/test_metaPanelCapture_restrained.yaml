@@ -17,7 +17,7 @@
       # should_exist: true
 
 - name: MetaPanelCapture solo aviti
-  # Overall runtime : ~ 20 min - runs a panelCapture n a coriell NS157twist sample + happy
+  # Overall runtime : ~ 40 min - runs a panelCapture on a coriell NS157twist sample + happy
   tags:
     - wf_level
     - hg38
@@ -31,13 +31,13 @@
       should_exist: true
 
 - name: MetaPanelCapture solo routine
-  # Overall runtime : ~ 20 min - runs a panelCapture n a coriell NS157twist sample + happy
+  # Overall runtime : ~ 40 min - runs a panelCapture n a coriell NS157twist sample + happy
   tags:
     - wf_level
     - hg38
     - CAD260090_VDM-4B-NS
     - routine
-  command: nohup bash -c "source ${WDL_PATH}tests/func_special.sh && run_wdl_MobiDL ${WDL_PATH}metaPanelCapture.wdl ${WDL_PATH}tests/metaPanelCapture/solo_routine_hg38_inputs.json ${WDL_PATH}tests/Cluster_noDB-test.conf && happy CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.dv.vcf /bioinfo/refData/annotations/Coriell/NA24385/hg38/bed_intersects/NA24385_noinconsistent_NS_157_twist_20250515.bed /bioinfo/refData/genomes/GRCh38/no_alt/hg38.fa /bioinfo/refData/annotations/Coriell/NA24385/hg38/HG002_GRCh38_1_22_v4.2.1_benchmark.decomposed.vcf.gz && cat happy_dir/CAD260090_VDM-4B-NS.dv.summary.csv | cut -d ',' -f1,2,3,4,5,7,11,12,14 | column -s, -t"
+  command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/solo_routine_hg38_inputs.json tests/Cluster_noDB-test.conf && happy CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.dv.vcf /bioinfo/refData/annotations/Coriell/NA24385/hg38/bed_intersects/NA24385_noinconsistent_NS_157_twist_20250515.bed /bioinfo/refData/genomes/GRCh38/no_alt/hg38.fa /bioinfo/refData/annotations/Coriell/NA24385/hg38/HG002_GRCh38_1_22_v4.2.1_benchmark.decomposed.vcf.gz && cat happy_dir/CAD260090_VDM-4B-NS.dv.summary.csv | cut -d ',' -f1,2,3,4,5,7,11,12,14 | column -s, -t"
   # command: nohup bash -c "source tests/func_special.sh && run_wdl_MobiDL metaPanelCapture.wdl tests/metaPanelCapture/solo_routine_hg38_inputs.json tests/Cluster_noDB-test.conf && happy CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.dv.vcf /bioinfo/refData/annotations/Coriell/NA24385/hg38/bed_intersects/NA24385_noinconsistent_NS_157_twist_20250515.bed /bioinfo/refData/genomes/GRCh38/no_alt/hg38.fa /bioinfo/refData/annotations/Coriell/NA24385/hg38/HG002_GRCh38_1_22_v4.2.1_benchmark.decomposed.vcf.gz && cat happy_dir/CAD260090_VDM-4B-NS.dv.summary.csv | cut -d ',' -f1,2,3,4,5,7,11,12,14 | column -s, -t"
   stdout:
     contains:
