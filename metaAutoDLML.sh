@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20260322
+VERSION=20260324
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -1185,27 +1185,31 @@ do
 							# launch panelCapture on a NA24385 sample - this test checks the happy summary md5sum in the end
 							info "Launching pytest on ${PYTEST_SAMPLE}"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-							pytest  \
-							--tag "${PYTEST_TAG1}" \
-							--tag "${PYTEST_TAG2}" \
-							--tag "${PYTEST_GENOME}" \
-							--tag "${PYTEST_SAMPLE}" \
-							--basetemp="${TMP_OUTPUT_DIR}" \
-							--keep-workflow-wd-on-fail \
-							--symlink \
-							--verbose \
-							--git-aware \
-							tests/test_metaPanelCapture_restrained.yaml
-							if [ $? eq 0 ]; then
-							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-								echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
-								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} succeeded" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-								info "pytest succeeded on ${PYTEST_SAMPLE}"
-							else
-								echo "Pytest NA24385 panelCapture failed" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_fail.txt"
-								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [WARNING] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} failed" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-								info "pytest failed on ${PYTEST_SAMPLE}"
-							fi
+							# if [ "${DRY_RUN}" = false ];then
+								source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
+								pytest  \
+								--tag "${PYTEST_TAG1}" \
+								--tag "${PYTEST_TAG2}" \
+								--tag "${PYTEST_GENOME}" \
+								--tag "${PYTEST_SAMPLE}" \
+								--basetemp="${TMP_OUTPUT_DIR}" \
+								--keep-workflow-wd-on-fail \
+								--symlink \
+								--verbose \
+								--git-aware \
+								tests/test_metaPanelCapture_restrained.yaml
+								if [ $? eq 0 ]; then
+								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+									echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
+									echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} succeeded" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+									info "pytest succeeded on ${PYTEST_SAMPLE}"
+								else
+									echo "Pytest NA24385 panelCapture failed" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_fail.txt"
+									echo "[`date +'%Y-%m-%d %H:%M:%S'`] [WARNING] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} failed" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+									info "pytest failed on ${PYTEST_SAMPLE}"
+								fi
+								conda deactivate
+							# fi
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
