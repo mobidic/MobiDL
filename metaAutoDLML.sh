@@ -1197,7 +1197,7 @@ do
 								--symlink \
 								--verbose \
 								--git-aware \
-								tests/test_metaPanelCapture_restrained.yaml
+								"${PYTEST_YAML}"
 								if [ $? eq 0 ]; then
 								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 									echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
