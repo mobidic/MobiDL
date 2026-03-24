@@ -1186,7 +1186,7 @@ do
 							info "Launching pytest on ${PYTEST_SAMPLE}"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 							# if [ "${DRY_RUN}" = false ];then
-								source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
+								source "${CONDA_ACTIVATE}" "${PYTEST_ENV}"
 								pytest  \
 								--tag "${PYTEST_TAG1}" \
 								--tag "${PYTEST_TAG2}" \
