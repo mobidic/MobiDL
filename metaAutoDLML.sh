@@ -1188,16 +1188,17 @@ do
 							# if [ "${DRY_RUN}" = false ];then
 								source "${CONDA_ACTIVATE}" "${PYTEST_ENV}"
 								pytest  \
-								--tag "${PYTEST_TAG1}" \
-								--tag "${PYTEST_TAG2}" \
-								--tag "${PYTEST_GENOME}" \
-								--tag "${PYTEST_SAMPLE}" \
-								--basetemp="${TMP_OUTPUT_DIR}" \
-								--keep-workflow-wd-on-fail \
-								--symlink \
-								--verbose \
-								--git-aware \
-								"${PYTEST_YAML}"
+									--rootdir="${WDL_PATH}" \
+									--tag "${PYTEST_TAG1}" \
+									--tag "${PYTEST_TAG2}" \
+									--tag "${PYTEST_GENOME}" \
+									--tag "${PYTEST_SAMPLE}" \
+									--basetemp="${TMP_OUTPUT_DIR}" \
+									--keep-workflow-wd-on-fail \
+									--symlink \
+									--verbose \
+									--git-aware \
+									"${PYTEST_YAML}"
 								if [ $? eq 0 ]; then
 								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 									echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
