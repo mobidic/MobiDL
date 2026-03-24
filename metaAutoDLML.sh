@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20260120
+VERSION=20260322
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -32,10 +32,13 @@ VERSION=20260120
 # 	Should be executed once per 10 minutes
 
 # "
+version() {
+	echo "metaAutoDLML v${VERSION}"
+}
 usage() {
 	echo 'This script automates MobiDL workflows.'
 	echo 'Program: metaAutoDLML'
-	echo 'Version: ${VERSION}'
+	echo "Version: ${VERSION}"
 	echo 'Contact: Baux David <david.baux@chu-montpellier.fr>'
 	echo 'Usage : bash autoDLML.sh --config <path to conf file> [-v 4]'
 	echo '	Mandatory arguments :'
@@ -99,6 +102,9 @@ while [ "$1" != "" ];do
 		-c | --config)	shift
 			CONFIG_FILE=$1			
 			;;
+		--version) version
+			exit
+			;;
 		-v | --verbosity) shift 
 			# Check if verbosity level argument is an integer before assignment 
 			if ! [[ "$1" =~ ^[0-9]+$ ]]
@@ -130,6 +136,7 @@ done
 
 if [ ! -f "${CONFIG_FILE}" ]; then
     error "Config file ${CONFIG_FILE} not found!"
+	exit 1
 fi
 
 # we check the params against a regexp
@@ -258,6 +265,7 @@ modifyJson() {
 	debug "MOBIDL_JSON_TEMPLATE: ${MOBIDL_JSON_TEMPLATE}"
 	if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
 		error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
+		echo "[`date +'%Y-%m-%d %H:%M:%S'`] [ERROR] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 	else
 		cp "${MOBIDL_JSON_TEMPLATE}" "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
 		chmod 755 "${AUTODL_DIR}${RUN}/${WDL}_${SAMPLE}_inputs.json"
@@ -330,6 +338,7 @@ gatherJsonsAndLaunch() {
 		debug "Derivate 'metaPanelCapture_JSON' from JSON of 1st sample : ${MOBIDL_JSON_TEMPLATE}"
 		if [ ! -e "${MOBIDL_JSON_TEMPLATE}" ];then
 			error "No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}"
+			echo "[`date +'%Y-%m-%d %H:%M:%S'`] [ERROR] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} No json file for ${WDL}: ${MOBIDL_JSON_TEMPLATE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 		else
 			JSON="${AUTODL_DIR}${RUN}/${metaWDL}_${GENOME}_inputs.json"
 			# Extract info from 'samplesInfos' file(s) (created by 'modifyJson()'):
@@ -361,10 +370,14 @@ gatherJsonsAndLaunch() {
 				info "WDL launching command: ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${metaWDL}.wdl -i ${JSON}"
 				info "Log in ${LOG_FILE}"
 			else
+				echo "[`date +'%Y-%m-%d %H:%M:%S'`] [ERROR] - metaAutoDLML version : ${VERSION} - MobiDL ${metaWDL} launched for ${GENOME}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 				"${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${metaWDL}.wdl" -i "${JSON}" >> "${LOG_FILE}"
 			fi
 			if [ $? -eq 0 ];then
 				conda deactivate
+				if [ "${DRY_RUN}" = false ];then
+					echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} secondary analysis complete for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+				fi
 				workflowPostTreatment "${metaWDL}" "${GENOME}"
 			else
 				# # GATK_LEFT_ALIGN_INDEL_ERROR=$(grep 'the range cannot contain negative indices' "${TMP_OUTPUT_DIR2}Logs/${SAMPLE}_${WDL}.log")
@@ -383,6 +396,8 @@ gatherJsonsAndLaunch() {
 				# 	fi
 				# else
 				error "Error while executing ${metaWDL} for ${GENOME} in run ${RUN_PATH}${RUN}"
+				echo "[`date +'%Y-%m-%d %H:%M:%S'`] [ERROR] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} error while executing ${metaWDL} for ${GENOME}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+				exit 1
 				# fi
 			fi
 		fi
@@ -408,13 +423,14 @@ workflowPostTreatment() {
 		# TEST ME to paralellize datat transfer
 		source "${CONDA_ACTIVATE}" "${PARALLEL_ENV}"
 		parallel -j 8 /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX {} "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" ::: "${TMP_OUTPUT_DIR2}"/*
-		conda deactivate
 		if [ $? -eq 0 ];then
 			chmod -R 777 "${TMP_OUTPUT_DIR2}"
 			rm -r "${TMP_OUTPUT_DIR2}"
 		else
 			error "Error while syncing ${1} in run ${OUTPUT_PATH}${RUN}"
+			echo "[`date +'%Y-%m-%d %H:%M:%S'`] [ERROR] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} error while syncing ${RUN} data" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 		fi
+		conda deactivate
 		# remove cromwell data
 		WORKFLOW_ID=$(grep "${CROMWELL_ID_EXP}" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${1}_${2}.log" | rev | cut -d ' ' -f 1 | rev)
 		if [[ -n "${WORKFLOW_ID}" ]]; then
@@ -841,6 +857,7 @@ do
 							rm -rf "${AUTODL_DIR}/${RUN}"
 							mkdir "${AUTODL_DIR}/${RUN}"
 							debug "1st loop on SAMPLES"
+							touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
 									# Multiple library types in one single run
@@ -1162,13 +1179,33 @@ do
 							RUN_ARRAY[${RUN}]=2
 							info "RUN ${RUN} treated"
 							if [ "${DRY_RUN}" = false ];then
-								touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
-								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
+								touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} ended properly for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 							fi
-							# echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - autoDL version : ${VERSION} - MobiDL ${WDL} complete for run ${RUN}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Complete.txt"
-							#Temp outDir already removed by 'workflowPostTreatment':
-							# chmod -R 777 "${TMP_OUTPUT_DIR2}"
-							# rm -r "${TMP_OUTPUT_DIR2}"
+							# launch panelCapture on a NA24385 sample - this test checks the happy summary md5sum in the end
+							info "Launching pytest on ${PYTEST_SAMPLE}"
+							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+							pytest  \
+							--tag "${PYTEST_TAG1}" \
+							--tag "${PYTEST_TAG2}" \
+							--tag "${PYTEST_GENOME}" \
+							--tag "${PYTEST_SAMPLE}" \
+							--basetemp="${TMP_OUTPUT_DIR}" \
+							--keep-workflow-wd-on-fail \
+							--symlink \
+							--verbose \
+							--git-aware \
+							tests/test_metaPanelCapture_restrained.yaml
+							if [ $? eq 0 ]; then
+							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+								echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
+								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} succeeded" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+								info "pytest succeeded on ${PYTEST_SAMPLE}"
+							else
+								echo "Pytest NA24385 panelCapture failed" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_fail.txt"
+								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [WARNING] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} failed" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+								info "pytest failed on ${PYTEST_SAMPLE}"
+							fi
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
 							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
