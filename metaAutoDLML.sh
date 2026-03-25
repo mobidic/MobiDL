@@ -376,7 +376,7 @@ gatherJsonsAndLaunch() {
 			if [ $? -eq 0 ];then
 				conda deactivate
 				if [ "${DRY_RUN}" = false ];then
-					echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} secondary analysis complete for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+					echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} secondary analysis completed for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 				fi
 				workflowPostTreatment "${metaWDL}" "${GENOME}"
 			else
@@ -1200,7 +1200,6 @@ do
 									--git-aware \
 									"${PYTEST_YAML}"
 								if [ $? -eq 0 ]; then
-								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 									echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
 									echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} succeeded" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 									info "pytest succeeded on ${PYTEST_SAMPLE}"
