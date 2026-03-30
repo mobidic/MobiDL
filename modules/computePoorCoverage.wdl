@@ -34,6 +34,7 @@ task computeGenomecov {
 	String OutputFile = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/~{SampleID}_genomecov.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
+		mkdir -p "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/coverage/"
 		cut -f 1-4 ~{IntervalBedFile} > fourColumns.bed
 		source ~{CondaBin}activate ~{BedtoolsEnv}
 		~{BedToolsExe} genomecov -ibam ~{BamFile} -bga \
