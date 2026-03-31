@@ -162,6 +162,8 @@ debug "CONFIG FILE: ${CONFIG_FILE}"
 
 
 ###############		Get run info file				 ##################################
+###############		DEPRECATED 20260331 MobiDL now uses a file directly placed in run folders
+###############		MobiDL/MobiDLComplete.txt
 
 # the file contains the run id and a code
 # 0 => not treated => to do - used to retreat a run in case ex of error
@@ -169,21 +171,21 @@ debug "CONFIG FILE: ${CONFIG_FILE}"
 # 2 => run treated - ignore directory
 # the file is stored in an array and modified by the script
 
-if [ ! -s "${RUNS_FILE}" ]; then
-    error "Runs file ${RUNS_FILE} not found or is empty!"
-	exit 1
-fi
+# if [ ! -s "${RUNS_FILE}" ]; then
+#     error "Runs file ${RUNS_FILE} not found or is empty!"
+# 	exit 1
+# fi
 
-declare -A RUN_ARRAY #init array
-while read LINE
-do
-	if echo ${LINE} | grep -E -v '^(#|$)' &>/dev/null; then
-		if echo ${LINE} | grep -F '=' &>/dev/null; then
-			RUN_ID=$(echo "${LINE}" | cut -d '=' -f 1)
-			RUN_ARRAY[${RUN_ID}]=$(echo "${LINE}" | cut -d '=' -f 2-)
-		fi
-	fi
-done < ${RUNS_FILE}
+# declare -A RUN_ARRAY #init array
+# while read LINE
+# do
+# 	if echo ${LINE} | grep -E -v '^(#|$)' &>/dev/null; then
+# 		if echo ${LINE} | grep -F '=' &>/dev/null; then
+# 			RUN_ID=$(echo "${LINE}" | cut -d '=' -f 1)
+# 			RUN_ARRAY[${RUN_ID}]=$(echo "${LINE}" | cut -d '=' -f 2-)
+# 		fi
+# 	fi
+# done < ${RUNS_FILE}
 
 #choosePipeline() {
 #	return $(${GREP} -F "${SAMPLE_SHEET}" "${SAMPLE_SHEET_DB}" | cut -d '=' -f 2)
@@ -376,7 +378,7 @@ gatherJsonsAndLaunch() {
 			if [ $? -eq 0 ];then
 				conda deactivate
 				if [ "${DRY_RUN}" = false ];then
-					echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} secondary analysis completed for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+					echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} secondary analysis completed for genome ${GENOME}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 				fi
 				workflowPostTreatment "${metaWDL}" "${GENOME}"
 			else
@@ -617,7 +619,22 @@ do
 		###### do not look at runs set to 2 in the runs.txt file
 		# debug "RUN: ${RUN}"
 		# debug "RUN STATE: ${RUN}:${RUN_ARRAY[${RUN}]}"
-		if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
+		# place a MobiDLComplete.txt file in completed runs - run once and remove
+		# if [ "${RUN_ARRAY[${RUN}]}" -eq 2 ]; then
+		# 	info "adding MobiDL file for run ${RUN}" >> "${SOFT_DIR}MobiDL_file_${DATE}.txt"
+		# 	mkdir -p "${RUN_PATH}${RUN}/MobiDL" && echo 2 > "${RUN_PATH}${RUN}/MobiDL/MobiDLComplete.txt"
+		# fi
+		# continue
+		MOBIDL_COMPLETE_FILE="${RUN_PATH}${RUN}/MobiDL/MobiDLComplete.txt"
+		if [ ! -f "${MOBIDL_COMPLETE_FILE}" ] || { [ -f "${MOBIDL_COMPLETE_FILE}" ] && grep -q '0' "${MOBIDL_COMPLETE_FILE}"; };then
+			# test
+			# debug "Inside RUN: ${RUN}"
+			# continue
+			if [ "${DRY_RUN}" = false ];then
+				mkdir -p "${RUN_PATH}${RUN}/MobiDL"
+			fi
+		# old style with runs.txt file
+		# if [ -z "${RUN_ARRAY[${RUN}]}" ] || [ "${RUN_ARRAY[${RUN}]}" -eq 0 ]; then
 			assignVariables "${RUN_PATH}"
 			debug "RUN: ${RUN},SAMPLESHEET:${SAMPLESHEET},MAX_DEPTH:${MAX_DEPTH},TRIGGER_FILE:${TRIGGER_FILE},TRIGGER_EXPR:${TRIGGER_EXPR}"
 			# now we must look for the AnalysisLog.txt file
@@ -691,15 +708,19 @@ do
 							# check if BED and WDL exist otherwise continue
 							if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${WDL}.wdl" ]];then
 								# Create a file with non treated samples:
-								mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
-								echo "${RUN} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
-								# Change value on array and file to done
-								if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-									echo ${RUN}=2 >> ${RUNS_FILE}
-								elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-									sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								if [ "${DRY_RUN}" = false ];then
+									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}"
+									echo "${RUN} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${WDL}" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated.txt"
+									echo 2 > "${MOBIDL_COMPLETE_FILE}"
 								fi
-								RUN_ARRAY[${RUN}]=2
+								# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
+								# Change value on array and file to done
+								# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+								# 	echo ${RUN}=2 >> ${RUNS_FILE}
+								# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+								# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								# fi
+								# RUN_ARRAY[${RUN}]=2
 								continue
 							fi
 						# elif [ -n "${MULTIPLE}" ];then
@@ -724,14 +745,18 @@ do
 						debug "BED: ${BED} - GENOME:${GENOME}"
 						if [ -n "${MANIFEST}" ] &&  [ -n "${WDL}" ] && [ -n "${BED}" ];then
 							info "MobiDL workflow to be launched for run ${RUN}:${WDL}"
-							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-								echo ${RUN}=1 >> ${RUNS_FILE}
-								RUN_ARRAY[${RUN}]=1
-							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								# Change value on array and file to running
-								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
-								RUN_ARRAY[${RUN}]=1
+							if [ "${DRY_RUN}" = false ];then
+								echo 1 > "${MOBIDL_COMPLETE_FILE}"
 							fi
+							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
+							# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							# 	echo ${RUN}=1 >> ${RUNS_FILE}
+							# 	RUN_ARRAY[${RUN}]=1
+							# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							# 	# Change value on array and file to running
+							# 	sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
+							# 	RUN_ARRAY[${RUN}]=1
+							# fi
 							if [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 								OUTPUT_PATH=${MINISEQ_RUNS_DEST_DIR}
 							elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
@@ -857,7 +882,6 @@ do
 							rm -rf "${AUTODL_DIR}/${RUN}"
 							mkdir "${AUTODL_DIR}/${RUN}"
 							debug "1st loop on SAMPLES"
-							touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
 									# Multiple library types in one single run
@@ -1171,21 +1195,21 @@ do
 							fi
 							conda deactivate
 							# fi
-							# may not be needed anymore with NFS share TEST ME
 							if [ "${DRY_RUN}" = false ];then
 								chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
+								echo 2 > "${MOBIDL_COMPLETE_FILE}"
 							fi
-							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
-							RUN_ARRAY[${RUN}]=2
+							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
+							# sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
+							# RUN_ARRAY[${RUN}]=2
 							info "RUN ${RUN} treated"
 							if [ "${DRY_RUN}" = false ];then
-								touch "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} ended properly for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 							fi
 							# launch panelCapture on a NA24385 sample - this test checks the happy summary md5sum in the end
 							info "Launching pytest on ${PYTEST_SAMPLE}"
 							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-							# if [ "${DRY_RUN}" = false ];then
+							if [ "${DRY_RUN}" = false ];then
 								source "${CONDA_ACTIVATE}" "${PYTEST_ENV}"
 								pytest  \
 									--rootdir="${WDL_PATH}" \
@@ -1202,35 +1226,43 @@ do
 								if [ $? -eq 0 ]; then
 									echo "Pytest NA24385 panelCapture succeeded" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_success.txt"
 									echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} succeeded" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-									info "pytest succeeded on ${PYTEST_SAMPLE}"
+									info "Control test on ${PYTEST_SAMPLE} succeeded"
 								else
 									echo "Pytest NA24385 panelCapture failed" > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/NA24385_fail.txt"
 									echo "[`date +'%Y-%m-%d %H:%M:%S'`] [WARNING] - metaAutoDLML version : ${VERSION} - Control test on ${PYTEST_SAMPLE} failed" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-									info "pytest failed on ${PYTEST_SAMPLE}"
+									info "Control test on ${PYTEST_SAMPLE} failed"
 								fi
 								conda deactivate
-							# fi
+							fi
 						else
 							info "Nothing done for run ${RUN_PATH}${RUN}"
-							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-								echo ${RUN}=2 >> ${RUNS_FILE}
-								RUN_ARRAY[${RUN}]=2
-							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								# Change value on array and file to done
-								sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-								RUN_ARRAY[${RUN}]=2
+							if [ "${DRY_RUN}" = false ];then
+								echo 2 > "${MOBIDL_COMPLETE_FILE}"
 							fi
+							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
+							# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							# 	echo ${RUN}=2 >> ${RUNS_FILE}
+							# 	RUN_ARRAY[${RUN}]=2
+							# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							# 	# Change value on array and file to done
+							# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+							# 	RUN_ARRAY[${RUN}]=2
+							# fi
 						fi
 					else
 						info "Nothing done for ${RUN}"
-						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-							echo ${RUN}=2 >> ${RUNS_FILE}
-							RUN_ARRAY[${RUN}]=2
-						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							# Change value on array and file to done
-							sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-							RUN_ARRAY[${RUN}]=2
+						if [ "${DRY_RUN}" = false ];then
+							echo 2 > "${MOBIDL_COMPLETE_FILE}"
 						fi
+						# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
+						# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+						# 	echo ${RUN}=2 >> ${RUNS_FILE}
+						# 	RUN_ARRAY[${RUN}]=2
+						# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+						# 	# Change value on array and file to done
+						# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+						# 	RUN_ARRAY[${RUN}]=2
+						# fi
 					fi
 				fi
 			fi
