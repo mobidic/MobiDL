@@ -715,11 +715,11 @@ do
 								fi
 								# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
 								# Change value on array and file to done
-								# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-								# 	echo ${RUN}=2 >> ${RUNS_FILE}
-								# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-								# fi
+								if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+									echo ${RUN}=2 >> ${RUNS_FILE}
+								elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+									sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								fi
 								# RUN_ARRAY[${RUN}]=2
 								continue
 							fi
@@ -749,14 +749,14 @@ do
 								echo 1 > "${MOBIDL_COMPLETE_FILE}"
 							fi
 							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-							# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-							# 	echo ${RUN}=1 >> ${RUNS_FILE}
-							# 	RUN_ARRAY[${RUN}]=1
-							# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							# 	# Change value on array and file to running
-							# 	sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
-							# 	RUN_ARRAY[${RUN}]=1
-							# fi
+							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+								echo ${RUN}=1 >> ${RUNS_FILE}
+								# RUN_ARRAY[${RUN}]=1
+							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+								# Change value on array and file to running
+								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
+								# RUN_ARRAY[${RUN}]=1
+							fi
 							if [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 								OUTPUT_PATH=${MINISEQ_RUNS_DEST_DIR}
 							elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
@@ -1200,7 +1200,7 @@ do
 								echo 2 > "${MOBIDL_COMPLETE_FILE}"
 							fi
 							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-							# sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
+							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
 							# RUN_ARRAY[${RUN}]=2
 							info "RUN ${RUN} treated"
 							if [ "${DRY_RUN}" = false ];then
@@ -1240,14 +1240,14 @@ do
 								echo 2 > "${MOBIDL_COMPLETE_FILE}"
 							fi
 							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-							# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-							# 	echo ${RUN}=2 >> ${RUNS_FILE}
-							# 	RUN_ARRAY[${RUN}]=2
-							# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							# 	# Change value on array and file to done
-							# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-							# 	RUN_ARRAY[${RUN}]=2
-							# fi
+							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+								echo ${RUN}=2 >> ${RUNS_FILE}
+								# RUN_ARRAY[${RUN}]=2
+							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+								# Change value on array and file to done
+								sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								# RUN_ARRAY[${RUN}]=2
+							fi
 						fi
 					else
 						info "Nothing done for ${RUN}"
@@ -1255,14 +1255,14 @@ do
 							echo 2 > "${MOBIDL_COMPLETE_FILE}"
 						fi
 						# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-						# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-						# 	echo ${RUN}=2 >> ${RUNS_FILE}
-						# 	RUN_ARRAY[${RUN}]=2
-						# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-						# 	# Change value on array and file to done
-						# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-						# 	RUN_ARRAY[${RUN}]=2
-						# fi
+						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							echo ${RUN}=2 >> ${RUNS_FILE}
+							# RUN_ARRAY[${RUN}]=2
+						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							# Change value on array and file to done
+							sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+							# RUN_ARRAY[${RUN}]=2
+						fi
 					fi
 				fi
 			fi
