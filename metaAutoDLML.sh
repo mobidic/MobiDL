@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20260324
+VERSION=20260331
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -882,6 +882,8 @@ do
 							rm -rf "${AUTODL_DIR}/${RUN}"
 							mkdir "${AUTODL_DIR}/${RUN}"
 							debug "1st loop on SAMPLES"
+							# create a sample list to launch the nf-core rnaseq wrapper
+							RNA_SAMPLE_LIST=''
 							for SAMPLE in ${!SAMPLES[@]};do
 								if [[ ${MULTIPLE} != '' ]];then
 									# Multiple library types in one single run
@@ -900,6 +902,14 @@ do
 
 									# check if BED and WDL exist otherwise continue
 									if [[ ! -f "${ROI_DIR}${BED}" || ! -f "${WDL_PATH}${NEW_WDL}.wdl" ]];then
+										# RNA?
+										if [ "${NEW_WDL}" = "rnaseq" ] && [ "${BED}" = "nobed" ];then
+											if [ "${RNA_SAMPLE_LIST}" = '' ];then
+												RNA_SAMPLE_LIST="${SAMPLE}"
+											else
+												RNA_SAMPLE_LIST="${RNA_SAMPLE_LIST},${SAMPLE}"
+											fi
+										fi
 										if [ "${DRY_RUN}" = false ];then
 											# Create a file with non treated FASTQ:
 											echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${NEW_WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
@@ -927,7 +937,32 @@ do
 								fi
 								modifyJson
 							done
-							# Exit loop, gather jsonS and run metaPipe:
+							################ RNA workflow
+							# run nfcore rnaseq via its home-made wrapper
+							if [ "${RNA_SAMPLE_LIST}" != '' ];then
+								# get CWD
+								MOBIDL_LAUNCH_PATH="${PWD}"
+								# get fastq dir
+								FASTQ_DIR=$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 3)
+								RNA_FASTQ_DIR=${FASTQ_DIR}
+								if [[ "${PROVIDER}" = "ELEMENT" ]];then
+									RNA_FASTQ_DIR=${FASTQ_DIR}$(echo "${SAMPLES[${SAMPLE}]}" | cut -d ';' -f 4)
+								fi
+								if [ "${DRY_RUN}" = false ];then
+									# launch here
+									info "launching nf-core rnaseq: cd ${NFCORE_RNASEQ_LAUNCH_PATH} && ${NFCORE_RNASEQ_WRAPPER} ${RNA_FASTQ_DIR} ${RNA_SAMPLE_LIST}"
+									cd "${NFCORE_RNASEQ_LAUNCH_PATH}" && "${NFCORE_RNASEQ_WRAPPER}" "${RNA_FASTQ_DIR}" "${RNA_SAMPLE_LIST}" &
+									# return to PWD
+									cd "${MOBIDL_LAUNCH_PATH}"
+								else
+									debug "MOBIDL_LAUNCH_PATH: ${MOBIDL_LAUNCH_PATH}"
+									debug "launching nf-core rnaseq: cd ${NFCORE_RNASEQ_LAUNCH_PATH} && ${NFCORE_RNASEQ_WRAPPER} ${RNA_FASTQ_DIR} ${RNA_SAMPLE_LIST}"
+								fi
+							fi
+							################
+
+							################ MobiDL workflow
+							# Exit loop, gather jsonS and run MobiDL metaPipe:
 							gatherJsonsAndLaunch
 							# Then loop again (to prepare Achab + get ROI_TYPES for MobiCNV):
 							# WARN: Some steps are done twice -> not very efficient
@@ -1208,8 +1243,8 @@ do
 							fi
 							# launch panelCapture on a NA24385 sample - this test checks the happy summary md5sum in the end
 							info "Launching pytest on ${PYTEST_SAMPLE}"
-							echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 							if [ "${DRY_RUN}" = false ];then
+								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - Launching control test on ${PYTEST_SAMPLE}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
 								source "${CONDA_ACTIVATE}" "${PYTEST_ENV}"
 								pytest  \
 									--rootdir="${WDL_PATH}" \
