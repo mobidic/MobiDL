@@ -171,21 +171,21 @@ debug "CONFIG FILE: ${CONFIG_FILE}"
 # 2 => run treated - ignore directory
 # the file is stored in an array and modified by the script
 
-if [ ! -s "${RUNS_FILE}" ]; then
-    error "Runs file ${RUNS_FILE} not found or is empty!"
-	exit 1
-fi
+# if [ ! -s "${RUNS_FILE}" ]; then
+#     error "Runs file ${RUNS_FILE} not found or is empty!"
+# 	exit 1
+# fi
 
-declare -A RUN_ARRAY #init array
-while read LINE
-do
-	if echo ${LINE} | grep -E -v '^(#|$)' &>/dev/null; then
-		if echo ${LINE} | grep -F '=' &>/dev/null; then
-			RUN_ID=$(echo "${LINE}" | cut -d '=' -f 1)
-			RUN_ARRAY[${RUN_ID}]=$(echo "${LINE}" | cut -d '=' -f 2-)
-		fi
-	fi
-done < ${RUNS_FILE}
+# declare -A RUN_ARRAY #init array
+# while read LINE
+# do
+# 	if echo ${LINE} | grep -E -v '^(#|$)' &>/dev/null; then
+# 		if echo ${LINE} | grep -F '=' &>/dev/null; then
+# 			RUN_ID=$(echo "${LINE}" | cut -d '=' -f 1)
+# 			RUN_ARRAY[${RUN_ID}]=$(echo "${LINE}" | cut -d '=' -f 2-)
+# 		fi
+# 	fi
+# done < ${RUNS_FILE}
 
 #choosePipeline() {
 #	return $(${GREP} -F "${SAMPLE_SHEET}" "${SAMPLE_SHEET_DB}" | cut -d '=' -f 2)
@@ -715,12 +715,12 @@ do
 								fi
 								# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
 								# Change value on array and file to done
-								if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-									echo ${RUN}=2 >> ${RUNS_FILE}
-								elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-									sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-								fi
-								RUN_ARRAY[${RUN}]=2
+								# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+								# 	echo ${RUN}=2 >> ${RUNS_FILE}
+								# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+								# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+								# fi
+								# RUN_ARRAY[${RUN}]=2
 								continue
 							fi
 						# elif [ -n "${MULTIPLE}" ];then
@@ -749,14 +749,14 @@ do
 								echo 1 > "${MOBIDL_COMPLETE_FILE}"
 							fi
 							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-								echo ${RUN}=1 >> ${RUNS_FILE}
-								RUN_ARRAY[${RUN}]=1
-							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								# Change value on array and file to running
-								sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
-								RUN_ARRAY[${RUN}]=1
-							fi
+							# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							# 	echo ${RUN}=1 >> ${RUNS_FILE}
+							# 	RUN_ARRAY[${RUN}]=1
+							# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							# 	# Change value on array and file to running
+							# 	sed -i -e "s/${RUN}=0/${RUN}=1/g" "${RUNS_FILE}"
+							# 	RUN_ARRAY[${RUN}]=1
+							# fi
 							if [[ "${RUN_PATH}" =~ "MINISEQ" ]];then
 								OUTPUT_PATH=${MINISEQ_RUNS_DEST_DIR}
 							elif [[ "${RUN_PATH}" =~ "NEXTSEQ" ]];then
@@ -811,7 +811,7 @@ do
 									mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop"
 								fi
 								if  [ "${PROVIDER}" = "ILLUMINA" ];then
-									# for some reason SRUN should be called without quotes
+									# for some reason SRUN must be called without quotes
 									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops ${ILLUMINAINTEROP}summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
 									/usr/bin/srun -N1 -c1 -pprod -JautoDL_interops "${ILLUMINAINTEROP}summary" "${RUN_PATH}${RUN}"  --csv=1 > "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/summary"
 									debug "/usr/bin/srun -N1 -c1 -pprod -JautoDL_interopi ${ILLUMINAINTEROP}index-summary ${RUN_PATH}${RUN}  --csv=1 > ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/interop/index-summary"
@@ -910,7 +910,7 @@ do
 												RNA_SAMPLE_LIST="${RNA_SAMPLE_LIST},${SAMPLE}"
 											fi
 										fi
-										if [ "${DRY_RUN}" = false ];then
+										elif [ "${DRY_RUN}" = false ];then
 											# Create a file with non treated FASTQ:
 											echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${NEW_WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
 										fi
@@ -1235,12 +1235,12 @@ do
 								echo 2 > "${MOBIDL_COMPLETE_FILE}"
 							fi
 							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-							sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
-							RUN_ARRAY[${RUN}]=2
-							info "RUN ${RUN} treated"
-							if [ "${DRY_RUN}" = false ];then
-								echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} ended properly for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
-							fi
+							# sed -i -e "s/${RUN}=1/${RUN}=2/" "${RUNS_FILE}"
+							# RUN_ARRAY[${RUN}]=2
+							# info "RUN ${RUN} treated"
+							# if [ "${DRY_RUN}" = false ];then
+							# 	echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${WDL} ended properly for run ${RUN}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
+							# fi
 							# launch panelCapture on a NA24385 sample - this test checks the happy summary md5sum in the end
 							info "Launching pytest on ${PYTEST_SAMPLE}"
 							if [ "${DRY_RUN}" = false ];then
@@ -1275,14 +1275,14 @@ do
 								echo 2 > "${MOBIDL_COMPLETE_FILE}"
 							fi
 							# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-							if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-								echo ${RUN}=2 >> ${RUNS_FILE}
-								RUN_ARRAY[${RUN}]=2
-							elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-								# Change value on array and file to done
-								sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-								RUN_ARRAY[${RUN}]=2
-							fi
+							# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+							# 	echo ${RUN}=2 >> ${RUNS_FILE}
+							# 	RUN_ARRAY[${RUN}]=2
+							# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+							# 	# Change value on array and file to done
+							# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+							# 	RUN_ARRAY[${RUN}]=2
+							# fi
 						fi
 					else
 						info "Nothing done for ${RUN}"
@@ -1290,14 +1290,14 @@ do
 							echo 2 > "${MOBIDL_COMPLETE_FILE}"
 						fi
 						# UNCOMMENT ABOVE AND COMMENT BELOW WHEN READY
-						if [ -z "${RUN_ARRAY[${RUN}]}" ];then
-							echo ${RUN}=2 >> ${RUNS_FILE}
-							RUN_ARRAY[${RUN}]=2
-						elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
-							# Change value on array and file to done
-							sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
-							RUN_ARRAY[${RUN}]=2
-						fi
+						# if [ -z "${RUN_ARRAY[${RUN}]}" ];then
+						# 	echo ${RUN}=2 >> ${RUNS_FILE}
+						# 	RUN_ARRAY[${RUN}]=2
+						# elif [ "${RUN_ARRAY[${RUN}]}" -eq 0 ];then
+						# 	# Change value on array and file to done
+						# 	sed -i -e "s/${RUN}=0/${RUN}=2/g" "${RUNS_FILE}"
+						# 	RUN_ARRAY[${RUN}]=2
+						# fi
 					fi
 				fi
 			fi
