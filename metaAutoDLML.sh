@@ -950,7 +950,7 @@ do
 								if [ "${DRY_RUN}" = false ];then
 									# launch here
 									info "launching nf-core rnaseq: cd ${NFCORE_RNASEQ_LAUNCH_PATH} && ${NFCORE_RNASEQ_WRAPPER} ${RNA_FASTQ_DIR} ${RNA_SAMPLE_LIST}"
-									cd "${NFCORE_RNASEQ_LAUNCH_PATH}" && "${NFCORE_RNASEQ_WRAPPER}" "${RNA_FASTQ_DIR}" "${RNA_SAMPLE_LIST}" &
+									cd "${NFCORE_RNASEQ_LAUNCH_PATH}" && "${NFCORE_RNASEQ_WRAPPER}" "${RNA_FASTQ_DIR}" "${RNA_SAMPLE_LIST}" > /dev/null 2>&1 &
 									# return to PWD
 									cd "${MOBIDL_LAUNCH_PATH}"
 								else
