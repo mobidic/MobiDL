@@ -909,7 +909,6 @@ do
 											else
 												RNA_SAMPLE_LIST="${RNA_SAMPLE_LIST},${SAMPLE}"
 											fi
-										fi
 										elif [ "${DRY_RUN}" = false ];then
 											# Create a file with non treated FASTQ:
 											echo "${SAMPLE} not treated because either the bed or workflow specified in the sample sheet does not exist - BED: ${BED}; Workflow: ${NEW_WDL}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/untreated_samples.txt"
