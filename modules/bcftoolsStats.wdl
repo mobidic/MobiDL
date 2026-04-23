@@ -28,6 +28,7 @@ task bcftoolsStats {
 	}
 	command <<<
 		set -e  # To make task stop at 1st error
+		mkdir -p "~{OutDir}~{SampleID}/~{WorkflowType}/PicardQualityDir"
 		source ~{CondaBin}activate ~{BcftoolsEnv}
 		~{BcftoolsExe} stats \
 		~{VcfFile} \
