@@ -26,6 +26,7 @@ import "modules/computeCoverage.wdl" as runComputeCoverage
 import "modules/computeCoverageClamms.wdl" as runComputeCoverageClamms
 import "modules/gatkCollectHsMetrics.wdl" as runGatkCollectHsMetrics
 import "modules/deepVariant.wdl" as runDeepVariant
+import "modules/deepVariantCompress.wdl" as runDeepVariantCompress
 import "modules/bcftoolsNorm.wdl" as runBcftoolsNorm
 import "modules/compressIndexVcf.wdl" as runCompressIndexVcf
 import "modules/jvarkitVcfPolyX.wdl" as runJvarkitVcfPolyX
@@ -161,6 +162,7 @@ workflow panelCapture {
 		## DeepVariant
 		# String referenceFasta
 		String modelType
+		String dsModelType = "WGS_TUMOR_ONLY"
 		# String bedFile
 		String data
 		String refData
@@ -169,8 +171,10 @@ workflow panelCapture {
 		String dvExe
 		String singularityExe = "singularity"
 		String dvSimg
+		String dsSimg
 		## VcSuffix
 		String dvSuffix = ".dv"
+		String dsSuffix = ".ds"
 		String hcSuffix = ".hc"
 		## Identito (default = SNPXplex. rsIDs order here will be maintained)
 		String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
@@ -611,7 +615,7 @@ workflow panelCapture {
 	}
 ###################################################################################
 #
-# Variant Calling 1: DeepVariant
+# Variant Calling: DeepVariant
 #
 ###################################################################################
 	call runDeepVariant.deepVariant {
@@ -748,6 +752,36 @@ workflow panelCapture {
 			VcfFile = compressIndexVcfDv.bgZippedVcf,
 			VcfFileIndex = compressIndexVcfDv.bgZippedVcfIndex
 	}
+###################################################################################
+#
+# Variant Calling: DeepSomatic
+#
+###################################################################################
+	call runDeepVariantCompress.deepVariant as deepSomatic {
+	    input:
+			Queue = avxQueue,
+			CondaBin = condaBin,
+			SingularityEnv = singularityEnv,
+			Cpu = cpuHigh,
+			Memory = memoryLow,
+			SampleID = sampleID,
+			OutDir = outDir,
+			WorkflowType = workflowType,			
+			DvExe = dvExe,
+			SingularityExe = singularityExe,
+			DvSimg = dsSimg,
+			BamFile = bamFile,
+			BamIndex = bamIndex,
+			RefFastaGz = refFastaGz,
+			IntervalBedFile = intervalBedFile,
+			ModelType = dsModelType,
+			Data = data,
+			RefData = refData,
+			OutDir = outDir,
+			Output = outputMnt,
+			VcSuffix = dsSuffix,
+            Version = version
+	}
 	#not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
 	#call runGatkVariantEval.gatkVariantEval as gatkVariantEvalDv{
 	#	input:
@@ -770,7 +804,7 @@ workflow panelCapture {
 	#}
 ###################################################################################
 #
-# Variant Calling 2: Haplotype Caller
+# Variant Calling: Haplotype Caller
 #
 ###################################################################################
 	scatter (interval in gatkSplitIntervals.splittedIntervals) {
