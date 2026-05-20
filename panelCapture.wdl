@@ -768,7 +768,7 @@ workflow panelCapture {
 			SampleID = sampleID,
 			OutDir = outDir,
 			WorkflowType = workflowType,			
-			DvExe = dvExe,
+			DvExe = dsExe,
 			SingularityExe = singularityExe,
 			DvSimg = dsSimg,
 			BamFile = samtoolsSort.sortedBam,
