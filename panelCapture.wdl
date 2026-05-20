@@ -168,7 +168,8 @@ workflow panelCapture {
 		String refData
 		# String dvOut
 		String outputMnt
-		String dvExe
+		String dvExe = "run_deepvariant"
+		String dsExe = "run_deepsomatic"
 		String singularityExe = "singularity"
 		String dvSimg
 		String dsSimg
@@ -758,7 +759,7 @@ workflow panelCapture {
 #
 ###################################################################################
 	call runDeepVariantCompress.deepVariant as deepSomatic {
-	    input:
+		input:
 			Queue = avxQueue,
 			CondaBin = condaBin,
 			SingularityEnv = singularityEnv,
@@ -780,7 +781,7 @@ workflow panelCapture {
 			OutDir = outDir,
 			Output = outputMnt,
 			VcSuffix = dsSuffix,
-            Version = true
+			Version = true
 	}
 	#not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
 	#call runGatkVariantEval.gatkVariantEval as gatkVariantEvalDv{
@@ -1148,7 +1149,7 @@ workflow panelCapture {
 		File? FinalCram = samtoolsCramConvert.cram
 		File? FinalCramIndex = samtoolsCramIndex.cramIndex
 		File? FinalCramCrumbled = crumble.crumbled
-        File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
+		File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
 		File? Qualityfile = multiqc.multiqcHtml
 	}
 }

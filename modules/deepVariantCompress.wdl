@@ -39,18 +39,18 @@ task deepVariant {
 	# OutPath differs if modules called from dvIdentito or panelCapture
 	String OutPath = if WorkflowType == "" then "~{OutDir}" else "~{OutDir}/~{SampleID}/~{WorkflowType}"
 	command <<<
-		set -e  # To make task stop at 1st error
+		set -e # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SingularityEnv}
 		TMPDIR=/scratch/tmp
 		APPTAINER_TMPDIR=/scratch/tmp
 		APPTAINER_CACHEDIR=/scratch/tmp
 		SINGULARITY_TMPDIR=/scratch/tmp
 		SINGULARITY_CACHEDIR=/scratch/tmp
-		"~{SingularityExe}" run \
+		~{SingularityExe} run \
 		--bind "~{Output}" \
 		--bind "~{RefData}" \
 		--bind "~{Data}" \
-		"~{DvSimg}" "~{DvExe}" \
+		~{DvSimg} ~{DvExe} \
 		--model_type="~{ModelType}" \
 		--ref="~{RefFastaGz}" \
 		--reads="~{BamFile}" \
