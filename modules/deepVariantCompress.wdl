@@ -38,6 +38,8 @@ task deepVariant {
 	}
 	# OutPath differs if modules called from dvIdentito or panelCapture
 	String OutPath = if WorkflowType == "" then "~{OutDir}" else "~{OutDir}/~{SampleID}/~{WorkflowType}"
+	String Reads = if DvExe == "run_deepsomatic" then "reads_tumor" else "reads"
+	String dSArgs = if DvExe == "run_deepsomatic" then "--sample_name_tumor=~{SampleID} --use_default_pon_filtering=true" else ""
 	command <<<
 		set -e # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SingularityEnv}
@@ -53,10 +55,10 @@ task deepVariant {
 		~{DvSimg} ~{DvExe} \
 		--model_type="~{ModelType}" \
 		--ref="~{RefFastaGz}" \
-		--reads="~{BamFile}" \
+		--~{Reads}="~{BamFile}" \
 		--regions="~{IntervalBedFile}" \
 		--num_shards="~{Cpu}" \
-		--output_vcf="~{OutPath}/~{SampleID}.~{VcSuffix}.vcf.gz"
+		--output_vcf="~{OutPath}/~{SampleID}.~{VcSuffix}.vcf.gz" ~{dSArgs}
 
 		if [ ~{Version} = true ];then
 			# fill-in tools version file			
