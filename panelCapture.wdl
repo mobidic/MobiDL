@@ -770,8 +770,8 @@ workflow panelCapture {
 			DvExe = dvExe,
 			SingularityExe = singularityExe,
 			DvSimg = dsSimg,
-			BamFile = bamFile,
-			BamIndex = bamIndex,
+			BamFile = samtoolsSort.sortedBam,
+			BamIndex = finalIndexing.bamIndex,
 			RefFastaGz = refFastaGz,
 			IntervalBedFile = intervalBedFile,
 			ModelType = dsModelType,
@@ -780,7 +780,7 @@ workflow panelCapture {
 			OutDir = outDir,
 			Output = outputMnt,
 			VcSuffix = dsSuffix,
-            Version = version
+            Version = true
 	}
 	#not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
 	#call runGatkVariantEval.gatkVariantEval as gatkVariantEvalDv{
