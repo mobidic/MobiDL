@@ -41,7 +41,7 @@ task cleanUpPanelCaptureTmpDirs {
 		rm ~{sep=" " BamArray}
 		rm ~{sep=" " VcfArray}
 		# fill-in READMEVCF
-		echo "#####MobiDL panelCapture April 2021" > "~{OutDir}~{SampleID}/~{WorkflowType}/README_VCF.txt"
+		echo "##### MobiDL panelCapture April 2021" > "~{OutDir}~{SampleID}/~{WorkflowType}/README_VCF.txt"
 		echo "You will Find several vcf files in the directory, MobiDL using two variant callers:" >> "~{OutDir}~{SampleID}/~{WorkflowType}/README_VCF.txt"
 		echo " - SampleID.hc.vcf is the vcf genereated with GATK4 HaplotypeCaller." >> "~{OutDir}~{SampleID}/~{WorkflowType}/README_VCF.txt"
 		echo " - SampleID.dv.vcf is the vcf generated with DeepVariant." >> "~{OutDir}~{SampleID}/~{WorkflowType}/README_VCF.txt"

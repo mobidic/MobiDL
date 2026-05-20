@@ -27,7 +27,8 @@ task identito {
 		Int Memory
 	}
 	# MEMO: If 'sampleName' in filename, MultiQC create separate tables, instead of 1 gathered
-	String OutputFile = "~{OutDir}~{SampleID}/~{WorkflowType}/~{QualDir}/Identito_mqc.tsv"
+	# OutPath differs if modules called from dvIdentito or panelCapture
+	String OutputFile = if WorkflowType == "" then "~{OutDir}/~{SampleID}_Identito_mqc.tsv" else "~{OutDir}~{SampleID}/~{WorkflowType}/~{QualDir}/Identito_mqc.tsv"
 	command <<<
 		set -e  # To make task stop at 1st error
 		source ~{CondaBin}activate ~{BcftoolsEnv}
