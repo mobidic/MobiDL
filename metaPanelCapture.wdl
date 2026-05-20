@@ -119,6 +119,7 @@ workflow metaPanelCapture {
 		String dvExe
 		String singularityExe = "singularity"
 		String dvSimg
+		String dsSimg
 		## VcSuffix
 		String dvSuffix = ".dv"
 		String hcSuffix = ".hc"
@@ -220,6 +221,7 @@ workflow metaPanelCapture {
 				singularityExe = singularityExe,
 				dvSimg = dvSimg,
 				dvSuffix = dvSuffix,
+				dsSimg = dsSimg,
 				hcSuffix = hcSuffix,
 				covReportDir = covReportDir,
 				covReportJar = covReportJar,
