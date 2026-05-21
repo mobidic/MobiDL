@@ -30,6 +30,7 @@ task deepVariant {
 		String OutDir
 		String Output
 		String VcSuffix
+		String GenomeVersion = 'hg38'
 		# runtime attributes
 		String Queue
 		# String? Node
@@ -39,7 +40,8 @@ task deepVariant {
 	# OutPath differs if modules called from dvIdentito or panelCapture
 	String OutPath = if WorkflowType == "" then "~{OutDir}" else "~{OutDir}/~{SampleID}/~{WorkflowType}"
 	String Reads = if DvExe == "run_deepsomatic" then "reads_tumor" else "reads"
-	String dSArgs = if DvExe == "run_deepsomatic" then "--sample_name_tumor=~{SampleID} --use_default_pon_filtering=true" else ""
+	String PONFiltering = if GenomeVersion == "hg38" then true else false
+	String dSArgs = if DvExe == "run_deepsomatic" then "--sample_name_tumor=~{SampleID} --use_default_pon_filtering=~{PONFiltering}" else ""
 	command <<<
 		set -e # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SingularityEnv}
@@ -55,13 +57,13 @@ task deepVariant {
 		~{DvSimg} ~{DvExe} \
 		--model_type="~{ModelType}" \
 		--ref="~{RefFastaGz}" \
-		--~{Reads}="~{BamFile}" \
+		--~{Reads}="~{OutPath}/~{SampleID}.sorted.bam" \
 		--regions="~{IntervalBedFile}" \
 		--num_shards="~{Cpu}" \
 		--output_vcf="~{OutPath}/~{SampleID}.~{VcSuffix}.vcf.gz" ~{dSArgs}
 
 		if [ ~{Version} = true ];then
-			# fill-in tools version file			
+			# fill-in tools version file
 			echo "DeepVariant: v$(~{SingularityExe} run ~{DvSimg} ~{DvExe} --version 2>/dev/null | grep 'DeepVariant' | cut -f3 -d ' ')" >> "~{OutPath}/~{SampleID}.versions.txt"
 		fi
 		conda deactivate

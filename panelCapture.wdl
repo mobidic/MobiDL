@@ -781,6 +781,7 @@ workflow panelCapture {
 			OutDir = outDir,
 			Output = outputMnt,
 			VcSuffix = dsSuffix,
+			GenomeVersion = genomeVersion,
 			Version = true
 	}
 	#not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
