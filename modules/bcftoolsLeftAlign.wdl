@@ -4,8 +4,8 @@ task bcftoolsLeftAlign {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
-		version: "0.0.1"
-		date: "2023-09-07"
+		version: "0.0.2"
+		date: "2026-05-08"
 	}
 	input {
 		# env variables	
@@ -27,6 +27,8 @@ task bcftoolsLeftAlign {
 		Int Memory
 	}
 	command <<<
+		set -e  # To make task stop at 1st error
+		mkdir -p "~{OutDir}~{SampleID}/~{WorkflowType}/bcftools"
 		source ~{CondaBin}activate ~{BcftoolsEnv}
 		~{BcftoolsExe} norm -f ~{FastaGenome} \
 		-o ~{OutDir}~{SampleID}/~{WorkflowType}/bcftools/~{SampleID}_leftalign.vcf ~{SplittedVcf}

@@ -56,6 +56,7 @@
   "metaPanelCapture.singularityExe": "singularity",
   "metaPanelCapture.modelType": "WES",
   "metaPanelCapture.dvSimg": "/bioinfo/singularity_img/deepvariant.sif",
+  "metaPanelCapture.dsSimg": "/bioinfo/singularity_img/deepsomatic.sif",
   "metaPanelCapture.avxQueue": "avx",
   "metaPanelCapture.covReportDir": "/bioinfo/softs/CovReport2/",
   "metaPanelCapture.covReportJar": "CovReport2.jar",

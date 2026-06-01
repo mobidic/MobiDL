@@ -89,8 +89,8 @@ task achab {
 
 		set -x
 
-		if [[ ! -d ~{OutDir} ]]; then
-			mkdir -p ~{OutDir}
+		if [[ ! -d "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/" ]]; then
+			mkdir -p "~{OutDir}~{SampleID}/~{WorkflowType}/achab_excel/"
 		fi
 
 		~{PerlPath} "~{AchabExe}" \

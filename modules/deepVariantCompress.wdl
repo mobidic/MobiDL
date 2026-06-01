@@ -11,6 +11,7 @@ task deepVariant {
 		# env variables	
 		String CondaBin
 		String SingularityEnv
+		String SamtoolsEnv
 		# global variables
 		String SampleID
 		String OutDir
@@ -19,6 +20,7 @@ task deepVariant {
 		String SingularityExe
 		String DvSimg
 		String DvExe
+		String BgZipExe
 		Boolean Version = false
 		# task specific variables
 		File BamFile
@@ -60,12 +62,16 @@ task deepVariant {
 		--~{Reads}="~{OutPath}/~{SampleID}.sorted.bam" \
 		--regions="~{IntervalBedFile}" \
 		--num_shards="~{Cpu}" \
-		--output_vcf="~{OutPath}/~{SampleID}.~{VcSuffix}.vcf.gz" ~{dSArgs}
+		--output_vcf="~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz" ~{dSArgs}
 
 		if [ ~{Version} = true ];then
 			# fill-in tools version file
 			echo "DeepVariant: v$(~{SingularityExe} run ~{DvSimg} ~{DvExe} --version 2>/dev/null | grep 'DeepVariant' | cut -f3 -d ' ')" >> "~{OutPath}/~{SampleID}.versions.txt"
 		fi
+		conda deactivate
+		source ~{CondaBin}activate ~{SamtoolsEnv}
+		~{BgZipExe} -f -d "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz" > "~{OutPath}/~{SampleID}~{VcSuffix}.vcf"
+		rm "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz.tbi"
 		conda deactivate
 	>>>
 	runtime {
@@ -75,6 +81,6 @@ task deepVariant {
 		# node: "~{Node}"
 	}
 	output{
-		 File DeepVcf = "~{OutPath}/~{SampleID}.~{VcSuffix}.vcf.gz"
+		File DeepVcf = "~{OutPath}/~{SampleID}~{VcSuffix}.vcf"
 	}
 }

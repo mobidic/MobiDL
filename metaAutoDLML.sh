@@ -22,7 +22,7 @@
 
 
 ##############		If any option is given, print help message	##################################
-VERSION=20260414
+VERSION=20260601
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -260,7 +260,7 @@ modifyJson() {
 		GENOME=hg19
 	fi
 	debug "WDL:${WDL} - SAMPLE:${SAMPLE} - BED:${BED} - RUN:${RUN_PATH}${RUN} - GENOME:${GENOME}"
-	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
+	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_ds_${GENOME}.json"
 	# if [ "${GENOME}" != "hg19" ];then
 	# 	MOBIDL_JSON_TEMPLATE="${MOBIDL_JSON_DIR}${WDL}_inputs_${GENOME}.json"
 	# fi
@@ -450,9 +450,10 @@ setvariables() {
 	GENE_FILE_SED=${GENE_FILE////\\/}
 	RUN_PATH_SED=${RUN_PATH////\\/}
 	# OUTPUT_PATH_SED_TMP=${OUTPUT_PATH/\/RS_IURC\/data/\/mnt\/140}
-	OUTPUT_PATH_SED_TMP1=${OUTPUT_PATH/RS_IURC/mnt}
-	OUTPUT_PATH_SED_TMP=${OUTPUT_PATH_SED_TMP1/data/data140}
-	OUTPUT_PATH_SED=${OUTPUT_PATH_SED_TMP////\\/}
+	# OUTPUT_PATH_SED_TMP1=${OUTPUT_PATH/RS_IURC/mnt}
+	# OUTPUT_PATH_SED_TMP=${OUTPUT_PATH_SED_TMP1/data/data140}
+	# OUTPUT_PATH_SED=${OUTPUT_PATH_SED_TMP////\\/}
+	OUTPUT_PATH_SED=${OUTPUT_PATH////\\/}
 	ROI_DIR_SED=${ROI_DIR////\\/}
 	BASE_DIR_CLUSTER_SED=${BASE_DIR_CLUSTER////\\/}
 	SUBPATH_SED=${SUBPATH////\\/}
@@ -463,11 +464,13 @@ setjsonvariables() {
 	chmod 777 "${1}"
 	sed -i -e "s/\(  \"${ACHAB}\.sampleID\": \"\).*/\1${SAMPLE}\",/" \
 		-e "s/\(  \"${ACHAB}\.affected\": \"\).*/\1${SAMPLE}\",/" \
-		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/${SAMPLE}\.vcf\",/" \
-		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${SAMPLE}\/disease.txt\",/" \
+		-e "s/\(  \"${ACHAB}\.inputVcf\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${2}\/${SAMPLE}\.vcf\",/" \
+		-e "s/\(  \"${ACHAB}\.diseaseFile\": \"\).*/\1${BASE_DIR_CLUSTER_SED}${ACHAB_TODO_DIR_SED}${2}\/disease.txt\",/" \
 		-e "s/\(  \"${ACHAB}\.genesOfInterest\": \"\).*/\1${GENE_FILE_SED}\",/" \
+		-e "s/\(  \"${ACHAB}\.workflowType\": \"\).*/\1${ACHAB_DIR}\",/" \
 		-e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SUBPATH_SED}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 		"${1}"
+		# -e "s/\(  \"${ACHAB}\.outDir\": \"\).*/\1${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${SUBPATH_SED}\/${SAMPLE}\/${ACHAB_DIR}\/\",/" \
 }
 
 
@@ -477,13 +480,19 @@ modifyAchabJson() {
 		ACHAB_DIR=CaptainAchabCFScreening
 	fi
 	chmod -R 777 "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
-	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json" "${SAMPLE}"
+	ACHAB_DIR=CaptainAchabMosaic
+	setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/captainAchab_inputs.json" "${SAMPLE}_Mosaic"
 	if [ "${DRY_RUN}" = true ];then
 		info "Moving achab dir commad: cp -R ${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/ ${BASE_DIR}${ACHAB_TODO_DIR}"
 	else
 		if [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ] && [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/disease.txt" ] && [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json" ];then
 			# move achab input folder in todo folder for autoachab
 			cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/" "${BASE_DIR}${ACHAB_TODO_DIR}"
+		fi
+		if [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/${SAMPLE}.vcf" ] && [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/disease.txt" ] && [ -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/captainAchab_inputs.json" ];then
+			# move achab Mosaic input folder in todo folder for autoachab
+			cp -R "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/" "${BASE_DIR}${ACHAB_TODO_DIR}"
 		fi
 	fi
 	ACHAB_DIR=CaptainAchab
@@ -498,6 +507,8 @@ prepareAchab() {
 	fi
 	if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/" ];then
 		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
+		# 4 mosaic
+		mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/"
 	fi
 	debug "SUBPATH: ${SUBPATH}"
 	# disease and genes of interest files
@@ -561,6 +572,8 @@ prepareAchab() {
 	if [ ! -f "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf" ];then
 		# if not CF then just copy the VCF
 		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/"
+		# deepsomatic VCF
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.ds.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/${SAMPLE}.vcf"
 	fi
 
 
@@ -569,8 +582,10 @@ prepareAchab() {
 	if [ -n "${DISEASE_FILE}" ] && [ -n "${GENE_FILE}" ] && [ -n "${JSON_SUFFIX}" ]; then
 		# cp disease file in achab input dir
 		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/disease.txt"
+		cp "${DISEASE_ACHAB_DIR}${DISEASE_FILE}" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/disease.txt"
 		# cp json file in achab input dir and modify it
 		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+		cp "${MOBIDL_JSON_DIR}captainAchab_inputs_${JSON_SUFFIX}.json" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/captainAchab_inputs.json"
 		setvariables
 		modifyAchabJson
 		# If CF then copy original VCF from CF_panel bed file to Achab ready dir for future analysis

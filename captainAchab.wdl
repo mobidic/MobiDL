@@ -18,8 +18,8 @@ workflow captainAchab {
 	meta {
 		author: "David BAUX"
 		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.3.1"
-		date: "2025-04-07"
+		version: "1.3.2"
+		date: "2026-06-01"
 	}
 	input {
 		#Variable section
@@ -49,7 +49,7 @@ workflow captainAchab {
 		## Global
 		String workflowType
 		String sampleID
-		String outTmpDir = "/scratch/tmp_output/"
+		String outTmpDir = if workflowType == "CaptainAchabMosaic" then "/scratch/tmp_output/mosaic/" else "/scratch/tmp_output/"
 		String outDir
 		Boolean keepFiles
 		## For annovarForMpa
