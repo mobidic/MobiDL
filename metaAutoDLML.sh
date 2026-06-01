@@ -566,6 +566,8 @@ prepareAchab() {
 		else
 			/usr/bin/srun -N1 -c1 -pprod -JautoDL_bedtools_CF "${BEDTOOLS}" intersect -a "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.vcf.gz" -b "${ROI_DIR}CF_screening_v2.bed" -header > "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/${SAMPLE}.vcf"
 		fi
+		# deepsomatic VCF
+		cp "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${WDL}/${SAMPLE}.ds.vcf" "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}_Mosaic/${SAMPLE}.vcf"
 		conda deactivate
 		# source ${CONDA_DEACTIVATE}
 	fi
