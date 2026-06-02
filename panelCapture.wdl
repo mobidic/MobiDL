@@ -797,7 +797,7 @@ workflow panelCapture {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			GatkExe = gatkExe,
-			VcSuffix = dvSuffix,
+			VcSuffix = dsSuffix,
 			UnsortedVcf = deepSomatic.DeepVcf
 	}
 	call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxDs {
