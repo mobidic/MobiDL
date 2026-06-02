@@ -641,7 +641,6 @@ workflow panelCapture {
 			ModelType = modelType,
 			Data = data,
 			RefData = refData,
-			OutDir = outDir,
 			Output = outputMnt,
 			VcSuffix = dvSuffix
 	}
@@ -780,7 +779,6 @@ workflow panelCapture {
 			ModelType = dsModelType,
 			Data = data,
 			RefData = refData,
-			OutDir = outDir,
 			Output = outputMnt,
 			VcSuffix = dsSuffix,
 			GenomeVersion = genomeVersion,
