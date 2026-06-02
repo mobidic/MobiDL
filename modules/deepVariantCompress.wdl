@@ -29,7 +29,6 @@ task deepVariant {
 		String ModelType
 		String Data
 		String RefData
-		String OutDir
 		String Output
 		String VcSuffix
 		String GenomeVersion = 'hg38'

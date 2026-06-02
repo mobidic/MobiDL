@@ -28,7 +28,6 @@ task deepVariant {
 		String ModelType
 		String Data
 		String RefData
-		String OutDir
 		String Output
 		String VcSuffix
 		# runtime attributes
