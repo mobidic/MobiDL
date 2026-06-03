@@ -18,7 +18,7 @@ task bcftoolsAnnotate {
 		String BcftoolsExe = "bcftools"
 		Boolean Version = false
 		# task specific variables
-		File VcfFile
+		File? VcfFile
 		File VcfIndex = "~{VcfFile}.tbi"
 		File ReferenceFile
 		File ReferenceFileIndex = "~{ReferenceFile}.tbi"

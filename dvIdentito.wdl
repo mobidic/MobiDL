@@ -1,7 +1,7 @@
 version 1.0
 
 import "modules/deepVariantCompress.wdl" as runDeepVariant
-# import "modules/bcftoolsAnnotate.wdl" as runAnnotate
+import "modules/bcftoolsAnnotate.wdl" as runAnnotate
 import "modules/identito.wdl" as runIdentito
 
 workflow dvIdentito {
@@ -49,8 +49,8 @@ workflow dvIdentito {
         String dvSimg
         String data
         String refData
-        String dvSuffix = ".dv"
-        # String vcSuffix = ".raw"
+        String dvSuffix = "dv"
+        String vcSuffix = ".raw"
         String modelType
         ## Identito
         String idList
@@ -81,25 +81,26 @@ workflow dvIdentito {
             Data = data,
             RefData = refData,
             Output = outputMnt,
+            VcSuffix = vcSuffix,
+            Version = version
+    }
+    # to get rsids in dv VCF
+    call runAnnotate.bcftoolsAnnotate as annotate {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = "~{outDir}/dvIdentito",
+            WorkflowType = workflowType,
+            ReferenceFile = referenceFile,
+            VcfFile = deepVariant.DeepVcfGz,
+            VcfIndex = deepVariant.DeepVcfIndex,
             VcSuffix = dvSuffix,
             Version = version
     }
-    # call runAnnotate.bcftoolsAnnotate as annotate {
-    #     input:
-    #         Queue = defQueue,
-    #         CondaBin = condaBin,
-    #         BcftoolsEnv = bcftoolsEnv,
-    #         Cpu = cpuLow,
-    #         Memory = memoryLow,
-    #         SampleID = sampleID,
-    #         OutDir = "~{outDir}/dvIdentito",
-    #         WorkflowType = workflowType,
-    #         ReferenceFile = referenceFile,
-    #         VcfFile = deepVariant.DeepVcf,
-    #         # VcfIndex = deepVariant.DeepVcfIndex,
-    #         VcSuffix = dvSuffix,
-    #         Version = version
-    # }
     call runIdentito.identito as identito {
         input:
             Queue = defQueue,
@@ -111,7 +112,7 @@ workflow dvIdentito {
             OutDir = "~{outDir}/dvIdentito",
             WorkflowType = workflowType,
             CsvtkExe = csvtkExe,
-            VcfFile = deepVariant.DeepVcf,
+            VcfFile = annotate.annotatedVcf,
             IDlist = idList
     }
     output {

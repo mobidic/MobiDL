@@ -68,10 +68,12 @@ task deepVariant {
 			echo "DeepVariant: v$(~{SingularityExe} run ~{DvSimg} ~{DvExe} --version 2>/dev/null | grep 'DeepVariant' | cut -f3 -d ' ')" >> "~{OutPath}/~{SampleID}.versions.txt"
 		fi
 		conda deactivate
-		source ~{CondaBin}activate ~{SamtoolsEnv}
-		~{BgZipExe} -f -d "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz" > "~{OutPath}/~{SampleID}~{VcSuffix}.vcf"
-		rm "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz.tbi"
-		conda deactivate
+		if [ ~{WorkflowType} != "" ];then
+			source ~{CondaBin}activate ~{SamtoolsEnv}
+			~{BgZipExe} -f -d "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz" > "~{OutPath}/~{SampleID}~{VcSuffix}.vcf"
+			rm "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz.tbi"
+			conda deactivate
+		fi
 	>>>
 	runtime {
 		queue: "~{Queue}"
@@ -80,6 +82,8 @@ task deepVariant {
 		# node: "~{Node}"
 	}
 	output{
-		File DeepVcf = "~{OutPath}/~{SampleID}~{VcSuffix}.vcf"
+		File? DeepVcf = "~{OutPath}/~{SampleID}~{VcSuffix}.vcf"
+		File? DeepVcfGz = "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz"
+		File? DeepVcfIndex = "~{OutPath}/~{SampleID}~{VcSuffix}.vcf.gz.tbi"
 	}
 }
