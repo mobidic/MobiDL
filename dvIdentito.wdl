@@ -18,6 +18,7 @@ workflow dvIdentito {
         ## envs
         String singularityEnv
         String bcftoolsEnv
+        String samtoolsEnv
         ## queues
         String defQueue
         String avxQueue
@@ -40,6 +41,7 @@ workflow dvIdentito {
         ## Bioinfo execs
         String bcftoolsExe = "bcftools"
         String csvtkExe = "csvtk"
+        String bgZipExe = "bgzip"
         # dv
         String outputMnt
         String dvExe
