@@ -441,7 +441,7 @@ workflow panelCapture {
 				Version = true,
 				LdLibraryPath = ldLibraryPath,
 				InputFile = samtoolsCramConvert.cram,
-				InputFileIndex =  samtoolsCramIndex.cramIndex,
+				InputFileIndex = samtoolsCramIndex.cramIndex,
 				FileType = "cram"
 		}
 		call runSamtoolsCramIndex.samtoolsCramIndex as crumbleIndexing {
@@ -1138,8 +1138,45 @@ workflow panelCapture {
 					FinalFile2 = crumbleIndexing.cramIndex,
 					JavaExe = javaExe,
 					CromwellJar = cromwellJar,
-					BamArray = ["~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex)],
-					VcfArray = ["~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcf),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcfIndex), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf),"~{dataPath}" + basename(jvarkitVcfPolyxDs.polyxedVcf),"~{dataPath}" + basename(jvarkitVcfPolyxDs.polyxedVcfIndex), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.snpVcf), "~{dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.indelVcf), "~{dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcf), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcf), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
+					BamArray = [
+                        "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable),
+                        "~{dataPath}" + basename(samtoolsSort.sortedBam),
+                        "~{dataPath}" + basename(finalIndexing.bamIndex)
+                    ],
+					VcfArray = [
+                        "~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),
+                        "~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),
+                        "~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),
+                        "~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcf),
+                        "~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcfIndex),
+                        "~{dataPath}" + basename(gatkSortVcfDs.sortedVcf),
+                        "~{dataPath}" + basename(gatkSortVcfDs.sortedVcfIndex),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDs.polyxedVcf),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDs.polyxedVcfIndex),
+                        "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf),
+                        "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex),
+                        "~{dataPath}" + basename(gatkSplitVcfs.snpVcf),
+                        "~{dataPath}" + basename(gatkSplitVcfs.snpVcfIndex),
+                        "~{dataPath}" + basename(gatkSplitVcfs.indelVcf),
+                        "~{dataPath}" + basename(gatkSplitVcfs.indelVcfIndex),
+                        "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf),
+                        "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex),
+                        "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf),
+                        "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex),
+                        "~{dataPath}" + basename(gatkMergeVcfs.mergedVcf),
+                        "~{dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex),
+                        "~{dataPath}" + basename(gatkSortVcfHc.sortedVcf),
+                        "~{dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex),
+                        "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcf),
+                        "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex),
+                        "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcf),
+                        "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),
+                        "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)
+                    ]
 					# BamArray = ["~{dataPath}" + basename(bwaSamtools.sortedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkApplyBQSR.recalBam), "~{dataPath}" + basename(gatkApplyBQSR.recalBamIndex), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBamIndex), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
 			}
 			call runMultiqc.multiqc as multiqcDoCrumble {
@@ -1171,9 +1208,45 @@ workflow panelCapture {
 					FinalFile2 = samtoolsCramIndex.cramIndex,
 					JavaExe = javaExe,
 					CromwellJar = cromwellJar,
-					BamArray = ["~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
-					# BamArray = ["~{dataPath}" + basename(bwaSamtools.sortedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkApplyBQSR.recalBam), "~{dataPath}" + basename(gatkApplyBQSR.recalBamIndex), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBamIndex), "${dataPath}" + basename(samtoolsSort.sortedBam), "${dataPath}" + basename(finalIndexing.bamIndex)],
-					VcfArray = ["~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),"~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),"~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcf),"~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcfIndex), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf), "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf), "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.snpVcf), "~{dataPath}" + basename(gatkSplitVcfs.snpVcfIndex), "~{dataPath}" + basename(gatkSplitVcfs.indelVcf), "~{dataPath}" + basename(gatkSplitVcfs.indelVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf), "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf), "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcf), "~{dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcf), "~{dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcf), "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex), "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)]
+					BamArray = [
+                        "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable),
+                        "${dataPath}" + basename(samtoolsSort.sortedBam),
+                        "${dataPath}" + basename(finalIndexing.bamIndex)
+                    ],
+					VcfArray = [
+                        "~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),
+                        "~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),
+                        "~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcf),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDv.polyxedVcfIndex),
+                        "~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcf),
+                        "~{dataPath}" + basename(gatkVariantFiltrationDv.filteredVcfIndex),
+                        "~{dataPath}" + basename(gatkSortVcfDs.sortedVcf),
+                        "~{dataPath}" + basename(gatkSortVcfDs.sortedVcfIndex),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDs.polyxedVcf),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxDs.polyxedVcfIndex),
+                        "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcf),
+                        "~{dataPath}" + basename(gatkGatherVcfs.gatheredHcVcfIndex),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcf),
+                        "~{dataPath}" + basename(jvarkitVcfPolyxHc.polyxedVcfIndex),
+                        "~{dataPath}" + basename(gatkSplitVcfs.snpVcf),
+                        "~{dataPath}" + basename(gatkSplitVcfs.snpVcfIndex),
+                        "~{dataPath}" + basename(gatkSplitVcfs.indelVcf),
+                        "~{dataPath}" + basename(gatkSplitVcfs.indelVcfIndex),
+                        "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcf),
+                        "~{dataPath}" + basename(gatkVariantFiltrationSnp.filteredSnpVcfIndex),
+                        "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcf),
+                        "~{dataPath}" + basename(gatkVariantFiltrationIndel.filteredIndelVcfIndex),
+                        "~{dataPath}" + basename(gatkMergeVcfs.mergedVcf),
+                        "~{dataPath}" + basename(gatkMergeVcfs.mergedVcfIndex),
+                        "~{dataPath}" + basename(gatkSortVcfHc.sortedVcf),
+                        "~{dataPath}" + basename(gatkSortVcfHc.sortedVcfIndex),
+                        "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcf),
+                        "~{dataPath}" + basename(compressIndexVcfHc.bgZippedVcfIndex),
+                        "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcf),
+                        "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),
+                        "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)
+                    ]
 			}
 			call runMultiqc.multiqc {
 				input:

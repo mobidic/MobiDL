@@ -15,7 +15,7 @@ task gatkSortVcf {
 		String GatkExe
 		Boolean Version = false
 		# task specific variables
-		File UnsortedVcf
+		File? UnsortedVcf
 		String VcSuffix
 		# runtime attributes
 		String Queue

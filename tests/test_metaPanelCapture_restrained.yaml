@@ -29,6 +29,8 @@
   files:
     - path: CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.vcf
       should_exist: true
+    - path: CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.ds.vcf
+      should_exist: true
 
 - name: MetaPanelCapture solo routine
   # Overall runtime : ~ 40 min - runs a panelCapture n a coriell NS157twist sample + happy
@@ -44,6 +46,8 @@
       - "workflow finished with status 'Succeeded'"
   files:
     - path: CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.vcf
+      should_exist: true
+    - path: CAD260090_VDM-4B-NS/panelCapture/CAD260090_VDM-4B-NS.ds.vcf
       should_exist: true
     - path: happy_dir/CAD260090_VDM-4B-NS.dv.summary.csv
       should_exist: true

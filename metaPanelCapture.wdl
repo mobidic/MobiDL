@@ -4,10 +4,10 @@ import "panelCapture.wdl" as runPanelCapture
 
 workflow metaPanelCapture {
 	meta {
-		author: "Felix VANDERMEEREN"
-		email: "felix.vandermeeren(at)chu-montpellier.fr"
-		version: "0.3.1"
-		date: "2026-01-19"
+		author: "Felix VANDERMEEREN, David BAUX"
+		email: "felix.vandermeeren(at)chu-montpellier.fr, d-baux(at)chu-montpellier.fr"
+		version: "0.3.2"
+		date: "2026-01-31"
 	}
 	input {
 		# variables declarations
@@ -129,6 +129,7 @@ workflow metaPanelCapture {
 		File geneFile
 	}
 	scatter (inputs in inputsLists) {
+		# if groups (=inputs[5]) defined, modif paths
 		String fastqLocR1 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/~{inputs[2]}" else "~{fastqDirname}/~{inputs[2]}"
 		String fastqLocR2 = if defined(inputs[5]) then "~{fastqDirname}/~{inputs[5]}/~{inputs[3]}" else "~{fastqDirname}/~{inputs[3]}"
 		String modifiedOutDir = if defined(inputs[5]) then "~{outDir}/~{inputs[5]}/" else "~{outDir}"
