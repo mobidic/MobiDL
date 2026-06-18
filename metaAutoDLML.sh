@@ -601,7 +601,7 @@ prepareAchab() {
             fi
             ACHAB_DIR_OLD="${ACHAB_DIR}"
             ACHAB_DIR=CaptainAchabCFPanel
-            setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json"
+            setjsonvariables "${OUTPUT_PATH}${RUN}/MobiDL/${SUBPATH}/${SAMPLE}/${SAMPLE}/captainAchab_inputs.json" "${SAMPLE}"
             ACHAB_DIR="${ACHAB_DIR_OLD}"
         fi
     fi
