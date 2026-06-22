@@ -1,6 +1,6 @@
 version 1.0
 
-task bwaSamtools {
+task minibwaSamtools {
 	meta {
 		author: "David BAUX"
 		email: "d-baux(at)chu-montpellier.fr"
@@ -10,7 +10,7 @@ task bwaSamtools {
 	input {
 		# env variables - BwaEnv includes samtools	
 		String CondaBin	
-		String minibwaEnv
+		String MinibwaEnv
 		# global variables
 		String SampleID
 		String OutDirSampleID = ""
@@ -35,7 +35,7 @@ task bwaSamtools {
 	String OutputDirSampleID = if OutDirSampleID == "" then SampleID else OutDirSampleID
 	command <<<
 		set -e  # To make task stop at 1st error
-		source ~{CondaBin}activate ~{minibwaEnv}
+		source ~{CondaBin}activate ~{MinibwaEnv}
 		~{minibwaExe} map -t~{Cpu} \
 		-R "@RG\tID:~{SampleID}\tSM:~{SampleID}\tPL:~{Platform}" \
 		~{RefFasta} \

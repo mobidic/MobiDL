@@ -250,7 +250,7 @@ workflow panelCapture {
 		input:
 			Queue = defQueue,
 			CondaBin = condaBin,
-			BwaEnv = minibwaEnv,
+			MinibwaEnv = minibwaEnv,
 			Cpu = cpuHigh,
 			Memory = memoryLow,
 			SampleID = sampleID,
@@ -275,7 +275,7 @@ workflow panelCapture {
 			OutDir = outDir,
 			WorkflowType = workflowType,
 			SambambaExe = sambambaExe,
-			BamFile = bwaSamtools.sortedBam
+			BamFile = minibwaSamtools.sortedBam
 	}
 	call runBedToGatkIntervalList.bedToGatkIntervalList {
 		input:
