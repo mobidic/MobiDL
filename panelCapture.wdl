@@ -141,11 +141,11 @@ workflow panelCapture {
 		String subdivisionMode
 		## gatk Base recal
 		File knownSites1
-		File knownSites1Index
+		File knownSites1Index = knownSites1 + ".tbi"
 		File knownSites2
-		File knownSites2Index
+		File knownSites2Index = knownSites2 + ".tbi"
 		File knownSites3
-		File knownSites3Index
+		File knownSites3Index = knownSites3 + ".tbi"
 		## cram conversion
 		File refFastaGz
 		File refFaiGz = refFastaGz + ".fai"
