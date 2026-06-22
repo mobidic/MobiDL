@@ -2,7 +2,8 @@ version 1.0
 
 import "modules/preparePanelCaptureTmpDirs.wdl" as runPreparePanelCaptureTmpDirs
 import "modules/fastp.wdl" as runFastp
-import "modules/bwaSamtools.wdl" as runBwaSamtools
+# import "modules/bwaSamtools.wdl" as runBwaSamtools
+import "modules/minibwaSamtools.wdl" as runMinibwaSamtools
 import "modules/sambambaIndex.wdl" as runSambambaIndex
 import "modules/sambambaMarkDup.wdl" as runSambambaMarkDup
 import "modules/bedToGatkIntervalList.wdl" as runBedToGatkIntervalList
@@ -63,7 +64,8 @@ workflow panelCapture {
 		String condaBin
 		## envs
 		String fastpEnv = "fastpEnv"
-		String bwaEnv = "bwaEnv"
+		# String bwaEnv = "bwaEnv"
+        String minibwaEnv = "minibwaEnv"
 		String samtoolsEnv = "samtoolsEnv"
 		String vcftoolsEnv = "vcftoolsEnv"	
 		String sambambaEnv = "sambambaEnv"
@@ -102,7 +104,8 @@ workflow panelCapture {
 		Boolean debug = false
 		## Bioinfo execs
 		String fastpExe = "fastp"
-		String bwaExe = "bwa"
+		# String bwaExe = "bwa"
+        String minibwaExe = "minibwa"
 		String samtoolsExe = "samtools"
 		String sambambaExe = "sambamba"
 		String bedToolsExe = "bedtools"
@@ -128,11 +131,11 @@ workflow panelCapture {
 		String noFiltering = ""
 		## bwaSamtools
 		String platform
-		File refAmb
-		File refAnn
-		File refBwt
-		File refPac
-		File refSa
+		# File refAmb
+		# File refAnn
+		# File refBwt
+		# File refPac
+		# File refSa
 		## sambambaIndex
 		## gatk splitintervals
 		String subdivisionMode
@@ -220,11 +223,34 @@ workflow panelCapture {
 # Alignment and post-alignment processing + QC
 #
 ###################################################################################
-	call runBwaSamtools.bwaSamtools {
+	# call runBwaSamtools.bwaSamtools {
+	# 	input:
+	# 		Queue = defQueue,
+	# 		CondaBin = condaBin,
+	# 		BwaEnv = bwaEnv,
+	# 		Cpu = cpuHigh,
+	# 		Memory = memoryLow,
+	# 		SampleID = sampleID,
+	# 		OutDir = outDir,
+	# 		WorkflowType = workflowType,
+	# 		FastqR1 = fastp.fastpR1,
+	# 		FastqR2 = fastp.fastpR2,
+	# 		SamtoolsExe = samtoolsExe,
+	# 		BwaExe = bwaExe,
+	# 		Version = true,
+	# 		Platform = platform,
+	# 		RefFasta = refFasta,
+	# 		RefAmb = refAmb,
+	# 		RefAnn = refAnn,
+	# 		RefBwt = refBwt,
+	# 		RefPac = refPac,
+	# 		RefSa = refSa
+	# }
+    call runMinibwaSamtools.minibwaSamtools {
 		input:
 			Queue = defQueue,
 			CondaBin = condaBin,
-			BwaEnv = bwaEnv,
+			BwaEnv = minibwaEnv,
 			Cpu = cpuHigh,
 			Memory = memoryLow,
 			SampleID = sampleID,
@@ -233,15 +259,10 @@ workflow panelCapture {
 			FastqR1 = fastp.fastpR1,
 			FastqR2 = fastp.fastpR2,
 			SamtoolsExe = samtoolsExe,
-			BwaExe = bwaExe,
+			minibwaExe = minibwaExe,
 			Version = true,
 			Platform = platform,
-			RefFasta = refFasta,
-			RefAmb = refAmb,
-			RefAnn = refAnn,
-			RefBwt = refBwt,
-			RefPac = refPac,
-			RefSa = refSa
+			RefFasta = refFasta
 	}
 	call runSambambaMarkDup.sambambaMarkDup {
 		input:
