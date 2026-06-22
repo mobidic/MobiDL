@@ -25,8 +25,8 @@ task minibwaSamtools {
 		String Platform
 		File RefFasta		
 		# index files for minibwa
-		File Refl2b = RefFasta + "l2b"
-		File Refmbw = RefFasta + "mbw"
+		File Refl2b = RefFasta + ".l2b"
+		File Refmbw = RefFasta + ".mbw"
 		# runtime attributes
 		String Queue
 		Int Cpu

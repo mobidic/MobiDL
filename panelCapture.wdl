@@ -94,8 +94,8 @@ workflow panelCapture {
 		File fastqR2
 		String genomeVersion
 		File refFasta
-		File refFai
-		File refDict
+		File refFai = refFasta + ".fai"
+		File refDict = refFasta + ".dict"
 		File intervalBedFile
 		String intervalBaitBed = ""
 		File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
@@ -148,8 +148,8 @@ workflow panelCapture {
 		File knownSites3Index
 		## cram conversion
 		File refFastaGz
-		File refFaiGz
-		File refFaiGzi
+		File refFaiGz = refFastaGz + ".fai"
+		File refFaiGzi = refFastaGz + ".gzi"
 		## crumble
 		Boolean doCrumble = true
 		## gatk-picard
