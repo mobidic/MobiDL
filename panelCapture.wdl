@@ -165,7 +165,7 @@ workflow panelCapture {
 		## DeepVariant
 		# String referenceFasta
 		String modelType
-		String dsModelType = "WGS_TUMOR_ONLY"
+		String dsModelType = "WES_TUMOR_ONLY"
 		# String bedFile
 		String data
 		String refData
