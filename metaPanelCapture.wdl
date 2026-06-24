@@ -19,7 +19,7 @@ workflow metaPanelCapture {
 		String suffix2 = "_S1_R2_001"
 		String genomeVersion
 		File refFasta
-		File refFai
+		# File refFai
 		File refDict
 		String intervalBaitBed = ""
 		String workflowType
