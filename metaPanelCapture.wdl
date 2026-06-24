@@ -147,7 +147,7 @@ workflow metaPanelCapture {
 				fastqR2 = fastqLocR2,
 				genomeVersion = genomeVersion,
 				refFasta = refFasta,
-				refFai = refFai,
+				# refFai = refFai,
 				refDict = refDict,
 				intervalBedFile = roiDir + "/" + inputs[0],
 				intervalBaitBed = intervalBaitBed,
