@@ -19,7 +19,7 @@ workflow metaPanelCapture {
 		String suffix2 = "_S1_R2_001"
 		String genomeVersion
 		File refFasta
-		# File refFai
+		# File refFai = refFasta + ".fai"
 		File refDict
 		String intervalBaitBed = ""
 		String workflowType
@@ -87,15 +87,15 @@ workflow metaPanelCapture {
 		String subdivisionMode
 		## gatk Base recal
 		File knownSites1
-		File knownSites1Index = knownSites1 + ".tbi"
+		# File knownSites1Index = knownSites1 + ".tbi"
 		File knownSites2
-		File knownSites2Index = knownSites2 + ".tbi"
+		# File knownSites2Index = knownSites2 + ".tbi"
 		File knownSites3
-		File knownSites3Index = knownSites3 + ".tbi"
+		# File knownSites3Index = knownSites3 + ".tbi"
 		## cram conversion
 		File refFastaGz
-		File refFaiGz = refFastaGz + ".fai"
-		File refFaiGzi = refFastaGz + ".gzi"
+		# File refFaiGz = refFastaGz + ".fai"
+		# File refFaiGzi = refFastaGz + ".gzi"
 		## crumble
 		Boolean doCrumble = true
 		## gatk-picard
@@ -118,7 +118,7 @@ workflow metaPanelCapture {
 		# String dvOut
 		String outputMnt
 		String dvExe = "run_deepvariant"
-		String dsExe = "run_deepsomatic"
+		# String dsExe = "run_deepsomatic"
 		String singularityExe = "singularity"
 		String dvSimg
 		String dsSimg
@@ -218,7 +218,6 @@ workflow metaPanelCapture {
 				swMode = swMode,
 				emitRefConfidence = emitRefConfidence,
 				modelType = modelType,
-                dsModelType = dsModelType,
 				data = data,
 				refData = refData,
 				outputMnt = outputMnt,
