@@ -368,10 +368,11 @@ gatherJsonsAndLaunch() {
             info "MobiDL ${metaWDL} log in ${LOG_FILE}"
             # actual launch and copy in the end
             source "${CONDA_ACTIVATE}" "${GATK_ENV}" || { error "Failed to activate Conda environment"; exit 1; }
-            if [ "${DRY_RUN}" = true ];then
-                info "WDL launching command: ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${metaWDL}.wdl -i ${JSON}"
-                info "Log in ${LOG_FILE}"
-            else
+            debug "Python: $(which python)"
+            # if [ "${DRY_RUN}" = true ];then
+            #     info "WDL launching command: ${CWW} -e ${CROMWELL} -o ${CROMWELL_OPTIONS} -c ${CROMWELL_CONF} -w ${WDL_PATH}${metaWDL}.wdl -i ${JSON}"
+            #     info "Log in ${LOG_FILE}"
+            if [ "${DRY_RUN}" = false ];then
                 echo "[`date +'%Y-%m-%d %H:%M:%S'`] [INFO] - metaAutoDLML version : ${VERSION} - MobiDL ${metaWDL} launched for ${GENOME}" >> "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${WDL}Log.txt"
                 "${CWW}" -e "${CROMWELL}" -o "${CROMWELL_OPTIONS}" -c "${CROMWELL_CONF}" -w "${WDL_PATH}${metaWDL}.wdl" -i "${JSON}" >> "${LOG_FILE}"
             fi
