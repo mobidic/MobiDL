@@ -6,8 +6,8 @@ workflow metaPanelCapture {
 	meta {
 		author: "Felix VANDERMEEREN, David BAUX"
 		email: "felix.vandermeeren(at)chu-montpellier.fr, d-baux(at)chu-montpellier.fr"
-		version: "0.3.2"
-		date: "2026-01-31"
+		version: "0.3.3"
+		date: "2026-06-25"
 	}
 	input {
 		# variables declarations
@@ -202,14 +202,14 @@ workflow metaPanelCapture {
 				# refSa = refSa,
 				subdivisionMode = subdivisionMode,
 				knownSites1 = knownSites1,
-				knownSites1Index = knownSites1Index,
+				# knownSites1Index = knownSites1Index,
 				knownSites2 = knownSites2,
-				knownSites2Index = knownSites2Index,
+				# knownSites2Index = knownSites2Index,
 				knownSites3 = knownSites3,
-				knownSites3Index = knownSites3Index,
+				# knownSites3Index = knownSites3Index,
 				refFastaGz = refFastaGz,
-				refFaiGz = refFaiGz,
-				refFaiGzi = refFaiGzi,
+				# refFaiGz = refFaiGz,
+				# refFaiGzi = refFaiGzi,
 				doCrumble = doCrumble,
 				variantEvalEV = variantEvalEV,
 				bedtoolsLowCoverage = bedtoolsLowCoverage,
