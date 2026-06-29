@@ -95,7 +95,7 @@ workflow panelCapture {
 		String genomeVersion
 		File refFasta
 		File refFai = refFasta + ".fai"
-		File refDict = refFasta + ".dict"
+		File refDict
 		File intervalBedFile
 		String intervalBaitBed = ""
 		File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed

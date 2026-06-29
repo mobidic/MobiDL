@@ -42,7 +42,7 @@ task deepVariant {
 	String OutPath = if WorkflowType == "" then "~{OutDir}" else "~{OutDir}/~{SampleID}/~{WorkflowType}"
 	String Reads = if DvExe == "run_deepsomatic" then "reads_tumor" else "reads"
 	String PONFiltering = if GenomeVersion == "hg38" then true else false
-	String dSArgs = if DvExe == "run_deepsomatic" then "--sample_name_tumor=~{SampleID} --use_default_pon_filtering=~{PONFiltering}" else ""
+	String dSArgs = if DvExe == "run_deepsomatic" then "--sample_name_tumor=~{SampleID} --use_default_pon_filtering=~{PONFiltering} --make_examples_extra_args='vsc_min_fraction_snps=0.03,vsc_min_fraction_indels=0.05'" else ""
 	command <<<
 		set -e # To make task stop at 1st error
 		source ~{CondaBin}activate ~{SingularityEnv}
