@@ -1136,6 +1136,7 @@ workflow panelCapture {
 					WorkflowType = workflowType,
 					FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
 					FinalFile2 = crumbleIndexing.cramIndex,
+                    FinalFile3 = bcftoolsNormDs.normVcf,
 					JavaExe = javaExe,
 					CromwellJar = cromwellJar,
 					BamArray = [
