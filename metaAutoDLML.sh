@@ -618,7 +618,7 @@ prepareGatkCnv() {
     #     "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/gatk_cnv.yaml"
     sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR: ${PROJECT_PATH_SED}gatk_cnv/" \
         -e "s/SAMPLES_PATH:/SAMPLES_PATH: ${PROJECT_PATH_SED}crams/" \
-        -e "s/BED_PATH:/BED_PATH: ${ROI_DIR_SED}${BED}/" \
+        -e "s/BED_PATH:/BED_PATH: ${ROI_DIR_SED}${BED_EXOME}/" \
         "${1}gatk_cnv.yaml"
         # -e "s/VCF_path:/VCF_path: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/MobiCNVvcfs/" \
         # "${1}gatk_cnv.yaml"
@@ -1064,6 +1064,7 @@ do
                                 if [[ -n "${MULTIPLE}" ]] && [[ "${SAMPLE_ROI_TYPE}" = "${EXOME_GROUP}" ]];then
                                     if [ ! -d "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams" ];then
                                         mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams"
+                                        BED_EXOME="${BED}"
                                     fi
                                     ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams/${SAMPLE}.crumble.cram"
                                     # ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams/${SAMPLE}.crumble.cram.crai"
@@ -1218,6 +1219,7 @@ do
                                     fi
                                     # Launch gatk_cnv on exomes
                                     if [[ "${LIBRARY}" = "${EXOME_GROUP}" ]];then
+                                        debug 'BED_EXOME:'"${BED_EXOME}"
                                         if [ "${DRY_RUN}" = false ];then
                                             prepareGatkCnv "${PROJECT_PATH}"
                                             if [ ! -d "${GATK_TMP_DIR}" ];then

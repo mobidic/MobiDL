@@ -52,1119 +52,1120 @@ import "modules/cleanUpPanelCaptureTmpDirs.wdl" as runCleanUpPanelCaptureTmpDirs
 import "modules/multiqc.wdl" as runMultiqc
 
 workflow panelCapture {
-	meta {
-		author: "David BAUX"
-		email: "david.baux(at)chu-montpellier.fr"
-		version: "1.3.4"
-		date: "2026-06-01"
-	}
-	input {
-		# variables declarations
-		## conda
-		String condaBin
-		## envs
-		String fastpEnv = "fastpEnv"
-		# String bwaEnv = "bwaEnv"
+    meta {
+        author: "David BAUX"
+        email: "david.baux(at)chu-montpellier.fr"
+        version: "1.3.4"
+        date: "2026-06-01"
+    }
+    input {
+        # variables declarations
+        ## conda
+        String condaBin
+        ## envs
+        String fastpEnv = "fastpEnv"
+        # String bwaEnv = "bwaEnv"
         String minibwaEnv = "minibwaEnv"
-		String samtoolsEnv = "samtoolsEnv"
-		String vcftoolsEnv = "vcftoolsEnv"	
-		String sambambaEnv = "sambambaEnv"
-		String bedtoolsEnv = "bedtoolsEnv"
-		String crumbleEnv = "crumbleEnv"
-		String bcftoolsEnv = "bcftoolsEnv"
-		String multiqcEnv = "multiqcEnv"
-		String singularityEnv = "singularityEnv"
-		String anacoreEnv = "anacoreEnv"
-		## queues
-		String defQueue = "prod"
-		String avxQueue = "avx"
-		## resources
-		Int cpuHigh
-		Int cpuLow
-		# Int avxCpu
-		Int memoryLow
-		Int memoryHigh
-		# memoryLow = scattered tasks =~ mem_per_cpu in HPC or not
-		# memoryHigh = one cpu tasks => high mem ex 10Gb
-		## Global
-		String sampleID
-		String suffix1
-		String suffix2
-		File fastqR1
-		File fastqR2
-		String genomeVersion
-		File refFasta
-		File refFai = refFasta + ".fai"
-		File refDict
-		File intervalBedFile
-		String intervalBaitBed = ""
-		File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
-		String workflowType
-		String outDir
-		Boolean debug = false
-		## Bioinfo execs
-		String fastpExe = "fastp"
-		# String bwaExe = "bwa"
+        String samtoolsEnv = "samtoolsEnv"
+        String vcftoolsEnv = "vcftoolsEnv"    
+        String sambambaEnv = "sambambaEnv"
+        String bedtoolsEnv = "bedtoolsEnv"
+        String crumbleEnv = "crumbleEnv"
+        String bcftoolsEnv = "bcftoolsEnv"
+        String multiqcEnv = "multiqcEnv"
+        String singularityEnv = "singularityEnv"
+        String anacoreEnv = "anacoreEnv"
+        ## queues
+        String defQueue = "prod"
+        String avxQueue = "avx"
+        ## resources
+        Int cpuHigh
+        Int cpuLow
+        # Int avxCpu
+        Int memoryLow
+        Int memoryHigh
+        # memoryLow = scattered tasks =~ mem_per_cpu in HPC or not
+        # memoryHigh = one cpu tasks => high mem ex 10Gb
+        ## Global
+        String sampleID
+        String suffix1
+        String suffix2
+        File fastqR1
+        File fastqR2
+        String genomeVersion
+        File refFasta
+        File refFai = refFasta + ".fai"
+        File refDict
+        File intervalBedFile
+        String intervalBaitBed = ""
+        File intervalBaitBedFile = if intervalBaitBed == "" then intervalBedFile else intervalBaitBed
+        String workflowType
+        String outDir
+        Boolean debug = false
+        ## Bioinfo execs
+        String fastpExe = "fastp"
+        # String bwaExe = "bwa"
         String minibwaExe = "minibwa"
-		String samtoolsExe = "samtools"
-		String sambambaExe = "sambamba"
-		String bedToolsExe = "bedtools"
-		String bcftoolsExe = "bcftools"
-		String bgZipExe = "bgzip"
-		String tabixExe = "tabix"
-		String multiqcExe = "multiqc"
-		String vcftoolsExe = "vcftools"
-		String crumbleExe = "crumble"
-		String gatkExe = "gatk"
-		String ldLibraryPath
-		String vcfPolyXJar
-		String csvtkExe = "/bioinfo/softs/bin/csvtk"
-		## Anacore-Utils custom mergeVCF script
-		File mergeVCFMobiDL
-		## Standard execs
-		String awkExe = "awk"
-		String sedExe = "sed"
-		String sortExe = "sort"		
-		String javaExe = "java"
-		String cromwellJar
-		## fastp
-		String noFiltering = ""
-		## bwaSamtools
-		String platform
-		# File refAmb
-		# File refAnn
-		# File refBwt
-		# File refPac
-		# File refSa
-		## sambambaIndex
-		## gatk splitintervals
-		String subdivisionMode
-		## gatk Base recal
-		File knownSites1
-		File knownSites1Index = knownSites1 + ".tbi"
-		File knownSites2
-		File knownSites2Index = knownSites2 + ".tbi"
-		File knownSites3
-		File knownSites3Index = knownSites3 + ".tbi"
-		## cram conversion
-		File refFastaGz
-		File refFaiGz = refFastaGz + ".fai"
-		File refFaiGzi = refFastaGz + ".gzi"
-		## crumble
-		Boolean doCrumble = true
-		## gatk-picard
-		String variantEvalEV = "MetricsCollection"
-		## computePoorCoverage
-		Int bedtoolsLowCoverage
-		Int bedToolsSmallInterval
-		## computeCoverage
-		Int minCovBamQual
-		## haplotypeCaller
-		String swMode
-		String emitRefConfidence = "NONE"
-		## DeepVariant
-		# String referenceFasta
-		String modelType
-		String dsModelType = "WES_TUMOR_ONLY"
-		# String bedFile
-		String data
-		String refData
-		# String dvOut
-		String outputMnt
-		String dvExe = "run_deepvariant"
-		String dsExe = "run_deepsomatic"
-		String singularityExe = "singularity"
-		String dvSimg
-		String dsSimg
-		## VcSuffix
-		String dvSuffix = ".dv"
-		String dsSuffix = ".ds"
-		String hcSuffix = ".hc"
-		## Identito (default = SNPXplex. rsIDs order here will be maintained)
-		String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
-		## covreport
-		String covReportDir
-		String covReportJar
-		File geneFile
-	}
+        String samtoolsExe = "samtools"
+        String sambambaExe = "sambamba"
+        String bedToolsExe = "bedtools"
+        String bcftoolsExe = "bcftools"
+        String bgZipExe = "bgzip"
+        String tabixExe = "tabix"
+        String multiqcExe = "multiqc"
+        String vcftoolsExe = "vcftools"
+        String crumbleExe = "crumble"
+        String gatkExe = "gatk"
+        String ldLibraryPath
+        String vcfPolyXJar
+        String csvtkExe = "/bioinfo/softs/bin/csvtk"
+        ## Anacore-Utils custom mergeVCF script
+        File mergeVCFMobiDL
+        ## Standard execs
+        String awkExe = "awk"
+        String sedExe = "sed"
+        String sortExe = "sort"        
+        String javaExe = "java"
+        String cromwellJar
+        ## fastp
+        String noFiltering = ""
+        ## bwaSamtools
+        String platform
+        # File refAmb
+        # File refAnn
+        # File refBwt
+        # File refPac
+        # File refSa
+        ## sambambaIndex
+        ## gatk splitintervals
+        String subdivisionMode
+        ## gatk Base recal
+        File knownSites1
+        File knownSites1Index = knownSites1 + ".tbi"
+        File knownSites2
+        File knownSites2Index = knownSites2 + ".tbi"
+        File knownSites3
+        File knownSites3Index = knownSites3 + ".tbi"
+        ## cram conversion
+        File refFastaGz
+        File refFaiGz = refFastaGz + ".fai"
+        File refFaiGzi = refFastaGz + ".gzi"
+        ## crumble
+        Boolean doCrumble = true
+        ## gatk-picard
+        String variantEvalEV = "MetricsCollection"
+        ## computePoorCoverage
+        Int bedtoolsLowCoverage
+        Int bedToolsSmallInterval
+        ## computeCoverage
+        Int minCovBamQual
+        ## haplotypeCaller
+        String swMode
+        String emitRefConfidence = "NONE"
+        ## DeepVariant
+        # String referenceFasta
+        String modelType
+        String dsModelType = "WES_TUMOR_ONLY"
+        # String bedFile
+        String data
+        String refData
+        # String dvOut
+        String outputMnt
+        String dvExe = "run_deepvariant"
+        String dsExe = "run_deepsomatic"
+        String singularityExe = "singularity"
+        String dvSimg
+        String dsSimg
+        ## VcSuffix
+        String dvSuffix = ".dv"
+        String dsSuffix = ".ds"
+        String hcSuffix = ".hc"
+        ## Identito (default = SNPXplex. rsIDs order here will be maintained)
+        String idList = "rs11702450,rs843345,rs1058018,rs8017,rs3738494,rs1065483,rs2839181,rs11059924,rs2075144,rs6795772,rs456261,rs1131620,rs2231926,rs352169,rs3739160"
+        ## covreport
+        String covReportDir
+        String covReportJar
+        File geneFile
+    }
 
-	# Tasks calls
-	call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GenomeVersion = genomeVersion
-	}
-	call runFastp.fastp {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			FastpEnv = fastpEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			FastpExe = fastpExe,
-			Version = true,
-			NoFiltering = noFiltering,
-			FastqR1 = fastqR1,
-			FastqR2 = fastqR2,
-			Suffix1 = suffix1,
-			Suffix2 = suffix2,
-			DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
+    # Tasks calls
+    call runPreparePanelCaptureTmpDirs.preparePanelCaptureTmpDirs {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GenomeVersion = genomeVersion
+    }
+    call runFastp.fastp {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            FastpEnv = fastpEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            FastpExe = fastpExe,
+            Version = true,
+            NoFiltering = noFiltering,
+            FastqR1 = fastqR1,
+            FastqR2 = fastqR2,
+            Suffix1 = suffix1,
+            Suffix2 = suffix2,
+            DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+    }
 ###################################################################################
 #
 # Alignment and post-alignment processing + QC
 #
 ###################################################################################
-	# call runBwaSamtools.bwaSamtools {
-	# 	input:
-	# 		Queue = defQueue,
-	# 		CondaBin = condaBin,
-	# 		BwaEnv = bwaEnv,
-	# 		Cpu = cpuHigh,
-	# 		Memory = memoryLow,
-	# 		SampleID = sampleID,
-	# 		OutDir = outDir,
-	# 		WorkflowType = workflowType,
-	# 		FastqR1 = fastp.fastpR1,
-	# 		FastqR2 = fastp.fastpR2,
-	# 		SamtoolsExe = samtoolsExe,
-	# 		BwaExe = bwaExe,
-	# 		Version = true,
-	# 		Platform = platform,
-	# 		RefFasta = refFasta,
-	# 		RefAmb = refAmb,
-	# 		RefAnn = refAnn,
-	# 		RefBwt = refBwt,
-	# 		RefPac = refPac,
-	# 		RefSa = refSa
-	# }
+    # call runBwaSamtools.bwaSamtools {
+    #     input:
+    #         Queue = defQueue,
+    #         CondaBin = condaBin,
+    #         BwaEnv = bwaEnv,
+    #         Cpu = cpuHigh,
+    #         Memory = memoryLow,
+    #         SampleID = sampleID,
+    #         OutDir = outDir,
+    #         WorkflowType = workflowType,
+    #         FastqR1 = fastp.fastpR1,
+    #         FastqR2 = fastp.fastpR2,
+    #         SamtoolsExe = samtoolsExe,
+    #         BwaExe = bwaExe,
+    #         Version = true,
+    #         Platform = platform,
+    #         RefFasta = refFasta,
+    #         RefAmb = refAmb,
+    #         RefAnn = refAnn,
+    #         RefBwt = refBwt,
+    #         RefPac = refPac,
+    #         RefSa = refSa
+    # }
     call runMinibwaSamtools.minibwaSamtools {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			MinibwaEnv = minibwaEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			FastqR1 = fastp.fastpR1,
-			FastqR2 = fastp.fastpR2,
-			SamtoolsExe = samtoolsExe,
-			minibwaExe = minibwaExe,
-			Version = true,
-			Platform = platform,
-			RefFasta = refFasta
-	}
-	call runSambambaMarkDup.sambambaMarkDup {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SambambaEnv = sambambaEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			SambambaExe = sambambaExe,
-			BamFile = minibwaSamtools.sortedBam
-	}
-	call runBedToGatkIntervalList.bedToGatkIntervalList {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			IntervalBedFile = intervalBedFile,
-			AwkExe = awkExe,
-			DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared,
-			
-	}
-	call runGatkSplitIntervals.gatkSplitIntervals {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,			
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			Version = true,
-			GatkInterval = bedToGatkIntervalList.gatkIntervals,
-			SubdivisionMode = subdivisionMode,
-			ScatterCount = cpuHigh
-	}
-	scatter (interval in gatkSplitIntervals.splittedIntervals) {
-		call runGatkBaseRecalibrator.gatkBaseRecalibrator {
-			input:
-				Queue = defQueue,
-				Cpu = cpuLow,
-				Memory = memoryLow,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				GatkExe = gatkExe,
-				RefFasta = refFasta,
-				RefFai = refFai,
-				RefDict = refDict,
-				GatkInterval = interval,
-				BamFile = sambambaMarkDup.markedBam,
-				BamIndex = sambambaMarkDup.markedBamIndex,
-				KnownSites1 = knownSites1,
-				KnownSites1Index = knownSites1Index,
-				KnownSites2 = knownSites2,
-				KnownSites2Index = knownSites2Index,
-				KnownSites3 = knownSites3,
-				KnownSites3Index = knownSites3Index
-		}
-	}
-	call runGatkGatherBQSRReports.gatkGatherBQSRReports {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RecalTables = gatkBaseRecalibrator.recalTable
-	}
-	# scatter (interval in gatkSplitIntervals.splittedIntervals) {
-	# https://gatk.broadinstitute.org/hc/en-us/community/posts/360077410652-What-interval-should-be-used-when-doing-the-BaseRecalibrator-for-exome-data?page=1#community_comment_360014580731
-	call runGatkApplyBQSR.gatkApplyBQSR {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			# GatkInterval = interval,
-			BamFile = sambambaMarkDup.markedBam,
-			BamIndex = sambambaMarkDup.markedBamIndex,
-			GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
-	}
-	call runGatkLeftAlignIndels.gatkLeftAlignIndels {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			# GatkInterval = interval,
-			BamFile = gatkApplyBQSR.recalBam
-	}
-	# }
-	# call runGatkGatherBamFiles.gatkGatherBamFiles {
-	# 	input:
-	# 		Queue = defQueue,
-	# 		Cpu = cpuLow,
-	# 		Memory = memoryHigh,
-	# 		SampleID = sampleID,
-	# 		OutDir = outDir,
-	# 		WorkflowType = workflowType,
-	# 		GatkExe = gatkExe,
-	# 		LAlignedBams = gatkLeftAlignIndels.lAlignedBam
-	# }
-	call runSamtoolsSort.samtoolsSort {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			SamtoolsExe = samtoolsExe,
-			BamFile = gatkLeftAlignIndels.lAlignedBam
-			# BamFile = gatkGatherBamFiles.gatheredBam
-	}
-	call runSambambaIndex.sambambaIndex as finalIndexing {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SambambaEnv = sambambaEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			OutFileSuffix = ".sorted",
-			WorkflowType = workflowType,
-			SambambaExe = sambambaExe,
-			Version = true,
-			BamFile = samtoolsSort.sortedBam
-	}
-	call runSamtoolsCramConvert.samtoolsCramConvert {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			SamtoolsExe = samtoolsExe,
-			BamFile = samtoolsSort.sortedBam,
-			RefFastaGz = refFastaGz,
-			RefFaiGz = refFaiGz,
-			RefFaiGzi = refFaiGzi
-	}
-	call runSamtoolsCramIndex.samtoolsCramIndex {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			SamtoolsExe = samtoolsExe,
-			CramFile = samtoolsCramConvert.cram,
-			CramSuffix = ""
-	}
-	if (doCrumble) {
-		call runCrumble.crumble {
-			input:
-				Queue = defQueue,
-				CondaBin = condaBin,
-				CrumbleEnv = crumbleEnv,
-				Cpu = cpuHigh,
-				Memory = memoryLow,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				CrumbleExe = crumbleExe,
-				Version = true,
-				LdLibraryPath = ldLibraryPath,
-				InputFile = samtoolsCramConvert.cram,
-				InputFileIndex = samtoolsCramIndex.cramIndex,
-				FileType = "cram"
-		}
-		call runSamtoolsCramIndex.samtoolsCramIndex as crumbleIndexing {
-			input:
-				Queue = defQueue,
-				CondaBin = condaBin,
-				SamtoolsEnv = samtoolsEnv,
-				Cpu = cpuLow,
-				Memory = memoryHigh,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				SamtoolsExe = samtoolsExe,
-				Version = true,
-				CramFile = crumble.crumbled,
-				CramSuffix = ".crumble"
-		}
-	}
-	call runSambambaFlagStat.sambambaFlagStat {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SambambaEnv = sambambaEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			SambambaExe = sambambaExe,
-			BamFile = samtoolsSort.sortedBam
-	}
-	call runGatkCollectMultipleMetrics.gatkCollectMultipleMetrics {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			BamFile = samtoolsSort.sortedBam
-	}
-	call runGatkCollectInsertSizeMetrics.gatkCollectInsertSizeMetrics {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			BamFile = samtoolsSort.sortedBam
-	}
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			IntervalBedFile = intervalBedFile,
-			RefDict = refDict,
-			GatkExe = gatkExe,
-			DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
-	call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListBait {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			Bait = true,
-			IntervalBedFile = intervalBaitBedFile,
-			RefDict = refDict,
-			GatkExe = gatkExe,
-			DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
-	}
-	call runComputePoorCoverage.computeGenomecov {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BedtoolsEnv = bedtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GenomeVersion = genomeVersion,
-			BedToolsExe = bedToolsExe,
-			AwkExe = awkExe,
-			SortExe = sortExe,
-			IntervalBedFile = intervalBedFile,
-			BedtoolsLowCoverage = bedtoolsLowCoverage,
-			BamFile = samtoolsSort.sortedBam
-	}
-	call runComputePoorCoverage.computePoorCoverage {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BedtoolsEnv = bedtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GenomeVersion = genomeVersion,
-			BedToolsExe = bedToolsExe,
-			AwkExe = awkExe,
-			SortExe = sortExe,
-			BedToolsSmallInterval = bedToolsSmallInterval,
-			GenomecovFile = computeGenomecov.genomecovFile
-	}
-	call runSamtoolsBedCov.samtoolsBedCov {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			SamtoolsExe = samtoolsExe,
-			IntervalBedFile = intervalBedFile,
-			BamFile = samtoolsSort.sortedBam,
-			BamIndex = finalIndexing.bamIndex,
-			MinCovBamQual = minCovBamQual
-	}
-	call runComputeCoverage.computeCoverage {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			AwkExe = awkExe,
-			SortExe = sortExe,
-			BedCovFile = samtoolsBedCov.BedCovFile
-	}
-	call runComputeCoverageClamms.computeCoverageClamms {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			AwkExe = awkExe,
-			SortExe = sortExe,
-			BedCovFile = samtoolsBedCov.BedCovFile
-	}
-	call runGatkCollectHsMetrics.gatkCollectHsMetrics {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			BamFile = samtoolsSort.sortedBam,
-			BaitIntervals = gatkBedToPicardIntervalListBait.picardIntervals,
-			TargetIntervals = gatkBedToPicardIntervalListTarget.picardIntervals
-	}
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            MinibwaEnv = minibwaEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            FastqR1 = fastp.fastpR1,
+            FastqR2 = fastp.fastpR2,
+            SamtoolsExe = samtoolsExe,
+            minibwaExe = minibwaExe,
+            Version = true,
+            Platform = platform,
+            RefFasta = refFasta
+    }
+    call runSambambaMarkDup.sambambaMarkDup {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SambambaEnv = sambambaEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SambambaExe = sambambaExe,
+            BamFile = minibwaSamtools.sortedBam
+    }
+    call runBedToGatkIntervalList.bedToGatkIntervalList {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            IntervalBedFile = intervalBedFile,
+            AwkExe = awkExe,
+            DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared,
+            
+    }
+    call runGatkSplitIntervals.gatkSplitIntervals {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,            
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            Version = true,
+            GatkInterval = bedToGatkIntervalList.gatkIntervals,
+            SubdivisionMode = subdivisionMode,
+            ScatterCount = cpuHigh
+    }
+    scatter (interval in gatkSplitIntervals.splittedIntervals) {
+        call runGatkBaseRecalibrator.gatkBaseRecalibrator {
+            input:
+                Queue = defQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                GatkExe = gatkExe,
+                RefFasta = refFasta,
+                RefFai = refFai,
+                RefDict = refDict,
+                GatkInterval = interval,
+                BamFile = sambambaMarkDup.markedBam,
+                BamIndex = sambambaMarkDup.markedBamIndex,
+                KnownSites1 = knownSites1,
+                KnownSites1Index = knownSites1Index,
+                KnownSites2 = knownSites2,
+                KnownSites2Index = knownSites2Index,
+                KnownSites3 = knownSites3,
+                KnownSites3Index = knownSites3Index
+        }
+    }
+    call runGatkGatherBQSRReports.gatkGatherBQSRReports {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RecalTables = gatkBaseRecalibrator.recalTable
+    }
+    # scatter (interval in gatkSplitIntervals.splittedIntervals) {
+    # https://gatk.broadinstitute.org/hc/en-us/community/posts/360077410652-What-interval-should-be-used-when-doing-the-BaseRecalibrator-for-exome-data?page=1#community_comment_360014580731
+    call runGatkApplyBQSR.gatkApplyBQSR {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            # GatkInterval = interval,
+            BamFile = sambambaMarkDup.markedBam,
+            BamIndex = sambambaMarkDup.markedBamIndex,
+            GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
+    }
+    call runGatkLeftAlignIndels.gatkLeftAlignIndels {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            # GatkInterval = interval,
+            BamFile = gatkApplyBQSR.recalBam
+    }
+    # }
+    # call runGatkGatherBamFiles.gatkGatherBamFiles {
+    #     input:
+    #         Queue = defQueue,
+    #         Cpu = cpuLow,
+    #         Memory = memoryHigh,
+    #         SampleID = sampleID,
+    #         OutDir = outDir,
+    #         WorkflowType = workflowType,
+    #         GatkExe = gatkExe,
+    #         LAlignedBams = gatkLeftAlignIndels.lAlignedBam
+    # }
+    call runSamtoolsSort.samtoolsSort {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SamtoolsExe = samtoolsExe,
+            BamFile = gatkLeftAlignIndels.lAlignedBam
+            # BamFile = gatkGatherBamFiles.gatheredBam
+    }
+    call runSambambaIndex.sambambaIndex as finalIndexing {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SambambaEnv = sambambaEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            OutFileSuffix = ".sorted",
+            WorkflowType = workflowType,
+            SambambaExe = sambambaExe,
+            Version = true,
+            BamFile = samtoolsSort.sortedBam
+    }
+    call runSamtoolsCramConvert.samtoolsCramConvert {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SamtoolsExe = samtoolsExe,
+            BamFile = samtoolsSort.sortedBam,
+            RefFastaGz = refFastaGz,
+            RefFaiGz = refFaiGz,
+            RefFaiGzi = refFaiGzi
+    }
+    call runSamtoolsCramIndex.samtoolsCramIndex {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SamtoolsExe = samtoolsExe,
+            CramFile = samtoolsCramConvert.cram,
+            CramSuffix = ""
+    }
+    if (doCrumble) {
+        call runCrumble.crumble {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                CrumbleEnv = crumbleEnv,
+                Cpu = cpuHigh,
+                Memory = memoryLow,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                CrumbleExe = crumbleExe,
+                Version = true,
+                LdLibraryPath = ldLibraryPath,
+                InputFile = samtoolsCramConvert.cram,
+                InputFileIndex = samtoolsCramIndex.cramIndex,
+                FileType = "cram"
+        }
+        call runSamtoolsCramIndex.samtoolsCramIndex as crumbleIndexing {
+            input:
+                Queue = defQueue,
+                CondaBin = condaBin,
+                SamtoolsEnv = samtoolsEnv,
+                Cpu = cpuLow,
+                Memory = memoryHigh,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                SamtoolsExe = samtoolsExe,
+                Version = true,
+                CramFile = crumble.crumbled,
+                CramSuffix = ".crumble"
+        }
+    }
+    call runSambambaFlagStat.sambambaFlagStat {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SambambaEnv = sambambaEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SambambaExe = sambambaExe,
+            BamFile = samtoolsSort.sortedBam
+    }
+    call runGatkCollectMultipleMetrics.gatkCollectMultipleMetrics {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            BamFile = samtoolsSort.sortedBam
+    }
+    call runGatkCollectInsertSizeMetrics.gatkCollectInsertSizeMetrics {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            BamFile = samtoolsSort.sortedBam
+    }
+    call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            IntervalBedFile = intervalBedFile,
+            RefDict = refDict,
+            GatkExe = gatkExe,
+            DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+    }
+    call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListBait {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            Bait = true,
+            IntervalBedFile = intervalBaitBedFile,
+            RefDict = refDict,
+            GatkExe = gatkExe,
+            DirsPrepared = preparePanelCaptureTmpDirs.dirsPrepared
+    }
+    call runComputePoorCoverage.computeGenomecov {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BedtoolsEnv = bedtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GenomeVersion = genomeVersion,
+            BedToolsExe = bedToolsExe,
+            AwkExe = awkExe,
+            SortExe = sortExe,
+            IntervalBedFile = intervalBedFile,
+            BedtoolsLowCoverage = bedtoolsLowCoverage,
+            BamFile = samtoolsSort.sortedBam
+    }
+    call runComputePoorCoverage.computePoorCoverage {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BedtoolsEnv = bedtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GenomeVersion = genomeVersion,
+            BedToolsExe = bedToolsExe,
+            AwkExe = awkExe,
+            SortExe = sortExe,
+            BedToolsSmallInterval = bedToolsSmallInterval,
+            GenomecovFile = computeGenomecov.genomecovFile
+    }
+    call runSamtoolsBedCov.samtoolsBedCov {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            SamtoolsExe = samtoolsExe,
+            IntervalBedFile = intervalBedFile,
+            BamFile = samtoolsSort.sortedBam,
+            BamIndex = finalIndexing.bamIndex,
+            MinCovBamQual = minCovBamQual
+    }
+    call runComputeCoverage.computeCoverage {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            AwkExe = awkExe,
+            SortExe = sortExe,
+            BedCovFile = samtoolsBedCov.BedCovFile
+    }
+    call runComputeCoverageClamms.computeCoverageClamms {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            AwkExe = awkExe,
+            SortExe = sortExe,
+            BedCovFile = samtoolsBedCov.BedCovFile
+    }
+    call runGatkCollectHsMetrics.gatkCollectHsMetrics {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            BamFile = samtoolsSort.sortedBam,
+            BaitIntervals = gatkBedToPicardIntervalListBait.picardIntervals,
+            TargetIntervals = gatkBedToPicardIntervalListTarget.picardIntervals
+    }
 ###################################################################################
 #
 # Variant Calling: DeepVariant
 #
 ###################################################################################
-	call runDeepVariant.deepVariant {
-		input:
-			Queue = avxQueue,
-			CondaBin = condaBin,
-			SingularityEnv = singularityEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,			
-			DvExe = dvExe,
-			GatkExe = gatkExe,
-			SingularityExe = singularityExe,
-			Version = true,
-			DvSimg = dvSimg,
-			BamFile = samtoolsSort.sortedBam,
-			BamIndex = finalIndexing.bamIndex,
-			RefFastaGz = refFastaGz,
-			IntervalBedFile = intervalBedFile,
-			ModelType = modelType,
-			Data = data,
-			RefData = refData,
-			Output = outputMnt,
-			VcSuffix = dvSuffix
-	}
-	call runRefCallFiltration.refCallFiltration {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			VcftoolsEnv = vcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			VcSuffix = dvSuffix,
-			VcftoolsExe = vcftoolsExe,
-			Version = true,
-			VcfToRefCalled = deepVariant.DeepVcf
-	}
-	call runGatkSortVcf.gatkSortVcf as gatkSortVcfDv {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			VcSuffix = dvSuffix,
-			UnsortedVcf = refCallFiltration.noRefCalledVcf
-	}
-	call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxDv {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			JavaExe = javaExe,
-			VcfPolyXJar = vcfPolyXJar,
-			VcSuffix = dvSuffix,
-			Version = true,
-			Vcf = gatkSortVcfDv.sortedVcf,
-			VcfIndex = gatkSortVcfDv.sortedVcfIndex
-	}
-	call runGatkVariantFiltrationDv.gatkVariantFiltrationDv {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			Vcf = jvarkitVcfPolyxDv.polyxedVcf,
-			VcfIndex = jvarkitVcfPolyxDv.polyxedVcfIndex,
-			VcSuffix = dvSuffix,
-			LowCoverage = bedtoolsLowCoverage
-	}
-	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDv {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = dvSuffix,
-			Version = true,
-			SortedVcf = gatkVariantFiltrationDv.filteredVcf
-	}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BgZipExe = bgZipExe,
-			TabixExe = tabixExe,
-			VcSuffix = dvSuffix,
-			Version = true,
-			VcfFile = bcftoolsNormDv.normVcf
-	}
-	call runBcftoolsStats.bcftoolsStats as bcftoolsStatsDv {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = dvSuffix,
-			VcfFile = compressIndexVcfDv.bgZippedVcf,
-			VcfFileIndex = compressIndexVcfDv.bgZippedVcfIndex
-	}
+    call runDeepVariant.deepVariant {
+        input:
+            Queue = avxQueue,
+            CondaBin = condaBin,
+            SingularityEnv = singularityEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,            
+            DvExe = dvExe,
+            GatkExe = gatkExe,
+            SingularityExe = singularityExe,
+            Version = true,
+            DvSimg = dvSimg,
+            BamFile = samtoolsSort.sortedBam,
+            BamIndex = finalIndexing.bamIndex,
+            RefFastaGz = refFastaGz,
+            IntervalBedFile = intervalBedFile,
+            ModelType = modelType,
+            Data = data,
+            RefData = refData,
+            Output = outputMnt,
+            VcSuffix = dvSuffix
+    }
+    call runRefCallFiltration.refCallFiltration {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            VcftoolsEnv = vcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            VcSuffix = dvSuffix,
+            VcftoolsExe = vcftoolsExe,
+            Version = true,
+            VcfToRefCalled = deepVariant.DeepVcf
+    }
+    call runGatkSortVcf.gatkSortVcf as gatkSortVcfDv {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            VcSuffix = dvSuffix,
+            UnsortedVcf = refCallFiltration.noRefCalledVcf
+    }
+    call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxDv {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            JavaExe = javaExe,
+            VcfPolyXJar = vcfPolyXJar,
+            VcSuffix = dvSuffix,
+            Version = true,
+            Vcf = gatkSortVcfDv.sortedVcf,
+            VcfIndex = gatkSortVcfDv.sortedVcfIndex
+    }
+    call runGatkVariantFiltrationDv.gatkVariantFiltrationDv {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            Vcf = jvarkitVcfPolyxDv.polyxedVcf,
+            VcfIndex = jvarkitVcfPolyxDv.polyxedVcfIndex,
+            VcSuffix = dvSuffix,
+            LowCoverage = bedtoolsLowCoverage
+    }
+    call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDv {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BcftoolsExe = bcftoolsExe,
+            VcSuffix = dvSuffix,
+            Version = true,
+            SortedVcf = gatkVariantFiltrationDv.filteredVcf
+    }
+    call runCompressIndexVcf.compressIndexVcf as compressIndexVcfDv {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BgZipExe = bgZipExe,
+            TabixExe = tabixExe,
+            VcSuffix = dvSuffix,
+            Version = true,
+            VcfFile = bcftoolsNormDv.normVcf
+    }
+    call runBcftoolsStats.bcftoolsStats as bcftoolsStatsDv {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BcftoolsExe = bcftoolsExe,
+            VcSuffix = dvSuffix,
+            VcfFile = compressIndexVcfDv.bgZippedVcf,
+            VcfFileIndex = compressIndexVcfDv.bgZippedVcfIndex
+    }
 ###################################################################################
 #
 # Variant Calling: DeepSomatic
 #
 ###################################################################################
-	call runDeepVariantCompress.deepVariant as deepSomatic {
-		input:
-			Queue = avxQueue,
-			CondaBin = condaBin,
-			SingularityEnv = singularityEnv,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuHigh,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,			
-			DvExe = dsExe,
-			SingularityExe = singularityExe,
-			BgZipExe = bgZipExe,
-			DvSimg = dsSimg,
-			BamFile = samtoolsSort.sortedBam,
-			BamIndex = finalIndexing.bamIndex,
-			RefFastaGz = refFastaGz,
-			IntervalBedFile = intervalBedFile,
-			ModelType = dsModelType,
-			Data = data,
-			RefData = refData,
-			Output = outputMnt,
-			VcSuffix = dsSuffix,
-			GenomeVersion = genomeVersion,
-			Version = true
-	}
-	# we need to get rid of INFO '.' in the VCF which makes mpa mad
-	# so we have to run vcfpolyx
-	call runGatkSortVcf.gatkSortVcf as gatkSortVcfDs {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			VcSuffix = dsSuffix,
-			UnsortedVcf = deepSomatic.DeepVcf
-	}
-	call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxDs {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			JavaExe = javaExe,
-			VcfPolyXJar = vcfPolyXJar,
-			VcSuffix = dsSuffix,
-			Version = true,
-			Vcf = gatkSortVcfDs.sortedVcf,
-			VcfIndex = gatkSortVcfDs.sortedVcfIndex
-	}
-	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDs {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = dsSuffix,
-			Version = true,
-			SortedVcf = jvarkitVcfPolyxDs.polyxedVcf
-	}
-	#not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
-	#call runGatkVariantEval.gatkVariantEval as gatkVariantEvalDv{
-	#	input:
-		#	Queue = defQueue,
-		#	CondaBin = condaBin,
-		#	Cpu = cpuHigh,
-		#	Memory = memoryLow,
-		#	SampleID = sampleID,
-		#	OutDir = outDir,
-		#	WorkflowType = workflowType,
-		#	GatkExe = gatkExe,
-		#	VariantEvalEV = variantEvalEV,
-		#	VcSuffix = dvSuffix,
-		#	VcfFile = bcftoolsNormDv.normVcf,
-		#	RefFasta = refFasta,
-		#	RefFai = refFai,
-		#	RefDict = refDict,
-		#	DbSNP = knownSites3,
-		#	DbSNPIndex = knownSites3Index
-	#}
+    call runDeepVariantCompress.deepVariant as deepSomatic {
+        input:
+            Queue = avxQueue,
+            CondaBin = condaBin,
+            SingularityEnv = singularityEnv,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuHigh,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,            
+            DvExe = dsExe,
+            SingularityExe = singularityExe,
+            BgZipExe = bgZipExe,
+            DvSimg = dsSimg,
+            BamFile = samtoolsSort.sortedBam,
+            BamIndex = finalIndexing.bamIndex,
+            RefFastaGz = refFastaGz,
+            IntervalBedFile = intervalBedFile,
+            ModelType = dsModelType,
+            Data = data,
+            RefData = refData,
+            Output = outputMnt,
+            VcSuffix = dsSuffix,
+            GenomeVersion = genomeVersion,
+            Version = true
+    }
+    # we need to get rid of INFO '.' in the VCF which makes mpa mad
+    # so we have to run vcfpolyx
+    call runGatkSortVcf.gatkSortVcf as gatkSortVcfDs {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            VcSuffix = dsSuffix,
+            UnsortedVcf = deepSomatic.DeepVcf
+    }
+    call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxDs {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            JavaExe = javaExe,
+            VcfPolyXJar = vcfPolyXJar,
+            VcSuffix = dsSuffix,
+            Version = true,
+            Vcf = gatkSortVcfDs.sortedVcf,
+            VcfIndex = gatkSortVcfDs.sortedVcfIndex
+    }
+    call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormDs {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BcftoolsExe = bcftoolsExe,
+            VcSuffix = dsSuffix,
+            Version = true,
+            SortedVcf = jvarkitVcfPolyxDs.polyxedVcf
+    }
+    #not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
+    #call runGatkVariantEval.gatkVariantEval as gatkVariantEvalDv{
+    #    input:
+        #    Queue = defQueue,
+        #    CondaBin = condaBin,
+        #    Cpu = cpuHigh,
+        #    Memory = memoryLow,
+        #    SampleID = sampleID,
+        #    OutDir = outDir,
+        #    WorkflowType = workflowType,
+        #    GatkExe = gatkExe,
+        #    VariantEvalEV = variantEvalEV,
+        #    VcSuffix = dvSuffix,
+        #    VcfFile = bcftoolsNormDv.normVcf,
+        #    RefFasta = refFasta,
+        #    RefFai = refFai,
+        #    RefDict = refDict,
+        #    DbSNP = knownSites3,
+        #    DbSNPIndex = knownSites3Index
+    #}
 ###################################################################################
 #
 # Variant Calling: Haplotype Caller
 #
 ###################################################################################
-	scatter (interval in gatkSplitIntervals.splittedIntervals) {
-		call runGatkHaplotypeCaller.gatkHaplotypeCaller {
-			input:
-				Queue = avxQueue,
-				Cpu = cpuLow,
-				Memory = memoryLow,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				GatkExe = gatkExe,
-				RefFasta = refFasta,
-				RefFai = refFai,
-				RefDict = refDict,
-				DbSNP = knownSites3,
-				DbSNPIndex = knownSites3Index,
-				GatkInterval = interval,
-				BamFile = samtoolsSort.sortedBam,
-				BamIndex = finalIndexing.bamIndex,
-				SwMode = swMode,
-				EmitRefConfidence = emitRefConfidence
-		}
-	}
-	call runGatkGatherVcfs.gatkGatherVcfs {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			Version = true,
-			HcVcfs = gatkHaplotypeCaller.hcVcf,
-			VcSuffix = hcSuffix
-	}
-	call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxHc {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			JavaExe = javaExe,
-			VcfPolyXJar = vcfPolyXJar,
-			VcSuffix = hcSuffix,
-			Vcf = gatkGatherVcfs.gatheredHcVcf,
-			VcfIndex = gatkGatherVcfs.gatheredHcVcfIndex
-	}
-	call runGatkSplitVcfs.gatkSplitVcfs {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			VcSuffix = hcSuffix,
-			GatkExe = gatkExe,
-			Vcf = jvarkitVcfPolyxHc.polyxedVcf,
-			VcfIndex = jvarkitVcfPolyxHc.polyxedVcfIndex
-	}
-	call runGatkVariantFiltrationSnp.gatkVariantFiltrationSnp {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			Vcf = gatkSplitVcfs.snpVcf,
-			VcfIndex = gatkSplitVcfs.snpVcfIndex,
-			LowCoverage = bedtoolsLowCoverage
-	}
-	call runGatkVariantFiltrationIndel.gatkVariantFiltrationIndel {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			Vcf = gatkSplitVcfs.indelVcf,
-			VcfIndex = gatkSplitVcfs.indelVcfIndex,
-			LowCoverage = bedtoolsLowCoverage
-	}
-	call runGatkMergeVcfs.gatkMergeVcfs {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			Vcfs = [gatkVariantFiltrationSnp.filteredSnpVcf, gatkVariantFiltrationIndel.filteredIndelVcf],
-			VcSuffix = hcSuffix
-	}
-	call runGatkSortVcf.gatkSortVcf as gatkSortVcfHc {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryHigh,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			VcSuffix = hcSuffix,
-			UnsortedVcf = gatkMergeVcfs.mergedVcf
-	}
-	call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormHc {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = hcSuffix,
-			SortedVcf = gatkSortVcfHc.sortedVcf
-	}
-	# not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
-	# call runGatkVariantEval.gatkVariantEval as gatkVariantEvalHc{
-	#	 input:
-		#	 Queue = defQueue,
-		#	 CondaBin = condaBin,
-		#	 Cpu = cpuLow,
-		#	 Memory = memoryHigh,
-		#	 SampleID = sampleID,
-		#	 OutDir = outDir,
-		#	 WorkflowType = workflowType,
-		#	 GatkExe = gatkExe,
-		# 	 VariantEvalEV = variantEvalEV,
-		#	 VcSuffix = hcSuffix,
-		#	 VcfFile = bcftoolsNormHc.normVcf,
-		#	 RefFasta = refFasta,
-		#	 RefFai = refFai,
-		#	 RefDict = refDict,
-		#	 DbSNP = knownSites3,
-		#	 DbSNPIndex = knownSites3Index
-	# }
-	call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BgZipExe = bgZipExe,
-			TabixExe = tabixExe,
-			VcSuffix = hcSuffix,
-			VcfFile = bcftoolsNormHc.normVcf
-	}
-	call runBcftoolsStats.bcftoolsStats as bcftoolsStatsHc {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BcftoolsExe = bcftoolsExe,
-			VcSuffix = hcSuffix,
-			VcfFile = compressIndexVcfHc.bgZippedVcf,
-			VcfFileIndex = compressIndexVcfHc.bgZippedVcfIndex
-	}
-	call runAnacoreUtilsMergeVCFCallers.anacoreUtilsMergeVCFCallers {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			AnacoreEnv = anacoreEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			MergeVCFMobiDL = mergeVCFMobiDL,
-			Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
-			Callers = ["HaplotypeCaller", "DeepVariant"]
-	}
-	call runGatkUpdateVCFSequenceDictionary.gatkUpdateVCFSequenceDictionary {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			GatkExe = gatkExe,
-			RefFasta = refFasta,
-			RefFai = refFai,
-			RefDict = refDict,
-			Vcf = anacoreUtilsMergeVCFCallers.mergedVcf
-	}
-	call runCompressIndexVcf.compressIndexVcf as compressIndexMergedVcf {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			SamtoolsEnv = samtoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			BgZipExe = bgZipExe,
-			TabixExe = tabixExe,
-			VcSuffix = '',
-			VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
-	}
-	call runIdentito.identito as identito {
-		input:
-			Queue = defQueue,
-			CondaBin = condaBin,
-			BcftoolsEnv = bcftoolsEnv,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			SampleID = sampleID,
-			OutDir = outDir,
-			WorkflowType = workflowType,
-			CsvtkExe = csvtkExe,
-			VcfFile = compressIndexVcfHc.bgZippedVcf,
-			IDlist = idList
-	}
-	call runIsexome.isExome as isExome {
-		input:
-			Queue = defQueue,
-			Cpu = cpuLow,
-			Memory = memoryLow,
-			IntervalBedFile = intervalBedFile
-	}
-	# if (intervalBedFile != "/bioinfo/refData/intervals/bedFiles/Twist-Exome-2-0_20250820_hg38_40bp.bed") {
-	if (! isExome.isExomeBool) {
-		call runCovReport.covReport as covreport {
-			input:
-				Cpu = cpuLow,
-				Memory = memoryLow,
-				SampleID = sampleID,
-				OutDir = outDir,
-				WorkflowType = workflowType,
-				CovReportDir = covReportDir,
-				CovReportJar = covReportJar,
-				JavaExe = javaExe,
-				BamFile = samtoolsSort.sortedBam,
-				BamIndex = finalIndexing.bamIndex,
-				GenomeVersion = genomeVersion,
-				GeneFile = geneFile
-		}
-	}
-	if (!debug) {
-		String dataPath = "~{outDir}~{sampleID}/~{workflowType}/"
-		if (doCrumble) {
-			call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs as cleanUpPanelCaptureTmpDirsDoCrumble {
-				input:
-					Queue = defQueue,
-					Cpu = cpuLow,
-					Memory = memoryLow,
-					SampleID = sampleID,
-					OutDir = outDir,
-					WorkflowType = workflowType,
-					FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
-					FinalFile2 = crumbleIndexing.cramIndex,
-					JavaExe = javaExe,
-					CromwellJar = cromwellJar,
-					BamArray = [
+    scatter (interval in gatkSplitIntervals.splittedIntervals) {
+        call runGatkHaplotypeCaller.gatkHaplotypeCaller {
+            input:
+                Queue = avxQueue,
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                GatkExe = gatkExe,
+                RefFasta = refFasta,
+                RefFai = refFai,
+                RefDict = refDict,
+                DbSNP = knownSites3,
+                DbSNPIndex = knownSites3Index,
+                GatkInterval = interval,
+                BamFile = samtoolsSort.sortedBam,
+                BamIndex = finalIndexing.bamIndex,
+                SwMode = swMode,
+                EmitRefConfidence = emitRefConfidence
+        }
+    }
+    call runGatkGatherVcfs.gatkGatherVcfs {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            Version = true,
+            HcVcfs = gatkHaplotypeCaller.hcVcf,
+            VcSuffix = hcSuffix
+    }
+    call runJvarkitVcfPolyX.jvarkitVcfPolyX as jvarkitVcfPolyxHc {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            JavaExe = javaExe,
+            VcfPolyXJar = vcfPolyXJar,
+            VcSuffix = hcSuffix,
+            Vcf = gatkGatherVcfs.gatheredHcVcf,
+            VcfIndex = gatkGatherVcfs.gatheredHcVcfIndex
+    }
+    call runGatkSplitVcfs.gatkSplitVcfs {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            VcSuffix = hcSuffix,
+            GatkExe = gatkExe,
+            Vcf = jvarkitVcfPolyxHc.polyxedVcf,
+            VcfIndex = jvarkitVcfPolyxHc.polyxedVcfIndex
+    }
+    call runGatkVariantFiltrationSnp.gatkVariantFiltrationSnp {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            Vcf = gatkSplitVcfs.snpVcf,
+            VcfIndex = gatkSplitVcfs.snpVcfIndex,
+            LowCoverage = bedtoolsLowCoverage
+    }
+    call runGatkVariantFiltrationIndel.gatkVariantFiltrationIndel {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            Vcf = gatkSplitVcfs.indelVcf,
+            VcfIndex = gatkSplitVcfs.indelVcfIndex,
+            LowCoverage = bedtoolsLowCoverage
+    }
+    call runGatkMergeVcfs.gatkMergeVcfs {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            Vcfs = [gatkVariantFiltrationSnp.filteredSnpVcf, gatkVariantFiltrationIndel.filteredIndelVcf],
+            VcSuffix = hcSuffix
+    }
+    call runGatkSortVcf.gatkSortVcf as gatkSortVcfHc {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryHigh,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            VcSuffix = hcSuffix,
+            UnsortedVcf = gatkMergeVcfs.mergedVcf
+    }
+    call runBcftoolsNorm.bcftoolsNorm as bcftoolsNormHc {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BcftoolsExe = bcftoolsExe,
+            VcSuffix = hcSuffix,
+            SortedVcf = gatkSortVcfHc.sortedVcf
+    }
+    # not ready for production (gath 4.1.4.0) and toooooooo loooooonnnnggggg
+    # call runGatkVariantEval.gatkVariantEval as gatkVariantEvalHc{
+    #     input:
+        #     Queue = defQueue,
+        #     CondaBin = condaBin,
+        #     Cpu = cpuLow,
+        #     Memory = memoryHigh,
+        #     SampleID = sampleID,
+        #     OutDir = outDir,
+        #     WorkflowType = workflowType,
+        #     GatkExe = gatkExe,
+        #      VariantEvalEV = variantEvalEV,
+        #     VcSuffix = hcSuffix,
+        #     VcfFile = bcftoolsNormHc.normVcf,
+        #     RefFasta = refFasta,
+        #     RefFai = refFai,
+        #     RefDict = refDict,
+        #     DbSNP = knownSites3,
+        #     DbSNPIndex = knownSites3Index
+    # }
+    call runCompressIndexVcf.compressIndexVcf as compressIndexVcfHc {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BgZipExe = bgZipExe,
+            TabixExe = tabixExe,
+            VcSuffix = hcSuffix,
+            VcfFile = bcftoolsNormHc.normVcf
+    }
+    call runBcftoolsStats.bcftoolsStats as bcftoolsStatsHc {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BcftoolsExe = bcftoolsExe,
+            VcSuffix = hcSuffix,
+            VcfFile = compressIndexVcfHc.bgZippedVcf,
+            VcfFileIndex = compressIndexVcfHc.bgZippedVcfIndex
+    }
+    call runAnacoreUtilsMergeVCFCallers.anacoreUtilsMergeVCFCallers {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            AnacoreEnv = anacoreEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            MergeVCFMobiDL = mergeVCFMobiDL,
+            Vcfs = [bcftoolsNormHc.normVcf, bcftoolsNormDv.normVcf],
+            Callers = ["HaplotypeCaller", "DeepVariant"]
+    }
+    call runGatkUpdateVCFSequenceDictionary.gatkUpdateVCFSequenceDictionary {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            GatkExe = gatkExe,
+            RefFasta = refFasta,
+            RefFai = refFai,
+            RefDict = refDict,
+            Vcf = anacoreUtilsMergeVCFCallers.mergedVcf
+    }
+    call runCompressIndexVcf.compressIndexVcf as compressIndexMergedVcf {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            SamtoolsEnv = samtoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            BgZipExe = bgZipExe,
+            TabixExe = tabixExe,
+            VcSuffix = '',
+            VcfFile = gatkUpdateVCFSequenceDictionary.refUpdatedVcf
+    }
+    call runIdentito.identito as identito {
+        input:
+            Queue = defQueue,
+            CondaBin = condaBin,
+            BcftoolsEnv = bcftoolsEnv,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            SampleID = sampleID,
+            OutDir = outDir,
+            WorkflowType = workflowType,
+            CsvtkExe = csvtkExe,
+            VcfFile = compressIndexVcfHc.bgZippedVcf,
+            IDlist = idList
+    }
+    call runIsexome.isExome as isExome {
+        input:
+            Queue = defQueue,
+            Cpu = cpuLow,
+            Memory = memoryLow,
+            IntervalBedFile = intervalBedFile
+    }
+    # if (intervalBedFile != "/bioinfo/refData/intervals/bedFiles/Twist-Exome-2-0_20250820_hg38_40bp.bed") {
+    if (! isExome.isExomeBool) {
+        call runCovReport.covReport as covreport {
+            input:
+                Cpu = cpuLow,
+                Memory = memoryLow,
+                SampleID = sampleID,
+                OutDir = outDir,
+                WorkflowType = workflowType,
+                CovReportDir = covReportDir,
+                CovReportJar = covReportJar,
+                JavaExe = javaExe,
+                BamFile = samtoolsSort.sortedBam,
+                BamIndex = finalIndexing.bamIndex,
+                GenomeVersion = genomeVersion,
+                GeneFile = geneFile
+        }
+    }
+    if (!debug) {
+        String dataPath = "~{outDir}~{sampleID}/~{workflowType}/"
+        if (doCrumble) {
+            call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs as cleanUpPanelCaptureTmpDirsDoCrumble {
+                input:
+                    Queue = defQueue,
+                    Cpu = cpuLow,
+                    Memory = memoryLow,
+                    SampleID = sampleID,
+                    OutDir = outDir,
+                    WorkflowType = workflowType,
+                    FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
+                    FinalFile2 = crumbleIndexing.cramIndex,
+                    FinalFile3 = bcftoolsNormDs.normVcf,
+                    JavaExe = javaExe,
+                    CromwellJar = cromwellJar,
+                    BamArray = [
                         "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable),
                         "~{dataPath}" + basename(samtoolsSort.sortedBam),
                         "~{dataPath}" + basename(finalIndexing.bamIndex)
                     ],
-					VcfArray = [
+                    VcfArray = [
                         "~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),
                         "~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),
                         "~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),
@@ -1198,43 +1199,44 @@ workflow panelCapture {
                         "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),
                         "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)
                     ]
-					# BamArray = ["~{dataPath}" + basename(bwaSamtools.sortedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkApplyBQSR.recalBam), "~{dataPath}" + basename(gatkApplyBQSR.recalBamIndex), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBamIndex), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
-			}
-			call runMultiqc.multiqc as multiqcDoCrumble {
-				input:
-					Queue = defQueue,
-					CondaBin = condaBin,
-					MultiqcEnv = multiqcEnv,
-					Cpu = cpuLow,
-					Memory = memoryHigh,
-					SampleID = sampleID,
-					OutDir = outDir,
-					WorkflowType = workflowType,
-					MultiqcExe = multiqcExe,
-					GatkExe = gatkExe,
-					Version = true,
-					Vcf = cleanUpPanelCaptureTmpDirsDoCrumble.finalFile1
-			}
-		}
-		if (!doCrumble) {
-			call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs {
-				input:
-					Queue = defQueue,
-					Cpu = cpuLow,
-					Memory = memoryLow,
-					SampleID = sampleID,
-					OutDir = outDir,
-					WorkflowType = workflowType,
-					FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
-					FinalFile2 = samtoolsCramIndex.cramIndex,
-					JavaExe = javaExe,
-					CromwellJar = cromwellJar,
-					BamArray = [
+                    # BamArray = ["~{dataPath}" + basename(bwaSamtools.sortedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkApplyBQSR.recalBam), "~{dataPath}" + basename(gatkApplyBQSR.recalBamIndex), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBamIndex), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
+            }
+            call runMultiqc.multiqc as multiqcDoCrumble {
+                input:
+                    Queue = defQueue,
+                    CondaBin = condaBin,
+                    MultiqcEnv = multiqcEnv,
+                    Cpu = cpuLow,
+                    Memory = memoryHigh,
+                    SampleID = sampleID,
+                    OutDir = outDir,
+                    WorkflowType = workflowType,
+                    MultiqcExe = multiqcExe,
+                    GatkExe = gatkExe,
+                    Version = true,
+                    Vcf = cleanUpPanelCaptureTmpDirsDoCrumble.finalFile1
+            }
+        }
+        if (!doCrumble) {
+            call runCleanUpPanelCaptureTmpDirs.cleanUpPanelCaptureTmpDirs {
+                input:
+                    Queue = defQueue,
+                    Cpu = cpuLow,
+                    Memory = memoryLow,
+                    SampleID = sampleID,
+                    OutDir = outDir,
+                    WorkflowType = workflowType,
+                    FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
+                    FinalFile2 = samtoolsCramIndex.cramIndex,
+                    FinalFile3 = bcftoolsNormDs.normVcf,
+                    JavaExe = javaExe,
+                    CromwellJar = cromwellJar,
+                    BamArray = [
                         "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable),
                         "${dataPath}" + basename(samtoolsSort.sortedBam),
                         "${dataPath}" + basename(finalIndexing.bamIndex)
                     ],
-					VcfArray = [
+                    VcfArray = [
                         "~{dataPath}" + basename(refCallFiltration.noRefCalledVcf),
                         "~{dataPath}" + basename(gatkSortVcfDv.sortedVcf),
                         "~{dataPath}" + basename(gatkSortVcfDv.sortedVcfIndex),
@@ -1268,30 +1270,30 @@ workflow panelCapture {
                         "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),
                         "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)
                     ]
-			}
-			call runMultiqc.multiqc {
-				input:
-					Queue = defQueue,
-					CondaBin = condaBin,
-					MultiqcEnv = multiqcEnv,
-					Cpu = cpuLow,
-					Memory = memoryHigh,
-					SampleID = sampleID,
-					OutDir = outDir,
-					WorkflowType = workflowType,
-					MultiqcExe = multiqcExe,
-					GatkExe = gatkExe,
-					Version = true,
-					Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
-			}
-		}
-	}
-	output {
-		File? FinalVcf = cleanUpPanelCaptureTmpDirs.finalFile1
-		File? FinalCram = samtoolsCramConvert.cram
-		File? FinalCramIndex = samtoolsCramIndex.cramIndex
-		File? FinalCramCrumbled = crumble.crumbled
-		File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
-		File? Qualityfile = multiqc.multiqcHtml
-	}
+            }
+            call runMultiqc.multiqc {
+                input:
+                    Queue = defQueue,
+                    CondaBin = condaBin,
+                    MultiqcEnv = multiqcEnv,
+                    Cpu = cpuLow,
+                    Memory = memoryHigh,
+                    SampleID = sampleID,
+                    OutDir = outDir,
+                    WorkflowType = workflowType,
+                    MultiqcExe = multiqcExe,
+                    GatkExe = gatkExe,
+                    Version = true,
+                    Vcf = cleanUpPanelCaptureTmpDirs.finalFile1
+            }
+        }
+    }
+    output {
+        File? FinalVcf = cleanUpPanelCaptureTmpDirs.finalFile1
+        File? FinalCram = samtoolsCramConvert.cram
+        File? FinalCramIndex = samtoolsCramIndex.cramIndex
+        File? FinalCramCrumbled = crumble.crumbled
+        File? FinalCramCrumbledIndex = crumbleIndexing.cramIndex
+        File? Qualityfile = multiqc.multiqcHtml
+    }
 }
