@@ -50,6 +50,8 @@ task minibwaSamtools {
 			echo "Samtools: v$(~{SamtoolsExe} --version | grep 'samtools' | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
 		fi
 		conda deactivate
+        # rm fastp fastq files
+        rm ~{FastqR1} ~{FastqR2}
 	>>>
 	output {
 		File sortedBam = "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/~{SampleID}.bam"
