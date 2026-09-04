@@ -1228,14 +1228,15 @@ do
                                             source "${CONDA_ACTIVATE}" "${SNAKEMAKE_ENV}"
                                             nohup snakemake \
                                             --executor slurm \
-                                            --default-resources slurm_partition=prod nodes=1 slurm_time=06:00:00 slurm_account=${USER} \
+                                            --default-resources slurm_partition=prod slurm_time=12:00:00 slurm_account=${USER} \
                                             --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/${RUN}/ \
                                             --snakefile "${GATK_SNAKEFILE}" \
-                                            --jobs 20 \
+                                            --jobs 16 \
                                             --use-conda \
                                             --configfile "${PROJECT_PATH}gatk_cnv.yaml" \
-                                            --resources cnv_caller=20 \
                                             > "${PROJECT_PATH}/crams/snakemake_gatkcnv.log" 2>&1 &
+                                            # --resources cnv_caller=8 \
+                                            # --default-resources slurm_partition=prod nodes=1 slurm_time=12:00:00 slurm_account=${USER} \
                                             conda deactivate
                                         fi
                                         info "snakemake --executor slurm --slurm-account $USER --default-resources slurm_partition=prod nodes=1 slurm_time=06:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile "${GATK_SNAKEFILE}" --jobs 20 --use-conda --configfile "${PROJECT_PATH}gatk_cnv.yaml" --resources cnv_caller=20"
