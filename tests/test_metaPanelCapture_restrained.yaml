@@ -51,7 +51,8 @@
       should_exist: true
     - path: happy_dir/CAD260090_VDM-4B-NS.dv.summary.csv
       should_exist: true
-      md5sum: 6475959888c7e99ce5ef57e7239085b4
+      md5sum: 73723f925650ccb9ed6e89adbd7be078 # miniBWA
+      # md5sum: 6475959888c7e99ce5ef57e7239085b4 -- BWA
 
 # - name: MetaPanelCapture different BED
 #   # Overall runtime : ~ 20 min
