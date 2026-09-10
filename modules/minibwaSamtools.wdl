@@ -46,7 +46,7 @@ task minibwaSamtools {
         if [ ~{Version} = true ];then
             # fill-in tools version file
             echo "----- Alignment -----" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
-            echo "minibwa: v$(~{minibwaExe})" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
+            echo "minibwa: v$(~{minibwaExe} version)" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
             echo "Samtools: v$(~{SamtoolsExe} --version | grep 'samtools' | cut -f2 -d ' ')" >> "~{OutDir}~{SampleID}/~{WorkflowType}/~{SampleID}.versions.txt"
         fi
         conda deactivate
