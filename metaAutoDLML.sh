@@ -22,7 +22,7 @@
 
 
 ##############        If any option is given, print help message    ##################################
-VERSION=20260609
+VERSION=20260918
 # USAGE="
 # Program: metaAutoDLML
 # Version: ${VERSION}
@@ -423,7 +423,7 @@ workflowPostTreatment() {
         info "Moving MobiDL results to ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
         # /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --chmod=ugo=rwX "${TMP_OUTPUT_DIR2}"/* "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/"
         # parallel -j 3 --eta rsync -a {} destination/ ::: Downloads/*
-        # TEST ME to paralellize datat transfer
+        # to paralellize data transfer by folder
         source "${CONDA_ACTIVATE}" "${PARALLEL_ENV}"
         parallel -j 8 /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_sample "${RSYNC}" -aqz --no-g --no-times --chmod=ugo=rwX {} "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/" ::: "${TMP_OUTPUT_DIR2}"/*
         if [ $? -eq 0 ];then
@@ -610,8 +610,11 @@ prepareAchab() {
 
 prepareGatkCnv() {
     # cp "${AUTODL_DIR}gatk_cnv.yaml" "${1}"
-    rsync "${GATK_YAML}" "${1}gatk_cnv.yaml"
+    "${RSYNC}" "${GATK_YAML}" "${1}gatk_cnv.yaml"
     PROJECT_PATH_SED=${1////\\/}
+    # in case we need to exceute gatk cnv on scratch, then transfer
+    # GATK_OUTPUT_DIR="${TMP_OUTPUT_DIR}${RUN}_GATK_CNV"
+    # GATK_OUTPUT_DIR_SED=${GATK_OUTPUT_DIR////\\/}
     # sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR:${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files\/gatk_cnv/" \
     #     -e "s/SAMPLES_PATH:/SAMPLES_PATH:${OUTPUT_PATH_SED}${RUN}\/MobiDL\/alignment_files/" \
     #     -e "s/BED_PATH:/BED_PATH:${ROI_DIR_SED}${BED}/" \
@@ -1066,7 +1069,7 @@ do
                                         mkdir -p "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams"
                                         BED_EXOME="${BED}"
                                     fi
-                                    ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams/${SAMPLE}.crumble.cram"
+                                    ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/${SAMPLE}/${WDL}/${SAMPLE}.cram" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams/${SAMPLE}.cram"
                                     # ln -s "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/${SAMPLE}/${WDL}/${SAMPLE}.crumble.cram.crai" "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/${EXOME_GROUP}/crams/${SAMPLE}.crumble.cram.crai"
                                 fi
                                 # if [[ ${MULTIPLE} != '' ]];then
@@ -1225,8 +1228,9 @@ do
                                             if [ ! -d "${GATK_TMP_DIR}" ];then
                                                 mkdir -p "${GATK_TMP_DIR}"
                                             fi
+                                            info "snakemake --executor slurm --default-resources slurm_partition=prod slurm_time=12:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile ${GATK_SNAKEFILE} --jobs 16 --use-conda --configfile ${PROJECT_PATH}gatk_cnv.yaml"
                                             source "${CONDA_ACTIVATE}" "${SNAKEMAKE_ENV}"
-                                            nohup snakemake \
+                                            snakemake \
                                             --executor slurm \
                                             --default-resources slurm_partition=prod slurm_time=12:00:00 slurm_account=${USER} \
                                             --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/${RUN}/ \
@@ -1235,11 +1239,17 @@ do
                                             --use-conda \
                                             --configfile "${PROJECT_PATH}gatk_cnv.yaml" \
                                             > "${PROJECT_PATH}/crams/snakemake_gatkcnv.log" 2>&1 &
+                                            # in case we need to exceute gatk cnv on scratch, then transfer
+                                            # if [ $? -eq 0 ]; then
+                                            #     /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR}${RUN}_GATK_CNV/" "${PROJECT_PATH}/gatk_cnv/"
+                                            #     info "gatk_cnv snakemake completed successfully for run ${RUN}, library ${LIBRARY}"
+                                            # else
+                                            #     warning "gatk_cnv snakemake failed for run ${RUN}, library ${LIBRARY}. Check the log file: ${PROJECT_PATH}/crams/snakemake_gatkcnv.log"
+                                            # fi
                                             # --resources cnv_caller=8 \
                                             # --default-resources slurm_partition=prod nodes=1 slurm_time=12:00:00 slurm_account=${USER} \
                                             conda deactivate
                                         fi
-                                        info "snakemake --executor slurm --slurm-account $USER --default-resources slurm_partition=prod nodes=1 slurm_time=06:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile "${GATK_SNAKEFILE}" --jobs 20 --use-conda --configfile "${PROJECT_PATH}gatk_cnv.yaml" --resources cnv_caller=20"
                                     fi
                                     # prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
                                     # ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda--configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4

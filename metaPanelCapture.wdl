@@ -97,7 +97,7 @@ workflow metaPanelCapture {
 		# File refFaiGz = refFastaGz + ".fai"
 		# File refFaiGzi = refFastaGz + ".gzi"
 		## crumble
-		Boolean doCrumble = true
+		Boolean doCrumble = false
 		## gatk-picard
 		String variantEvalEV = "MetricsCollection"
 		## computePoorCoverage
