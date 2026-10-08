@@ -1235,7 +1235,7 @@ do
                                             --default-resources slurm_partition=prod slurm_time=12:00:00 slurm_account=${USER} \
                                             --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/${RUN}/ \
                                             --snakefile "${GATK_SNAKEFILE}" \
-                                            --jobs 16 \
+                                            --jobs 24 \
                                             --use-conda \
                                             --configfile "${PROJECT_PATH}gatk_cnv.yaml" \
                                             > "${PROJECT_PATH}/crams/snakemake_gatkcnv.log" 2>&1 &
