@@ -1228,7 +1228,7 @@ do
                                             if [ ! -d "${GATK_TMP_DIR}" ];then
                                                 mkdir -p "${GATK_TMP_DIR}"
                                             fi
-                                            info "snakemake --executor slurm --default-resources slurm_partition=prod slurm_time=12:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile ${GATK_SNAKEFILE} --jobs 16 --use-conda --configfile ${PROJECT_PATH}gatk_cnv.yaml"
+                                            info "snakemake --executor slurm --default-resources slurm_partition=prod slurm_time=12:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile ${GATK_SNAKEFILE} --jobs 24 --use-conda --configfile ${PROJECT_PATH}gatk_cnv.yaml"
                                             source "${CONDA_ACTIVATE}" "${SNAKEMAKE_ENV}"
                                             snakemake \
                                             --executor slurm \
@@ -1237,8 +1237,10 @@ do
                                             --snakefile "${GATK_SNAKEFILE}" \
                                             --jobs 24 \
                                             --use-conda \
+                                            --keep-going \
                                             --configfile "${PROJECT_PATH}gatk_cnv.yaml" \
                                             > "${PROJECT_PATH}/crams/snakemake_gatkcnv.log" 2>&1 &
+                                            # --keep-going
                                             # in case we need to exceute gatk cnv on scratch, then transfer
                                             # if [ $? -eq 0 ]; then
                                             #     /usr/bin/srun -N1 -c1 -pprod -JautoDL_rsync_log "${RSYNC}" -aq --no-g --chmod=ugo=rwX --remove-source-files "${TMP_OUTPUT_DIR}${RUN}_GATK_CNV/" "${PROJECT_PATH}/gatk_cnv/"
