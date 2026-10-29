@@ -419,6 +419,7 @@ workflow panelCapture {
             BamIndex = sambambaMarkDup.markedBamIndex,
             GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
     }
+    # if (sampleID != "106316-2A") {
     call runGatkLeftAlignIndels.gatkLeftAlignIndels {
         input:
             Queue = defQueue,
@@ -434,6 +435,7 @@ workflow panelCapture {
             # GatkInterval = interval,
             BamFile = gatkApplyBQSR.recalBam
     }
+    # }
     # }
     # call runGatkGatherBamFiles.gatkGatherBamFiles {
     #     input:
@@ -458,7 +460,7 @@ workflow panelCapture {
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
             BamFile = gatkLeftAlignIndels.lAlignedBam
-            # BamFile = gatkGatherBamFiles.gatheredBam
+            # BamFile = select_first([gatkLeftAlignIndels.lAlignedBam,gatkApplyBQSR.recalBam])
     }
     call runSambambaIndex.sambambaIndex as finalIndexing {
         input:
