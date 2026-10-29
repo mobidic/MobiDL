@@ -6,8 +6,8 @@ workflow metaPanelCapture {
 	meta {
 		author: "Felix VANDERMEEREN, David BAUX"
 		email: "felix.vandermeeren(at)chu-montpellier.fr, d-baux(at)chu-montpellier.fr"
-		version: "0.3.2"
-		date: "2026-01-31"
+		version: "0.3.3"
+		date: "2026-06-25"
 	}
 	input {
 		# variables declarations
@@ -19,7 +19,7 @@ workflow metaPanelCapture {
 		String suffix2 = "_S1_R2_001"
 		String genomeVersion
 		File refFasta
-		File refFai
+		# File refFai = refFasta + ".fai"
 		File refDict
 		String intervalBaitBed = ""
 		String workflowType
@@ -29,7 +29,7 @@ workflow metaPanelCapture {
 		String condaBin
 		## envs
 		String fastpEnv = "fastpEnv"
-		String bwaEnv = "bwaEnv"
+		String minibwaEnv = "minibwaEnv"
 		String samtoolsEnv = "samtoolsEnv"
 		String vcftoolsEnv = "vcftoolsEnv"	
 		String sambambaEnv = "sambambaEnv"
@@ -52,7 +52,7 @@ workflow metaPanelCapture {
 		# memoryHigh = one cpu tasks => high mem ex 10Gb
 		## Bioinfo execs
 		String fastpExe = "fastp"
-		String bwaExe = "bwa"
+		String minibwaExe = "minibwa"
 		String samtoolsExe = "samtools"
 		String sambambaExe = "sambamba"
 		String bedToolsExe = "bedtools"
@@ -77,27 +77,27 @@ workflow metaPanelCapture {
 		String noFiltering = ""
 		## bwaSamtools
 		String platform
-		File refAmb
-		File refAnn
-		File refBwt
-		File refPac
-		File refSa
+		# File refAmb
+		# File refAnn
+		# File refBwt
+		# File refPac
+		# File refSa
 		## sambambaIndex
 		## gatk splitintervals
 		String subdivisionMode
 		## gatk Base recal
 		File knownSites1
-		File knownSites1Index
+		# File knownSites1Index = knownSites1 + ".tbi"
 		File knownSites2
-		File knownSites2Index
+		# File knownSites2Index = knownSites2 + ".tbi"
 		File knownSites3
-		File knownSites3Index
+		# File knownSites3Index = knownSites3 + ".tbi"
 		## cram conversion
 		File refFastaGz
-		File refFaiGz
-		File refFaiGzi
+		# File refFaiGz = refFastaGz + ".fai"
+		# File refFaiGzi = refFastaGz + ".gzi"
 		## crumble
-		Boolean doCrumble = true
+		Boolean doCrumble = false
 		## gatk-picard
 		String variantEvalEV = "MetricsCollection"
 		## computePoorCoverage
@@ -111,18 +111,21 @@ workflow metaPanelCapture {
 		## DeepVariant
 		# String referenceFasta
 		String modelType
+        String dsModelType = "WES_TUMOR_ONLY"
 		# String bedFile
 		String data
 		String refData
 		# String dvOut
 		String outputMnt
-		String dvExe
+		String dvExe = "run_deepvariant"
+		# String dsExe = "run_deepsomatic"
 		String singularityExe = "singularity"
 		String dvSimg
 		String dsSimg
 		## VcSuffix
 		String dvSuffix = ".dv"
 		String hcSuffix = ".hc"
+        String dsSuffix = ".ds"
 		## covreport
 		String covReportDir
 		String covReportJar
@@ -144,7 +147,7 @@ workflow metaPanelCapture {
 				fastqR2 = fastqLocR2,
 				genomeVersion = genomeVersion,
 				refFasta = refFasta,
-				refFai = refFai,
+				# refFai = refFai,
 				refDict = refDict,
 				intervalBedFile = roiDir + "/" + inputs[0],
 				intervalBaitBed = intervalBaitBed,
@@ -154,7 +157,7 @@ workflow metaPanelCapture {
 				debug = debug,
 				condaBin = condaBin,
 				fastpEnv = fastpEnv,
-				bwaEnv = bwaEnv,
+				minibwaEnv = minibwaEnv,
 				samtoolsEnv = samtoolsEnv,
 				vcftoolsEnv = vcftoolsEnv,
 				sambambaEnv = sambambaEnv,
@@ -171,7 +174,7 @@ workflow metaPanelCapture {
 				memoryLow = memoryLow,
 				memoryHigh = memoryHigh,
 				fastpExe = fastpExe,
-				bwaExe = bwaExe,
+				minibwaExe = minibwaExe,
 				samtoolsExe = samtoolsExe,
 				sambambaExe = sambambaExe,
 				bedToolsExe = bedToolsExe,
@@ -192,21 +195,21 @@ workflow metaPanelCapture {
 				cromwellJar = cromwellJar,
 				noFiltering = noFiltering,
 				platform = platform,
-				refAmb = refAmb,
-				refAnn = refAnn,
-				refBwt = refBwt,
-				refPac = refPac,
-				refSa = refSa,
+				# refAmb = refAmb,
+				# refAnn = refAnn,
+				# refBwt = refBwt,
+				# refPac = refPac,
+				# refSa = refSa,
 				subdivisionMode = subdivisionMode,
 				knownSites1 = knownSites1,
-				knownSites1Index = knownSites1Index,
+				# knownSites1Index = knownSites1Index,
 				knownSites2 = knownSites2,
-				knownSites2Index = knownSites2Index,
+				# knownSites2Index = knownSites2Index,
 				knownSites3 = knownSites3,
-				knownSites3Index = knownSites3Index,
+				# knownSites3Index = knownSites3Index,
 				refFastaGz = refFastaGz,
-				refFaiGz = refFaiGz,
-				refFaiGzi = refFaiGzi,
+				# refFaiGz = refFaiGz,
+				# refFaiGzi = refFaiGzi,
 				doCrumble = doCrumble,
 				variantEvalEV = variantEvalEV,
 				bedtoolsLowCoverage = bedtoolsLowCoverage,
@@ -222,6 +225,7 @@ workflow metaPanelCapture {
 				singularityExe = singularityExe,
 				dvSimg = dvSimg,
 				dvSuffix = dvSuffix,
+                dsSuffix = dsSuffix,
 				dsSimg = dsSimg,
 				hcSuffix = hcSuffix,
 				covReportDir = covReportDir,
