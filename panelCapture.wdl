@@ -94,11 +94,7 @@ workflow panelCapture {
         File fastqR2
         String genomeVersion
         File refFasta
-<<<<<<< HEAD
-        File refFai
-=======
         File refFai = refFasta + ".fai"
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
         File refDict
         File intervalBedFile
         String intervalBaitBed = ""
@@ -108,12 +104,8 @@ workflow panelCapture {
         Boolean debug = false
         ## Bioinfo execs
         String fastpExe = "fastp"
-<<<<<<< HEAD
-        String bwaExe = "bwa"
-=======
         # String bwaExe = "bwa"
         String minibwaExe = "minibwa"
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
         String samtoolsExe = "samtools"
         String sambambaExe = "sambamba"
         String bedToolsExe = "bedtools"
@@ -139,37 +131,16 @@ workflow panelCapture {
         String noFiltering = ""
         ## bwaSamtools
         String platform
-<<<<<<< HEAD
-        File refAmb
-        File refAnn
-        File refBwt
-        File refPac
-        File refSa
-=======
         # File refAmb
         # File refAnn
         # File refBwt
         # File refPac
         # File refSa
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
         ## sambambaIndex
         ## gatk splitintervals
         String subdivisionMode
         ## gatk Base recal
         File knownSites1
-<<<<<<< HEAD
-        File knownSites1Index
-        File knownSites2
-        File knownSites2Index
-        File knownSites3
-        File knownSites3Index
-        ## cram conversion
-        File refFastaGz
-        File refFaiGz
-        File refFaiGzi
-        ## crumble
-        Boolean doCrumble = true
-=======
         File knownSites1Index = knownSites1 + ".tbi"
         File knownSites2
         File knownSites2Index = knownSites2 + ".tbi"
@@ -181,7 +152,6 @@ workflow panelCapture {
         File refFaiGzi = refFastaGz + ".gzi"
         ## crumble
         Boolean doCrumble = false
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
         ## gatk-picard
         String variantEvalEV = "MetricsCollection"
         ## computePoorCoverage
@@ -195,11 +165,7 @@ workflow panelCapture {
         ## DeepVariant
         # String referenceFasta
         String modelType
-<<<<<<< HEAD
-        String dsModelType = "WGS_TUMOR_ONLY"
-=======
         String dsModelType = "WES_TUMOR_ONLY"
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
         # String bedFile
         String data
         String refData
@@ -257,13 +223,6 @@ workflow panelCapture {
 # Alignment and post-alignment processing + QC
 #
 ###################################################################################
-<<<<<<< HEAD
-    call runBwaSamtools.bwaSamtools {
-        input:
-            Queue = defQueue,
-            CondaBin = condaBin,
-            BwaEnv = bwaEnv,
-=======
     # call runBwaSamtools.bwaSamtools {
     #     input:
     #         Queue = defQueue,
@@ -292,7 +251,6 @@ workflow panelCapture {
             Queue = defQueue,
             CondaBin = condaBin,
             MinibwaEnv = minibwaEnv,
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
             Cpu = cpuHigh,
             Memory = memoryLow,
             SampleID = sampleID,
@@ -301,22 +259,10 @@ workflow panelCapture {
             FastqR1 = fastp.fastpR1,
             FastqR2 = fastp.fastpR2,
             SamtoolsExe = samtoolsExe,
-<<<<<<< HEAD
-            BwaExe = bwaExe,
-            Version = true,
-            Platform = platform,
-            RefFasta = refFasta,
-            RefAmb = refAmb,
-            RefAnn = refAnn,
-            RefBwt = refBwt,
-            RefPac = refPac,
-            RefSa = refSa
-=======
             minibwaExe = minibwaExe,
             Version = true,
             Platform = platform,
             RefFasta = refFasta
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
     }
     call runSambambaMarkDup.sambambaMarkDup {
         input:
@@ -329,11 +275,7 @@ workflow panelCapture {
             OutDir = outDir,
             WorkflowType = workflowType,
             SambambaExe = sambambaExe,
-<<<<<<< HEAD
-            BamFile = bwaSamtools.sortedBam
-=======
             BamFile = minibwaSamtools.sortedBam
->>>>>>> 8ae639097e10685df855e6bfd41d3f749dc953ba
     }
     call runBedToGatkIntervalList.bedToGatkIntervalList {
         input:
