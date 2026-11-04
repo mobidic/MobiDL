@@ -25,6 +25,7 @@ task computeGenomecov {
 		File IntervalBedFile
 		Int BedtoolsLowCoverage
 		File BamFile
+        File BamIndex
 		# runtime attributes
 		String Queue
 		Int Cpu

@@ -51,7 +51,6 @@ task minibwaSamtools {
         fi
         conda deactivate
         # rm fastp fastq files
-        # rm ~{FastqR1} ~{FastqR2}
         rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/FastpDir/$(basename ~{FastqR1})" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/FastpDir/$(basename ~{FastqR2})"
         # rm "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/FastpDir/~{SampleID}*_R1*.fastp.fq.gz" "~{OutDir}~{OutputDirSampleID}/~{WorkflowType}/FastpDir/~{SampleID}*_R2*.fastp.fq.gz"
     >>>

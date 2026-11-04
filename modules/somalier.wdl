@@ -35,9 +35,8 @@ task extract {
 		String refFasta
 		File bamFile
 		File BamIndex
-		String ext = ".bam"
 		# MEMO: Somalier always name '.somalier' from BAM ReadGroup tag -> use bellow param if needed:
-		String sampleName = basename(bamFile, ext)
+		String SampleID
 		String outputPath = "./"
 
 		# runtime attributes
@@ -56,7 +55,7 @@ task extract {
 		#       To enforce naming of outfile as 'sample.somalier'
 		#       Mostly for Sarek data, where CRAM read-group is 'sample_sample'
 		#       Leading somalier to create a 'sample_sample.somalier' (instead of expected 'sample.somalier')
-		SOMALIER_SAMPLE_NAME=~{sampleName} "~{path_exe}" extract \
+		SOMALIER_SAMPLE_NAME=~{SampleID} "~{path_exe}" extract \
 			--sites="~{sites}" \
 			--fasta="~{refFasta}" \
 			--out-dir="~{outputPath}" \
@@ -64,7 +63,7 @@ task extract {
 	>>>
 
 	output {
-		File file = "~{outputPath}/" + sampleName + ".somalier"
+		File file = "~{outputPath}/" + SampleID + ".somalier"
 	}
 
 	runtime {

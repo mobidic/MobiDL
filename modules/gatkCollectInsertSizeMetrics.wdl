@@ -19,6 +19,7 @@ task gatkCollectInsertSizeMetrics {
 		Boolean Version = false
 		# task specific variables
 		File BamFile
+        File BamIndex
 		# runtime attributes
 		String Queue
 		Int Cpu

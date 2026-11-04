@@ -20,6 +20,7 @@ task gatkCollectHsMetrics {
 		Boolean Version = false
 		# task specific variables
 		File BamFile
+        File BamIndex
 		File BaitIntervals
 		File TargetIntervals
 		Int CoverageCap = 1000

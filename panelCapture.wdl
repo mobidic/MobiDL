@@ -55,8 +55,8 @@ workflow panelCapture {
     meta {
         author: "David BAUX"
         email: "david.baux(at)chu-montpellier.fr"
-        version: "1.3.4"
-        date: "2026-06-01"
+        version: "1.3.5"
+        date: "2026-11-04"
     }
     input {
         # variables declarations
@@ -361,36 +361,59 @@ workflow panelCapture {
             BamIndex = sambambaMarkDup.markedBamIndex,
             GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
     }
-    # if (sampleID != "106316-2A") {
-    call runGatkLeftAlignIndels.gatkLeftAlignIndels {
-        input:
-            Queue = defQueue,
-            Cpu = cpuLow,
-            Memory = memoryHigh,
-            SampleID = sampleID,
-            OutDir = outDir,
-            WorkflowType = workflowType,
-            GatkExe = gatkExe,
-            RefFasta = refFasta,
-            RefFai = refFai,
-            RefDict = refDict,
-            # GatkInterval = interval,
-            BamFile = gatkApplyBQSR.recalBam
-    }
-    # }
-    # }
-    # call runGatkGatherBamFiles.gatkGatherBamFiles {
+    # attempt to fix gatk bug like:
+    # 20:38:44.114 INFO  ProgressMeter -       chr3:130996081              1.8              39258000       21411508.0
+    # java.lang.IllegalArgumentException: Alignments added out of order in SAMFileWriterImpl.addAlignment for file:///scratch/tmp_output/20261030_AV253403_Run036_B/Exome_hg38/CLA260317/panelCapture/CLA260317.dupmarked.recal.laligned.bam. Sort order is coordinate. Offending records are at [chr4:3375622] and [chr4:3375622]
+
+    # call runSamtoolsSort.samtoolsSort as sortBamForLeftAlignIndels {
     #     input:
     #         Queue = defQueue,
-    #         Cpu = cpuLow,
-    #         Memory = memoryHigh,
+    #         CondaBin = condaBin,
+    #         SamtoolsEnv = samtoolsEnv,
+    #         Cpu = cpuHigh,
+    #         Memory = memoryLow,
     #         SampleID = sampleID,
     #         OutDir = outDir,
     #         WorkflowType = workflowType,
-    #         GatkExe = gatkExe,
-    #         LAlignedBams = gatkLeftAlignIndels.lAlignedBam
+    #         SamtoolsExe = samtoolsExe,
+    #         RemoveLalignedBam = false,
+    #         BamFile = gatkApplyBQSR.recalBam
     # }
-    call runSamtoolsSort.samtoolsSort {
+    # if (sampleID != "106316-2A") {
+    # if (isExome.isExomeBool) {
+    #     call runGatkLeftAlignIndels.gatkLeftAlignIndels {
+    #         input:
+    #             Queue = defQueue,
+    #             Cpu = cpuLow,
+    #             Memory = memoryHigh,
+    #             SampleID = sampleID,
+    #             OutDir = outDir,
+    #             WorkflowType = workflowType,
+    #             GatkExe = gatkExe,
+    #             RefFasta = refFasta,
+    #             RefFai = refFai,
+    #             RefDict = refDict,
+    #             # GatkInterval = interval,
+    #             BamFile = gatkApplyBQSR.recalBam
+    #             # BamFile = sortBamForLeftAlignIndels.sortedBam
+    #     }
+    #     call runSamtoolsSort.samtoolsSort as sortbamFinal {
+    #     input:
+    #         Queue = defQueue,
+    #         CondaBin = condaBin,
+    #         SamtoolsEnv = samtoolsEnv,
+    #         Cpu = cpuHigh,
+    #         Memory = memoryLow,
+    #         SampleID = sampleID,
+    #         OutDir = outDir,
+    #         WorkflowType = workflowType,
+    #         SamtoolsExe = samtoolsExe,
+    #         BamFile = gatkLeftAlignIndels.lAlignedBam
+    #         # BamFile = select_first([gatkLeftAlignIndels.lAlignedBam,gatkApplyBQSR.recalBam])
+    #     }
+    # }
+    # if (! isExome.isExomeBool) {
+    call runSamtoolsSort.samtoolsSort as sortbamFinal {
         input:
             Queue = defQueue,
             CondaBin = condaBin,
@@ -401,9 +424,10 @@ workflow panelCapture {
             OutDir = outDir,
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
-            BamFile = gatkLeftAlignIndels.lAlignedBam
-            # BamFile = select_first([gatkLeftAlignIndels.lAlignedBam,gatkApplyBQSR.recalBam])
+            # BamFile = gatkLeftAlignIndels.lAlignedBam
+            BamFile = gatkApplyBQSR.recalBam
     }
+    # }
     call runSambambaIndex.sambambaIndex as finalIndexing {
         input:
             Queue = defQueue,
@@ -417,7 +441,7 @@ workflow panelCapture {
             WorkflowType = workflowType,
             SambambaExe = sambambaExe,
             Version = true,
-            BamFile = samtoolsSort.sortedBam
+            BamFile = sortbamFinal.sortedBam
     }
     call runSamtoolsCramConvert.samtoolsCramConvert {
         input:
@@ -430,7 +454,7 @@ workflow panelCapture {
             OutDir = outDir,
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
-            BamFile = samtoolsSort.sortedBam,
+            BamFile = sortbamFinal.sortedBam,
             RefFastaGz = refFastaGz,
             RefFaiGz = refFaiGz,
             RefFaiGzi = refFaiGzi
@@ -494,7 +518,9 @@ workflow panelCapture {
             OutDir = outDir,
             WorkflowType = workflowType,
             SambambaExe = sambambaExe,
-            BamFile = samtoolsSort.sortedBam
+            BamIndex = finalIndexing.bamIndex,
+            BamFile = sortbamFinal.sortedBam
+            
     }
     call runGatkCollectMultipleMetrics.gatkCollectMultipleMetrics {
         input:
@@ -506,7 +532,8 @@ workflow panelCapture {
             WorkflowType = workflowType,
             GatkExe = gatkExe,
             RefFasta = refFasta,
-            BamFile = samtoolsSort.sortedBam
+            BamIndex = finalIndexing.bamIndex,
+            BamFile = sortbamFinal.sortedBam
     }
     call runGatkCollectInsertSizeMetrics.gatkCollectInsertSizeMetrics {
         input:
@@ -518,7 +545,8 @@ workflow panelCapture {
             WorkflowType = workflowType,
             GatkExe = gatkExe,
             RefFasta = refFasta,
-            BamFile = samtoolsSort.sortedBam
+            BamIndex = finalIndexing.bamIndex,
+            BamFile = sortbamFinal.sortedBam
     }
     call runGatkBedToPicardIntervalList.gatkBedToPicardIntervalList as gatkBedToPicardIntervalListTarget {
         input:
@@ -563,7 +591,8 @@ workflow panelCapture {
             SortExe = sortExe,
             IntervalBedFile = intervalBedFile,
             BedtoolsLowCoverage = bedtoolsLowCoverage,
-            BamFile = samtoolsSort.sortedBam
+            BamIndex = finalIndexing.bamIndex,
+            BamFile = sortbamFinal.sortedBam
     }
     call runComputePoorCoverage.computePoorCoverage {
         input:
@@ -594,7 +623,7 @@ workflow panelCapture {
             WorkflowType = workflowType,
             SamtoolsExe = samtoolsExe,
             IntervalBedFile = intervalBedFile,
-            BamFile = samtoolsSort.sortedBam,
+            BamFile = sortbamFinal.sortedBam,
             BamIndex = finalIndexing.bamIndex,
             MinCovBamQual = minCovBamQual
     }
@@ -633,7 +662,8 @@ workflow panelCapture {
             GatkExe = gatkExe,
             RefFasta = refFasta,
             RefFai = refFai,
-            BamFile = samtoolsSort.sortedBam,
+            BamIndex = finalIndexing.bamIndex,
+            BamFile = sortbamFinal.sortedBam,
             BaitIntervals = gatkBedToPicardIntervalListBait.picardIntervals,
             TargetIntervals = gatkBedToPicardIntervalListTarget.picardIntervals
     }
@@ -657,8 +687,10 @@ workflow panelCapture {
             SingularityExe = singularityExe,
             Version = true,
             DvSimg = dvSimg,
-            BamFile = samtoolsSort.sortedBam,
-            BamIndex = finalIndexing.bamIndex,
+            # BamFile = sortbamFinal.sortedBam,
+            # BamIndex = finalIndexing.bamIndex,
+            BamFile = sambambaMarkDup.markedBam,
+            BamIndex = sambambaMarkDup.markedBamIndex,
             RefFastaGz = refFastaGz,
             IntervalBedFile = intervalBedFile,
             ModelType = modelType,
@@ -795,8 +827,10 @@ workflow panelCapture {
             SingularityExe = singularityExe,
             BgZipExe = bgZipExe,
             DvSimg = dsSimg,
-            BamFile = samtoolsSort.sortedBam,
-            BamIndex = finalIndexing.bamIndex,
+            BamFile = sambambaMarkDup.markedBam,
+            BamIndex = sambambaMarkDup.markedBamIndex,
+            # BamFile = sortbamFinal.sortedBam,
+            # BamIndex = finalIndexing.bamIndex,
             RefFastaGz = refFastaGz,
             IntervalBedFile = intervalBedFile,
             ModelType = dsModelType,
@@ -895,7 +929,7 @@ workflow panelCapture {
                 DbSNP = knownSites3,
                 DbSNPIndex = knownSites3Index,
                 GatkInterval = interval,
-                BamFile = samtoolsSort.sortedBam,
+                BamFile = sortbamFinal.sortedBam,
                 BamIndex = finalIndexing.bamIndex,
                 SwMode = swMode,
                 EmitRefConfidence = emitRefConfidence
@@ -1140,7 +1174,7 @@ workflow panelCapture {
                 CovReportDir = covReportDir,
                 CovReportJar = covReportJar,
                 JavaExe = javaExe,
-                BamFile = samtoolsSort.sortedBam,
+                BamFile = sortbamFinal.sortedBam,
                 BamIndex = finalIndexing.bamIndex,
                 GenomeVersion = genomeVersion,
                 GeneFile = geneFile
@@ -1164,7 +1198,7 @@ workflow panelCapture {
                     CromwellJar = cromwellJar,
                     BamArray = [
                         "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable),
-                        "~{dataPath}" + basename(samtoolsSort.sortedBam),
+                        "~{dataPath}" + basename(sortbamFinal.sortedBam),
                         "~{dataPath}" + basename(finalIndexing.bamIndex)
                     ],
                     VcfArray = [
@@ -1201,7 +1235,7 @@ workflow panelCapture {
                         "~{dataPath}" + basename(compressIndexVcfDv.bgZippedVcfIndex),
                         "~{dataPath}" + basename(anacoreUtilsMergeVCFCallers.mergedVcf)
                     ]
-                    # BamArray = ["~{dataPath}" + basename(bwaSamtools.sortedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkApplyBQSR.recalBam), "~{dataPath}" + basename(gatkApplyBQSR.recalBamIndex), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBamIndex), "~{dataPath}" + basename(samtoolsSort.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
+                    # BamArray = ["~{dataPath}" + basename(bwaSamtools.sortedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBam), "~{dataPath}" + basename(sambambaMarkDup.markedBamIndex), "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable), "~{dataPath}" + basename(gatkApplyBQSR.recalBam), "~{dataPath}" + basename(gatkApplyBQSR.recalBamIndex), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBam), "~{dataPath}" + basename(gatkLeftAlignIndels.lAlignedBamIndex), "~{dataPath}" + basename(sortbamFinal.sortedBam), "~{dataPath}" + basename(finalIndexing.bamIndex), "~{dataPath}" + basename(samtoolsCramConvert.cram),"~{dataPath}" + basename(samtoolsCramIndex.cramIndex)],
             }
             call runMultiqc.multiqc as multiqcDoCrumble {
                 input:
@@ -1235,7 +1269,7 @@ workflow panelCapture {
                     CromwellJar = cromwellJar,
                     BamArray = [
                         "~{dataPath}" + basename(gatkGatherBQSRReports.gatheredRecalTable),
-                        "${dataPath}" + basename(samtoolsSort.sortedBam),
+                        "${dataPath}" + basename(sortbamFinal.sortedBam),
                         "${dataPath}" + basename(finalIndexing.bamIndex)
                     ],
                     VcfArray = [
