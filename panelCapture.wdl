@@ -359,7 +359,9 @@ workflow panelCapture {
             # GatkInterval = interval,
             BamFile = sambambaMarkDup.markedBam,
             BamIndex = sambambaMarkDup.markedBamIndex,
-            GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable
+            GatheredRecaltable = gatkGatherBQSRReports.gatheredRecalTable,
+            DvVcf = deepVariant.DeepVcf,
+            DsVcf = deepSomatic.DeepVcf
     }
     # attempt to fix gatk bug like:
     # 20:38:44.114 INFO  ProgressMeter -       chr3:130996081              1.8              39258000       21411508.0

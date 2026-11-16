@@ -18,7 +18,7 @@ task isExome {
     }
     command <<<
         set -e
-        if [[ "~{IntervalBedFile}" =~ [Ee]xome ]];then
+        if [[ "~{IntervalBedFile}" =~ EXOME ]];then
             echo "true"
         else
             echo "false"

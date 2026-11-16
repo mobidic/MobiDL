@@ -23,6 +23,8 @@ task gatkApplyBQSR {
 		File BamFile
 		File BamIndex
 		File GatheredRecaltable
+        File DvVcf
+        File? DsVcf
 		# runtime attributes
 		String Queue
 		Int Cpu
