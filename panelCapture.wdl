@@ -1196,6 +1196,9 @@ workflow panelCapture {
                     FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
                     FinalFile2 = crumbleIndexing.cramIndex,
                     FinalFile3 = bcftoolsNormDs.normVcf,
+                    FinalFile4 = identito.outIdent,
+                    FinalFile5 = bcftoolsStatsHc.statVcf,
+                    FinalFile6 = bcftoolsStatsDv.statVcf,
                     JavaExe = javaExe,
                     CromwellJar = cromwellJar,
                     BamArray = [
@@ -1267,6 +1270,9 @@ workflow panelCapture {
                     FinalFile1 = compressIndexMergedVcf.bgZippedVcf,
                     FinalFile2 = samtoolsCramIndex.cramIndex,
                     FinalFile3 = bcftoolsNormDs.normVcf,
+                    FinalFile4 = identito.outIdent,
+                    FinalFile5 = bcftoolsStatsHc.statVcf,
+                    FinalFile6 = bcftoolsStatsDv.statVcf,
                     JavaExe = javaExe,
                     CromwellJar = cromwellJar,
                     BamArray = [

@@ -18,6 +18,9 @@ task cleanUpPanelCaptureTmpDirs {
         File FinalFile1
         File? FinalFile2
         File FinalFile3
+        File FinalFile4
+        File FinalFile5
+        File FinalFile6
         Array[String] BamArray
         Array[String] VcfArray
         # runtime attributes
