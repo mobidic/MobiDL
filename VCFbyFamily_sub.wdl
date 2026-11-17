@@ -24,6 +24,7 @@ workflow PedToVCF {
         String wdl = "variant_calling/merge"
         String suffixVcf = ".vcf.gz"  # VCF merged HC + DV
         String wdlBAM = "preprocessing/markduplicates"
+        # valeur herite de mobicorail mais ecrase par Orca/scripts/prepareVCFfam_MobiDL.sh
         String suffixBAM = ".md.cram"
         File intervalBedFile
         File somalierSites = "/mnt/chu-ngs/refData/igenomes/Homo_sapiens/GATK/GRCh37/Annotation/Somalier/sites.GRCh37.vcf.gz"
@@ -481,7 +482,8 @@ task findVCF {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String WDL = "panelCapture"
-        String SuffixFile = ".crumble.cram"
+        #String SuffixFile = ".crumble.cram"
+        String SuffixFile = "*cram"
 
         String CondaBin
         String BcftoolsEnv

@@ -27,6 +27,7 @@ workflow exomeMetrix {
         String workflowType = ""
         ## Optional
         String wdlBAM = "preprocessing/markduplicates"
+        # valeur ecrase par  Orca/scripts/prepareVCFfam_MobiDL.sh
         String suffixBAM = ".md.cram"
         File? somalierSites
         ## Params
@@ -125,6 +126,7 @@ workflow exomeMetrix {
                     sites = somalierSites,
                     bamFile = toIndexedBAM.sortedBam,
                     BamIndex = toIndexedBAM.bamIdx,
+                    SampleID = sampleID,
                     outputPath = mkdirCov.outDir + "/coverage/",
                     path_exe = somalierExe,
                     Queue = defQueue,
@@ -197,7 +199,8 @@ workflow exomeMetrix {
                 SortExe = sortExe,
                 IntervalBedFile = intervals,
                 BedtoolsLowCoverage = bedtoolsLowCoverage,
-                BamFile = filterBAM.sortedBam
+                BamFile = filterBAM.sortedBam,
+                BamIndex = filterBAM.bamIdx
         }
 
         call runComputePoorCoverage.computePoorCoverage {
@@ -301,7 +304,8 @@ task findFile {
         String Family  # Eg.: 'casIndex,father,mother'
         String PrefixPath  # Eg: /path/to/runID/MobiDL/
         String WDL = "panelCapture"
-        String SuffixFile = ".crumble.cram"
+        #String SuffixFile = ".crumble.cram"
+	String SuffixFile = "*cram"
 
         # runtime attributes
         String Queue
