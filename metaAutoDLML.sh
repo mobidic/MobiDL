@@ -1221,14 +1221,14 @@ do
                                         fi
                                     fi
                                     # Launch gatk_cnv on exomes
-                                    if [[ "${LIBRARY}" = "${EXOME_GROUP}" ]];then
+                                    if [[ "${LIBRARY}" = "${EXOME_GROUP}" && -d "${PROJECT_PATH}" ]];then
                                         debug 'BED_EXOME:'"${BED_EXOME}"
                                         if [ "${DRY_RUN}" = false ];then
                                             prepareGatkCnv "${PROJECT_PATH}"
                                             if [ ! -d "${GATK_TMP_DIR}" ];then
                                                 mkdir -p "${GATK_TMP_DIR}"
                                             fi
-                                            info "snakemake --executor slurm --default-resources slurm_partition=prod slurm_time=12:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile ${GATK_SNAKEFILE} --jobs 24 --use-conda --configfile ${PROJECT_PATH}gatk_cnv.yaml"
+                                            info "snakemake --executor slurm --default-resources slurm_partition=prod slurm_time=12:00:00  slurm_account=${USER} --slurm-logdir /mnt/chu-ngs/refData/CNV/gatk/twist2.0_hg38/MobiDL/ --snakefile ${GATK_SNAKEFILE} --jobs 24 --use-conda --keep-going --configfile ${PROJECT_PATH}gatk_cnv.yaml"
                                             source "${CONDA_ACTIVATE}" "${SNAKEMAKE_ENV}"
                                             snakemake \
                                             --executor slurm \
@@ -1256,7 +1256,7 @@ do
                                     # prepareGatkCnv "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/" "${LIBRARY}\/"
                                     # ${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8 --use-conda--configfile "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml" --resources cnv_caller=4
                                     # info "${SNAKEMAKE} --cluster "sbatch -p prod -N 1 -J gatk-cnv --output=/dev/null" --jobs 1 -s ${GATK_SNAKEFILE} -j 8--use-conda --configfile ${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/${LIBRARY}/gatk_cnv.yaml --resources cnv_caller=4"
-                                    if [[ "${PROVIDER}" = "ELEMENT" ]];then
+                                    if [[ "${PROVIDER}" = "ELEMENT" && -d "${PROJECT_PATH}" ]];then
                                         info "Launching MultiQC on run ${RUN}/${LIBRARY}"
                                         source "${CONDA_ACTIVATE}" "${MULTIQC_ENV}"
                                         if [ "${DRY_RUN}" = true ];then
