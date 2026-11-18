@@ -621,8 +621,8 @@ prepareGatkCnv() {
     #     "${OUTPUT_PATH}${RUN}/MobiDL/${DATE}/alignment_files/gatk_cnv.yaml"
     sed -i -e "s/OUTPUT_DIR:/OUTPUT_DIR: ${PROJECT_PATH_SED}gatk_cnv/" \
         -e "s/SAMPLES_PATH:/SAMPLES_PATH: ${PROJECT_PATH_SED}crams/" \
-        -e "s/BED_PATH:/BED_PATH: ${ROI_DIR_SED}${BED_EXOME}/" \
         "${1}gatk_cnv.yaml"
+        # -e "s/BED_PATH:/BED_PATH: ${ROI_DIR_SED}${BED_EXOME}/" \
         # -e "s/VCF_path:/VCF_path: ${OUTPUT_PATH_SED}${RUN}\/MobiDL\/${DATE}\/MobiCNVvcfs/" \
         # "${1}gatk_cnv.yaml"
 }
